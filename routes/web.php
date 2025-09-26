@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PresensiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,10 +15,17 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
+Route::middleware(['guest:karyawan'])->group(function(){
+Route::get('/',function () {
     return view('auth.login');
+})->name('login');
+Route::post('/proseslogin', [AuthController::class, 'proseslogin']);
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index']);
-Route::post('/proseslogin', [AuthController::class, 'proseslogin']);
+Route::middleware(['auth:karyawan'])->group(function(){
+    Route::get( '/dashboard', [DashboardController::class, 'index']);
+Route::get('/logout',[AuthController::class,'logout']);
+
+Route::get('/presensi/create',[PresensiController::class,'create']);
+});
+
