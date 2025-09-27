@@ -27,5 +27,6 @@ Route::middleware(['auth:karyawan'])->group(function(){
 Route::get('/logout',[AuthController::class,'logout']);
 
 Route::get('/presensi/create',[PresensiController::class,'create']);
+Route::post('/presensi/store',[PresensiController::class,'store']);
 });
 
