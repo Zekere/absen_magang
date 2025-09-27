@@ -13,8 +13,8 @@
     <meta name="keywords" content="bootstrap 4, mobile template, cordova, phonegap, mobile, html" />
 
     <!-- Perbaikan asset -->
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}" sizes="32x32">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/192x192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/icon/puprlogo.png') }}" sizes="32x32">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/puprlogo.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="manifest" href="{{ asset('__manifest.json') }}">
 </head>
@@ -36,7 +36,7 @@
             </div>
             <div class="section mt-1">
                 <h1>E-Presensi PUPR</h1>
-                <h4>Silahkan Login</h4>
+                <h4>Silahkan Login<br>Dengan Akun Anda dengan memasukkan NIK dan Password</h4>
             </div>
             <div class="section mt-1 mb-5">
                 <form action="/proseslogin" method="POST">
