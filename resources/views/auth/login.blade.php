@@ -39,6 +39,16 @@
                 <h4>Silahkan Login<br>Dengan Akun Anda dengan memasukkan NIK dan Password</h4>
             </div>
             <div class="section mt-1 mb-5">
+              @php
+    $message = Session::get('error');
+@endphp
+
+@if (Session::has('error'))
+    <div class="alert alert-danger" role="alert">
+        {{ $message }}
+    </div>
+@endif
+
                 <form action="/proseslogin" method="POST">
                     @csrf
                     <div class="form-group boxed">
