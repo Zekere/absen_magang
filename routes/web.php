@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PresensiController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KaryawanController; // ⬅ penting
+
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +58,9 @@ Route::post('/presensi/storeizin',[PresensiController::class,'storeizin']);
 Route::middleware(['auth:user'])->group(function (){
 Route::get('/logoutadmin',[AuthController::class,'logoutadmin']);
 Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin']);
+
+//data karyawan
+Route::get('/karyawan', [KaryawanController::class, 'index']);
 
 });
 
