@@ -1,100 +1,87 @@
-<!doctype html>
-<html lang="en">
-
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-    <title>E-Presensi PUPR</title>
-    <meta name="description" content="Mobilekit HTML Mobile UI Kit">
-    <meta name="keywords" content="bootstrap 4, mobile template, cordova, phonegap, mobile, html" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login E-Presensi</title>
 
-    <!-- Perbaikan asset -->
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
     <link rel="icon" type="image/png" href="{{ asset('assets/img/icon/puprlogo.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/puprlogo.png') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <link rel="manifest" href="{{ asset('__manifest.json') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/login.css') }}">
 </head>
-
-<body class="bg-white">
-
-    <!-- loader -->
-    <div id="loader">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div>
-    <!-- * loader -->
-
-    <!-- App Capsule -->
-    <div id="appCapsule" class="pt-0">
-
-        <div class="login-form mt-1">
-            <div class="section">
-                <img src="{{ asset('assets/img/login/login.jpg') }}" alt="image" class="form-image">
+<body>
+   <div class="login-container">
+        <div class="login-card">
+            <h2 class="login-title">E-Presensi PUPR</h2>
+            <p class="text-center text-white mb-4">Silahkan Login Dengan Akun Anda</p>
+            
+            <!-- Alert Error -->
+            @php
+                $message = Session::get('error');
+            @endphp
+            @if (Session::has('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="section mt-1">
-                <h1>Login Admin</h1>
-                <h4>Silahkan Login<br>Dengan Akun Anda dengan memasukkan Email dan Password</h4>
-            </div>
-            <div class="section mt-1 mb-5">
-              @php
-    $message = Session::get('error');
-@endphp
-
-@if (Session::has('error'))
-    <div class="alert alert-danger" role="alert">
-        {{ $message }}
-    </div>
-@endif
-
-                <form action="/prosesloginadmin" method="POST">
-                    @csrf
-                    <div class="form-group boxed">
-                        <div class="input-wrapper">
-                           <input type="text" class="form-control" id="email" name="email" placeholder="EMAIL" required>
-
-                            <i class="clear-input">
-                                <ion-icon name="close-circle"></ion-icon>
-                            </i>
+            @endif
+            
+            <form action="/proseslogin" method="POST" id="loginForm">
+                @csrf
+                <div class="mb-3">
+                    <label for="username" class="form-label" id="usernameLabel">ID Anda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="username" name="nik" placeholder="Masukkan ID" required>
+                        <i class="bi bi-person-fill input-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Masukkan password" required>
+                        <i class="bi bi-lock-fill input-icon"></i>
+                    </div>
+                </div>
+                
+                <!-- Role Toggle Switch -->
+                <div class="role-toggle-container">
+                    <div class="toggle-wrapper">
+                        <div class="toggle-switch">
+                            <input type="radio" name="role" id="user" value="user" checked>
+                            <label for="user" class="toggle-option">Login as User</label>
+                            
+                            <input type="radio" name="role" id="admin" value="admin">
+                            <label for="admin" class="toggle-option">Login as Admin</label>
+                            
+                            <div class="toggle-slider"></div>
                         </div>
                     </div>
-
-                    <div class="form-group boxed">
-                        <div class="input-wrapper">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
-                            <i class="clear-input">
-                                <ion-icon name="close-circle"></ion-icon>
-                            </i>
-                        </div>
-                    </div>
-
-                    <div class="form-links mt-2">
-                        {{-- <div>
-                            <a href="page-register.html">Register Now</a>
-                        </div> --}}
-                        <div><a href="page-forgot-password.html" class="text-muted">Forgot Password?</a></div>
-                    </div>
-
-                    <div class="form-button-group">
-                        <button type="submit" class="btn btn-primary btn-block btn-lg">Log in</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                
+                <div class="form-options">
+                    <a href="page-forgot-password.html" class="forgot-password">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-login">Login</button>
+            </form>
         </div>
-
     </div>
-    <!-- * App Capsule -->
 
-    <!-- ///////////// Js Files ////////////////////  -->
-    <script src="{{ asset('assets/js/lib/jquery-3.4.1.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/popper.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
-    <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.js"></script>
-    <script src="{{ asset('assets/js/plugins/owl-carousel/owl.carousel.min.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins/jquery-circle-progress/circle-progress.min.js') }}"></script>
-    <script src="{{ asset('assets/js/base.js') }}"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Custom JS -->
+  <script src="{{ asset('assets/js/login.js') }}"></script>
 </body>
 </html>
