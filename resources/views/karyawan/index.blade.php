@@ -2,6 +2,9 @@
 @section('content')
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
 <div class="container-fluid">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
@@ -26,7 +29,37 @@
 
                     <!-- Body Card -->
                     <div class="card-body">
+                        
                         <div class="table-responsive">
+                            <form action="/karyawan" method="GET" class="mb-4">
+    <div class="row g-2 align-items-center">
+        <!-- Input Nama Karyawan -->
+        <div class="col-md-5">
+            <input type="text" name="nama_karyawan" id="nama_karyawan" 
+                   class="form-control" placeholder="Cari Nama Karyawan"
+                   value="{{ request('nama_karyawan') }}">
+        </div>
+
+        <!-- Dropdown Departemen -->
+        <div class="col-md-4">
+            <select name="kode_dept" id="kode_dept" class="form-select">
+                <option value="">Pilih Departemen</option>
+@foreach ( $departemen as $d )
+<option {{ Request('kode_dept') ==$d->kode_dept? 'selected' : '' }} value="{{ $d -> kode_dept }}">{{ $d->nama_dept }}</option>
+
+@endforeach
+            </select>
+        </div>
+
+        <!-- Tombol Cari -->
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Search
+            </button>
+        </div>
+    </div>
+</form>
+
                             <table class="table table-hover align-middle text-center">
                                 <thead class="table-primary">
                                     <tr>
@@ -40,13 +73,14 @@
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
+                                </form>
                                 <tbody>
                                     @foreach ($karyawan as $d)
                                     @php
                                         $path = Storage::url('uploads/karyawan/'.$d->foto);
                                     @endphp
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $loop->iteration + $karyawan -> firstItem () -1 }}</td>
                                         <td>{{ $d->nik }}</td>
                                         <td class="fw-semibold">{{ $d->nama_lengkap }}</td>
                                         <td>
@@ -83,6 +117,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            <div class="d-flex justify-content-center mt-3">
+    {{ $karyawan->links('pagination::bootstrap-5') }}
+</div>
+
                         </div> <!-- table-responsive -->
                     </div>
                 </div>
