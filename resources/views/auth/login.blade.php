@@ -35,13 +35,18 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
             <form action="/proseslogin" method="POST" id="loginForm">
                 @csrf
                 <div class="mb-3">
                     <label for="username" class="form-label" id="usernameLabel">ID Anda</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="username" name="nik" placeholder="Masukkan ID" required>
+            <form action="/prosesloginadmin" method="POST" id="loginForm">
+                @csrf
+                <div class="mb-3">
+                    <label for="username" class="form-label" id="usernameLabel">Email Anda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="username" name="email" placeholder="Masukkan email" required>
                         <i class="bi bi-person-fill input-icon"></i>
                     </div>
                 </div>
