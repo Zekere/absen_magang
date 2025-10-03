@@ -27,35 +27,35 @@
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a
-                 
-                >
-                  <i class="fas fa-home"></i>
+                
+                  
+                  <a href="/panel/dashboardadmin">
                   <p>Dashboard</p>
                 
+              
                 </a>
                 <div class="collapse" id="dashboard">
                   <ul class="nav nav-collapse">
                     <li>
                       <a href="{{ asset('Template_admin/demo1/index.html') }}">
-                        <span class="sub-item">Dashboard 1</span>
+                        <span class="sub-item">Dashboard </span>
                       </a>
                     </li>
                   </ul>
                 </div>
               </li>
              
-              <li class="nav-item">
+              <li class="nav-item ">
                 <a data-bs-toggle="collapse" href="#base">
-                  <i class="fas fa-layer-group"></i>
-                  <p>Konten</p>
+                  
+                  <p>Data Master</p>
                   <span class="caret"></span>
                 </a>
                 <div class="collapse" id="base">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="{{ asset('Template_admin/components/avatars.html') }}">
-                        <span class="sub-item">Avatars</span>
+                      <a href="/karyawan">
+                        <span class="sub-item">Data Karyawan</span>
                       </a>
                     </li>
                     <li>
