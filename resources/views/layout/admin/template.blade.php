@@ -40,6 +40,7 @@
 
     <!-- CSS Just for demo purpose, don't include it in your project -->
     <link rel="stylesheet" href="{{ asset ('assets/css/demo.css')}}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
 
 @include('layout.admin.sidebar')
@@ -390,7 +391,7 @@
                        
                         <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Logout</a>
+                        <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                       </li>
                     </div>
                   </ul>
@@ -400,6 +401,34 @@
          
 
           </nav>
+
+          <script>
+document.getElementById("logout").addEventListener("click", function(e) {
+    e.preventDefault(); // cegah langsung logout
+
+    Swal.fire({
+        title: 'Yakin mau logout?',
+        text: "Kamu akan keluar dari akun ini.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal',
+        showClass: {
+            popup: 'animate__animated animate__zoomIn'  // animasi muncul
+        },
+        hideClass: {
+            popup: 'animate__animated animate__zoomOut' // animasi hilang
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // redirect ke logout
+            window.location.href = "/logoutadmin";
+        }
+    });
+});
+</script>
              <div class="page-wrapper">
     @yield('content')
 
