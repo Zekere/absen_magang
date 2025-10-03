@@ -323,6 +323,9 @@
                        
                         <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>
+
+                        <a class="dropdown-item" href="/logout" id="logout">Logout</a>
+=======
                         <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                       </li>
                     </div>
@@ -348,10 +351,16 @@ document.getElementById("logout").addEventListener("click", function(e) {
         confirmButtonText: 'Ya, Logout',
         cancelButtonText: 'Batal',
         showClass: {
+
+            popup: 'animate_animated animate_zoomIn'  // animasi muncul
+        },
+        hideClass: {
+            popup: 'animate_animated animate_zoomOut' // animasi hilang
             popup: 'animate__animated animate__zoomIn'  // animasi muncul
         },
         hideClass: {
             popup: 'animate__animated animate__zoomOut' // animasi hilang
+bf9df31749df32c54ec2fb2df8b19b801b8b1885
         }
     }).then((result) => {
         if (result.isConfirmed) {
