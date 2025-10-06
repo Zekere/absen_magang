@@ -326,6 +326,7 @@
 
                         <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
 
+                        <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                       </li>
                     </div>
                   </ul>
@@ -350,16 +351,10 @@ document.getElementById("log").addEventListener("click", function(e) {
         confirmButtonText: 'Ya, Logout',
         cancelButtonText: 'Batal',
         showClass: {
-
-            popup: 'animate_animated animate_zoomIn'  // animasi muncul
-        },
-        hideClass: {
-            popup: 'animate_animated animate_zoomOut' // animasi hilang
             popup: 'animate__animated animate__zoomIn'  // animasi muncul
         },
         hideClass: {
             popup: 'animate__animated animate__zoomOut' // animasi hilang
-bf9df31749df32c54ec2fb2df8b19b801b8b1885
         }
     }).then((result) => {
         if (result.isConfirmed) {
