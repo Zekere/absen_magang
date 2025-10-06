@@ -326,7 +326,6 @@
 
                         <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
 
-                        <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                       </li>
                     </div>
                   </ul>
