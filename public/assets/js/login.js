@@ -32,6 +32,4 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Role:", adminRadio.checked ? "admin" : "user");
         console.log("Username:", usernameInput.value);
     });
-
 });
-

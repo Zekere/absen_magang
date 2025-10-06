@@ -61,6 +61,7 @@ Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin
 
 //data karyawan
 Route::get('/karyawan', [KaryawanController::class, 'index']);
+Route::post('/karyawan/store',[KaryawanController::class, 'store']);
 
 });
 
