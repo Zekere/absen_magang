@@ -6,12 +6,14 @@
         </div>
     </a>
 
-    <a href="/presensi/histori" class="item {{ Request()->is('presensi/histori') ? 'active' : '' }}">
+    <a href="/presensi/izin" class="item {{ Request()->is('presensi/izin') ? 'active' : '' }}">
         <div class="col">
-            <ion-icon name="document-text-outline"></ion-icon>
-            <strong>Histori</strong>
+            <ion-icon name="calendar-outline"></ion-icon>
+            <strong>Izin</strong>
         </div>
     </a>
+
+    
 
     <a href="/presensi/create" class="item {{ Request()->is('presensi/create') ? 'active' : '' }}">
         <div class="col">
@@ -21,10 +23,10 @@
         </div>
     </a>
 
-    <a href="/presensi/izin" class="item {{ Request()->is('presensi/izin') ? 'active' : '' }}">
+    <a href="/presensi/histori" class="item {{ Request()->is('presensi/histori') ? 'active' : '' }}">
         <div class="col">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <strong>Izin</strong>
+            <ion-icon name="document-text-outline"></ion-icon>
+            <strong>Histori</strong>
         </div>
     </a>
 
