@@ -36,21 +36,12 @@
             </div>
             @endif
             
-<<<<<<< HEAD
-            <form action="/prosesloginadmin" method="POST" id="loginForm">
-                @csrf
-                <div class="mb-3">
-                    <label for="username" class="form-label" id="usernameLabel">Email Anda</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="username" name="email" placeholder="Masukkan email" required>
-=======
             <form action="/proseslogin" method="POST" id="loginForm">
                 @csrf
                 <div class="mb-3">
                     <label for="username" class="form-label" id="usernameLabel">ID Anda</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="username" name="nik" placeholder="Masukkan ID" required>
->>>>>>> 0a88e76297e0ec59449dcf44a5f4c5c7a6e9d9cc
                         <i class="bi bi-person-fill input-icon"></i>
                     </div>
                 </div>

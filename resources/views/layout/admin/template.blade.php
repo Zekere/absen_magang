@@ -2,14 +2,14 @@
 <html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Kaiadmin - Bootstrap 5 Admin Dashboard</title>
+    <title>E-Presensi Admin</title>
     <meta
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
       name="viewport"
     />
     <link
       rel="icon"
-      href="{{asset ('assets/img/kaiadmin/favicon.ico') }}"
+      href="{{asset ('assets/img/icon/puprlogo.png') }}"
       type="image/x-icon"
     />
 
@@ -324,9 +324,8 @@
                         <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>
 
-                        <a class="dropdown-item" href="/logout" id="logout">Logout</a>
-=======
-                        <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
+                        <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
+
                       </li>
                     </div>
                   </ul>
@@ -338,7 +337,7 @@
           </nav>
 
           <script>
-document.getElementById("logout").addEventListener("click", function(e) {
+document.getElementById("log").addEventListener("click", function(e) {
     e.preventDefault(); // cegah langsung logout
 
     Swal.fire({
