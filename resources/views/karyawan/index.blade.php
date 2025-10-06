@@ -98,7 +98,9 @@
                         <td><span class="badge bg-success px-3 py-2">{{ $d->nama_dept }}</span></td>
                         <td>
                           <div class="d-flex justify-content-center gap-2">
-                            <a href="{{ url('/karyawan'.$d->id.'/edit') }}" class="btn btn-sm btn-warning d-inline-flex align-items-center">
+                           
+
+                            <a href="#" class="edit" nik="{{ $d->nik }}">
                               <i class="bi bi-pencil-square"></i>
                             </a>
                             <form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
@@ -221,6 +223,23 @@
   </div>
 </div>
 
+
+<!-- MODAL EDIT -->
+<div class="modal fade" id="modal-editkaryawan" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg rounded-3">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Edit Data Karyawan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="loadeditform"> 
+
+      </div>
+      
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -240,6 +259,8 @@ $(function() {
     $modal.modal('show');
   });
 
+  
+
   $('#foto').on('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -247,6 +268,23 @@ $(function() {
       reader.onload = function(ev) { $('#Foto').attr('src', ev.target.result); };
       reader.readAsDataURL(file);
     } else { $('#Foto').attr('src', defaultPreview); }
+  });
+
+  $(".edit").click(function() {
+    var nik = $(this).attr('nik');
+    $.ajax({
+        type: 'POST'
+        , url: '/karyawan/edit'
+        , cache: false
+        , data: {
+            _token: "{{  csrf_token() }}"
+            , nik: nik
+        }
+        , success:function(respond){
+            $("#loadeditform").html(respond);
+        }
+    })
+    $("#modal-editkaryawan").modal("show");
   });
 
   $('#frmkaryawan').on('submit', function(e) {

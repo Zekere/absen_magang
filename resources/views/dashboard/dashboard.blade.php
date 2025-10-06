@@ -134,10 +134,10 @@
             confirmButtonText: 'Ya, Keluar!',
             cancelButtonText: 'Batal',
             showClass: {
-                popup: 'animate__animated animate__zoomIn animate__faster'
+                popup: 'animate_animated animatezoomIn animate_faster'
             },
             hideClass: {
-                popup: 'animate__animated animate__zoomOut animate__faster'
+                popup: 'animate_animated animatezoomOut animate_faster'
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -207,7 +207,7 @@
             <div class="list-menu">
                 <div class="item-menu text-center">
                     <div class="menu-icon">
-                        <a href="" class="green" style="font-size: 40px;">
+                        <a href="editprofile" class="primary" style="font-size: 40px;">
                             <ion-icon name="person-sharp"></ion-icon>
                         </a>
                     </div>
@@ -217,7 +217,7 @@
                 </div>
                 <div class="item-menu text-center">
                     <div class="menu-icon">
-                        <a href="" class="danger" style="font-size: 40px;">
+                        <a href="/presensi/izin" class="green" style="font-size: 40px;">
                             <ion-icon name="calendar-number"></ion-icon>
                         </a>
                     </div>
@@ -227,7 +227,7 @@
                 </div>
                 <div class="item-menu text-center">
                     <div class="menu-icon">
-                        <a href="" class="warning" style="font-size: 40px;">
+                        <a href="/presensi/histori" class="warning" style="font-size: 40px;">
                             <ion-icon name="document-text"></ion-icon>
                         </a>
                     </div>
@@ -237,12 +237,12 @@
                 </div>
                 <div class="item-menu text-center">
                     <div class="menu-icon">
-                        <a href="" class="orange" style="font-size: 40px;">
-                            <ion-icon name="location"></ion-icon>
+                        <a href="/presensi/create" class="orange" style="font-size: 40px;">
+                            <ion-icon name="camera"></ion-icon>
                         </a>
                     </div>
                     <div class="menu-name">
-                        Lokasi
+                        Kamera
                     </div>
                 </div>
             </div>
