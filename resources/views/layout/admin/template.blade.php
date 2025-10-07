@@ -392,10 +392,9 @@
                         <div class="dropdown-divider"></div>
                        
                         <a class="dropdown-item" href="#">Account Setting</a>
-                        <div class="dropdown-divider"></div>
-
-                        
+                        <div class="dropdown-divider"></div>             
                         <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
+                        <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
                       </li>
                     </div>
                   </ul>

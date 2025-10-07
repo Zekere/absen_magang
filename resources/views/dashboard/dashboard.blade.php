@@ -134,10 +134,10 @@
             confirmButtonText: 'Ya, Keluar!',
             cancelButtonText: 'Batal',
             showClass: {
-                popup: 'animate__animated animate__zoomIn animate__faster'
+                popup: 'animate_animated animatezoomIn animate_faster'
             },
             hideClass: {
-                popup: 'animate__animated animate__zoomOut animate__faster'
+                popup: 'animate_animated animatezoomOut animate_faster'
             }
         }).then((result) => {
             if (result.isConfirmed) {

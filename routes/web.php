@@ -63,5 +63,8 @@ Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin
 Route::get('/karyawan', [KaryawanController::class, 'index']);
 Route::post('/karyawan/store',[KaryawanController::class, 'store']);
 
+Route::post('/karyawan/edit',[KaryawanController::class, 'edit']);
+Route::post('/karyawan/{nik}/update',[KaryawanController::class, 'update']);
+
 });
 
