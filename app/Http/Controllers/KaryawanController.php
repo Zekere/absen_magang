@@ -172,5 +172,13 @@ class KaryawanController extends Controller
         return Redirect::back()->with(['warning' => 'Gagal memperbarui data: ' . $e->getMessage()]);
     }
 }
+public function delete($nik){
+    $delete = DB::table('karyawan')->where('nik',$nik)->delete();
+    if ($delete){
+        return Redirect::back()->with(['success' => 'Data Berhasil Dihapus']);
+    } else {
+        return Redirect::back()->with(['warning' => 'Data Gagal Dihapus']);
+    }
+}
 
 }
