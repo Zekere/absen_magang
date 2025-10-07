@@ -103,16 +103,21 @@
                         <td>
                           <div class="d-flex justify-content-center gap-2">
                             <!-- Edit: gunakan attribute nik (tidak ubah route) -->
-                            <a href="javascript:void(0)" class="edit" nik="{{ $d->nik }}" title="Edit">
+                            <a href="javascript:void(0)" class="edit btn btn-info btn-sm" nik="{{ $d->nik }}" title="Edit">
                               <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
+
+                              <!--form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')"-->
+                            <form action="/karyawan/{{ $d->nik }}/delete" method="POST" >
                               @csrf
-                              @method('DELETE')
-                              <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center">
+                              <!--@method('DELETE')-->
+                              <!--<button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center">
                                 <i class="bi bi-trash-fill"></i>
-                              </button>
+                              </button>-->
+                              <a class="btn btn-sm btn-danger d-inline-flex align-items-center delete-confirm">
+                                <i class="bi bi-trash-fill"></i>
+                              </a>
                             </form>
                           </div>
                         </td>
@@ -328,6 +333,29 @@ document.addEventListener('DOMContentLoaded', function() {
       Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memuat data edit.' });
     });
   });
+
+  //HAPUS NGASALDRI DAPLO
+ // Tombol Hapus dengan SweetAlert konfirmasi
+$(".delete-confirm").click(function (e) {
+  e.preventDefault();
+  var form = $(this).closest("form");
+
+  swal({
+    title: "Anda Yakin?",
+    text: "Setelah dihapus, Anda tidak dapat mengembalikannya lagi!",
+    icon: "warning",
+    buttons: ["Batal", "Ya, Hapus!"],
+    dangerMode: true,
+  }).then((willDelete) => {
+    if (willDelete) {
+      // Kirim form ke server untuk hapus data
+      form.submit();
+    } else {
+      swal("Data anda aman 😊", { icon: "info" });
+    }
+  });
+});
+
 
   // Submit tambah karyawan dengan Fetch + FormData
   const frmKaryawan = document.getElementById('frmkaryawan');
