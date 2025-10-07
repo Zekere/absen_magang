@@ -59,8 +59,8 @@
                       </a>
                     </li>
                     <li>
-                      <a href="{{ asset('Template_admin/components/buttons.html') }}">
-                        <span class="sub-item">Buttons</span>
+                      <a href="/departemen">
+                        <span class="sub-item">Departemen</span>
                       </a>
                     </li>
                     <li>
