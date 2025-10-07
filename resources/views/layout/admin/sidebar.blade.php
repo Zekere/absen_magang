@@ -58,7 +58,6 @@
                 <a href="components/buttons.html">
                   <span class="sub-item">Buttons</span>
                 </a>
-<<<<<<< HEAD
                 <div class="collapse" id="base">
                   <ul class="nav nav-collapse">
                     <li>
@@ -108,8 +107,6 @@
                     </li>
                   </ul>
                 </div>
-=======
->>>>>>> 66b9b460b1e6f77cb70fbf7c4f533e003fce493b
               </li>
               <li>
                 <a href="components/gridsystem.html">

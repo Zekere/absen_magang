@@ -1,143 +1,137 @@
 @extends('layout.admin.template')
 @section('content')
 
-<!-- Styles -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
-<!-- CSRF meta (dipakai oleh fetch) -->
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<div class="container-fluid mt-5">
 
-<div class="container-fluid">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div class="col">
       <h3 class="fw-bold mb-4">Dashboard</h3>
     </div>
   </div>
 
-  <div class="page-body">
-    <div class="container-xl">
-      <div class="row">
-        <div class="col-12">
-          <div class="card shadow-lg border-0 rounded-3">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-              <h4 class="mb-0 fw-bold">
-                <i class="bi bi-people-fill me-2"></i> Data Karyawan
-              </h4>
-              <!-- Tambah: data-bs-toggle agar modal bisa langsung terbuka kalau JS Bootstrap aktif -->
-              <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahkaryawan" data-bs-toggle="modal" data-bs-target="#modal-inputkaryawan" role="button" aria-pressed="false">
-                <i class="bi bi-plus-circle me-1"></i> Tambah Data
-              </a>
-            </div>
+</div>
 
-            <div class="card-body">
-              <div class="table-responsive">
-                <!-- Search -->
-                <form action="/karyawan" method="GET" class="mb-4">
-                  <div class="row g-2 align-items-center">
-                    <div class="col-md-5">
-                      <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                        <input type="text" name="nama_karyawan" id="nama_karyawan"
-                          class="form-control" placeholder="Cari Nama Karyawan"
-                          value="{{ request('nama_karyawan') }}">
-                      </div>
-                    </div>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow-lg border-0 rounded-3">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0 fw-bold">
+              <i class="bi bi-people-fill me-2"></i> Data Karyawan
+            </h4>
+            <!-- Tambah: data-bs-toggle agar modal bisa langsung terbuka kalau JS Bootstrap aktif -->
+            <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahkaryawan" data-bs-toggle="modal" data-bs-target="#modal-inputkaryawan" role="button" aria-pressed="false">
+              <i class="bi bi-plus-circle me-1"></i> Tambah Data
+            </a>
+          </div>
 
-                    <div class="col-md-4">
-                      <select name="kode_dept" id="kode_dept" class="form-select">
-                        <option value="">Pilih Departemen</option>
-                        @foreach ($departemen as $dept)
-                          <option value="{{ $dept->kode_dept }}"
-                            {{ request('kode_dept') == $dept->kode_dept ? 'selected' : '' }}>
-                            {{ $dept->nama_dept }}
-                          </option>
-                        @endforeach
-                      </select>
-                    </div>
-
-                    <div class="col-md-2 d-grid">
-                      <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search me-1"></i> Search
-                      </button>
+          <div class="card-body">
+            <div class="table-responsive">
+              <!-- Search -->
+              <form action="/karyawan" method="GET" class="mb-4">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-5">
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                      <input type="text" name="nama_karyawan" id="nama_karyawan"
+                        class="form-control" placeholder="Cari Nama Karyawan"
+                        value="{{ request('nama_karyawan') }}">
                     </div>
                   </div>
-                </form>
 
-                <!-- Table -->
-                <table class="table table-hover align-middle text-center">
-                  <thead class="table-primary">
-                    <tr>
-                      <th>No</th>
-                      <th>NIK</th>
-                      <th>Nama</th>
-                      <th>Jabatan</th>
-                      <th>No HP</th>
-                      <th>Foto</th>
-                      <th>Departemen</th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @foreach ($karyawan as $d)
-                      @php $path = Storage::url('uploads/karyawan/'.$d->foto); @endphp
-                      <tr>
-                        <td>{{ $loop->iteration + $karyawan->firstItem() -1 }}</td>
-                        <td>{{ $d->nik }}</td>
-                        <td class="fw-semibold">{{ $d->nama_lengkap }}</td>
-                        <td><span class="badge bg-info px-3 py-2">{{ $d->jabatan }}</span></td>
-                        <td>{{ $d->no_hp }}</td>
-                        <td>
-                          @if(empty($d->foto))
-                            <img src="{{ asset('assets/img/image.png') }}"
-                              class="rounded-circle border shadow-sm"
-                              style="width: 50px; height: 50px; object-fit: cover;">
-                          @else
-                            <img src="{{ url($path) }}" alt="Foto Karyawan"
-                              class="rounded-circle border shadow-sm"
-                              style="width: 50px; height: 50px; object-fit: cover;">
-                          @endif
-                        </td>
-                        <td><span class="badge bg-success px-3 py-2">{{ $d->nama_dept }}</span></td>
-                        <td>
-                          <div class="d-flex justify-content-center gap-2">
-                            <!-- Edit: gunakan attribute nik (tidak ubah route) -->
-                            <a href="javascript:void(0)" class="edit btn btn-info btn-sm" nik="{{ $d->nik }}" title="Edit">
-                              <i class="bi bi-pencil-square"></i>
-                            </a>
+                  <div class="col-md-4">
+                    <select name="kode_dept" id="kode_dept" class="form-select">
+                      <option value="">Pilih Departemen</option>
+                      @foreach ($departemen as $dept)
+                        <option value="{{ $dept->kode_dept }}"
+                          {{ request('kode_dept') == $dept->kode_dept ? 'selected' : '' }}>
+                          {{ $dept->nama_dept }}
+                        </option>
+                      @endforeach
+                    </select>
+                  </div>
 
-
-                              <!--form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')"-->
-                            <form action="/karyawan/{{ $d->nik }}/delete" method="POST" >
-                              @csrf
-                              <!--@method('DELETE')-->
-                              <!--<button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center">
-                                <i class="bi bi-trash-fill"></i>
-                              </button>-->
-                              <a class="btn btn-sm btn-danger d-inline-flex align-items-center delete-confirm">
-                                <i class="bi bi-trash-fill"></i>
-                              </a>
-                            </form>
-                          </div>
-                        </td>
-                      </tr>
-                    @endforeach
-                  </tbody>
-                </table>
-
-                <div class="d-flex justify-content-center mt-3">
-                  {{ $karyawan->links('pagination::bootstrap-5') }}
+                  <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-search me-1"></i> Search
+                    </button>
+                  </div>
                 </div>
+              </form>
 
+              <!-- Table -->
+              <table class="table table-hover align-middle text-center">
+                <thead class="table-primary">
+                  <tr>
+                    <th>No</th>
+                    <th>NIK</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>No HP</th>
+                    <th>Foto</th>
+                    <th>Departemen</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($karyawan as $d)
+                    @php $path = Storage::url('uploads/karyawan/'.$d->foto); @endphp
+                    <tr>
+                      <td>{{ $loop->iteration + $karyawan->firstItem() -1 }}</td>
+                      <td>{{ $d->nik }}</td>
+                      <td class="fw-semibold">{{ $d->nama_lengkap }}</td>
+                      <td><span class="badge bg-info px-3 py-2">{{ $d->jabatan }}</span></td>
+                      <td>{{ $d->no_hp }}</td>
+                      <td>
+                        @if(empty($d->foto))
+                          <img src="{{ asset('assets/img/image.png') }}"
+                            class="rounded-circle border shadow-sm"
+                            style="width: 50px; height: 50px; object-fit: cover;">
+                        @else
+                          <img src="{{ url($path) }}" alt="Foto Karyawan"
+                            class="rounded-circle border shadow-sm"
+                            style="width: 50px; height: 50px; object-fit: cover;">
+                        @endif
+                      </td>
+                      <td><span class="badge bg-success px-3 py-2">{{ $d->nama_dept }}</span></td>
+                      <td>
+                        <div class="d-flex justify-content-center gap-2">
+                          <!-- Edit: gunakan attribute nik (tidak ubah route) -->
+                          <a href="javascript:void(0)" class="edit btn btn-info btn-sm" nik="{{ $d->nik }}" title="Edit">
+                            <i class="bi bi-pencil-square"></i>
+                          </a>
+
+
+                            <!--form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')"-->
+                          <form action="/karyawan/{{ $d->nik }}/delete" method="POST" >
+                            @csrf
+                            <!--@method('DELETE')-->
+                            <!--<button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center">
+                              <i class="bi bi-trash-fill"></i>
+                            </button>-->
+                            <a class="btn btn-sm btn-danger d-inline-flex align-items-center delete-confirm">
+                              <i class="bi bi-trash-fill"></i>
+                            </a>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+
+              <div class="d-flex justify-content-center mt-3">
+                {{ $karyawan->links('pagination::bootstrap-5') }}
               </div>
+
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- Modal Tambah Data Karyawan -->
