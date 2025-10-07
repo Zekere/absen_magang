@@ -2,14 +2,14 @@
 <html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>E-Presensi Admin</title>
+    <title>Kaiadmin - Bootstrap 5 Admin Dashboard</title>
     <meta
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
       name="viewport"
     />
     <link
       rel="icon"
-      href="{{asset ('assets/img/icon/puprlogo.png') }}"
+      href="{{asset ('assets/img/kaiadmin/favicon.ico') }}"
       type="image/x-icon"
     />
 
@@ -43,9 +43,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
 
+@include('layout.admin.header')
+
 @include('layout.admin.sidebar')
 
-@include('layout.admin.header')
+
 
 
 
@@ -275,7 +277,75 @@
                   >
                     <i class="fas fa-layer-group"></i>
                   </a>
-                
+                  <div class="dropdown-menu quick-actions animated fadeIn">
+                    <div class="quick-actions-header">
+                      <span class="title mb-1">Quick Actions</span>
+                      <span class="subtitle op-7">Shortcuts</span>
+                    </div>
+                    <div class="quick-actions-scroll scrollbar-outer">
+                      <div class="quick-actions-items">
+                        <div class="row m-0">
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-danger rounded-circle">
+                                <i class="far fa-calendar-alt"></i>
+                              </div>
+                              <span class="text">Calendar</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-warning rounded-circle"
+                              >
+                                <i class="fas fa-map"></i>
+                              </div>
+                              <span class="text">Maps</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-info rounded-circle">
+                                <i class="fas fa-file-excel"></i>
+                              </div>
+                              <span class="text">Reports</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-success rounded-circle"
+                              >
+                                <i class="fas fa-envelope"></i>
+                              </div>
+                              <span class="text">Emails</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-primary rounded-circle"
+                              >
+                                <i class="fas fa-file-invoice-dollar"></i>
+                              </div>
+                              <span class="text">Invoice</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-secondary rounded-circle"
+                              >
+                                <i class="fas fa-credit-card"></i>
+                              </div>
+                              <span class="text">Payments</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
                   <a
@@ -292,7 +362,7 @@
                       />
                     </div>
                     <span class="profile-username">
-                      <span class="op-7"></span>
+                      <span class="op-7">Hi,</span>
                       <span class="fw-bold">{{ Auth::guard('user')->user()->name }}</span>
                     </span>
                   </a>
@@ -324,8 +394,8 @@
                         <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>
 
-                        <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
-
+                        
+                        <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                       </li>
                     </div>
                   </ul>
@@ -337,7 +407,7 @@
           </nav>
 
           <script>
-document.getElementById("log").addEventListener("click", function(e) {
+document.getElementById("logout").addEventListener("click", function(e) {
     e.preventDefault(); // cegah langsung logout
 
     Swal.fire({
@@ -350,10 +420,16 @@ document.getElementById("log").addEventListener("click", function(e) {
         confirmButtonText: 'Ya, Logout',
         cancelButtonText: 'Batal',
         showClass: {
+
+            popup: 'animate_animated animate_zoomIn'  // animasi muncul
+        },
+        hideClass: {
+            popup: 'animate_animated animate_zoomOut' // animasi hilang
             popup: 'animate__animated animate__zoomIn'  // animasi muncul
         },
         hideClass: {
             popup: 'animate__animated animate__zoomOut' // animasi hilang
+bf9df31749df32c54ec2fb2df8b19b801b8b1885
         }
     }).then((result) => {
         if (result.isConfirmed) {
@@ -649,8 +725,5 @@ document.getElementById("log").addEventListener("click", function(e) {
         fillColor: "rgba(255, 165, 52, .14)",
       });
     </script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-
-    @stack('scripts')
   </body>
 </html>

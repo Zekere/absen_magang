@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Karyawan;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
@@ -25,7 +25,7 @@ class KaryawanController extends Controller
           if(!empty($request->kode_dept)){
             $query->where('karyawan.kode_dept',$request->kode_dept);
         }
-        $karyawan = $query->paginate(10);
+        $karyawan = $query->paginate(5);
 
 
         $departemen = DB::table('departemen') ->get();

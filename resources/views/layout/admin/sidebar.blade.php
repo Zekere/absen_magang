@@ -2,9 +2,9 @@
       <div class="sidebar" data-background-color="dark">
         <div class="sidebar-logo">
           <div class="logo-header" data-background-color="dark">
-            <a href="{{ asset('Template_admin/index.html') }}" class="logo">
+            <a href="{{ asset('panel/dashboardadmin') }}" class="logo">
               <img
-                src=" {{ asset ('assets/img/kaiadmin/logo_light.svg')}}"
+                src=" {{ asset('assets/img/icon/puprlogo.png') }}"
                 alt="navbar brand"
                 class="navbar-brand"
                 height="20"
