@@ -6,6 +6,9 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
+<!-- CSRF meta (dipakai oleh fetch) -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="container-fluid">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div class="col">
@@ -22,7 +25,8 @@
               <h4 class="mb-0 fw-bold">
                 <i class="bi bi-people-fill me-2"></i> Data Karyawan
               </h4>
-              <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahkaryawan">
+              <!-- Tambah: data-bs-toggle agar modal bisa langsung terbuka kalau JS Bootstrap aktif -->
+              <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahkaryawan" data-bs-toggle="modal" data-bs-target="#modal-inputkaryawan" role="button" aria-pressed="false">
                 <i class="bi bi-plus-circle me-1"></i> Tambah Data
               </a>
             </div>
@@ -98,11 +102,11 @@
                         <td><span class="badge bg-success px-3 py-2">{{ $d->nama_dept }}</span></td>
                         <td>
                           <div class="d-flex justify-content-center gap-2">
-                           
-
-                            <a href="#" class="edit" nik="{{ $d->nik }}">
+                            <!-- Edit: gunakan attribute nik (tidak ubah route) -->
+                            <a href="javascript:void(0)" class="edit" nik="{{ $d->nik }}" title="Edit">
                               <i class="bi bi-pencil-square"></i>
                             </a>
+
                             <form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
                               @csrf
                               @method('DELETE')
@@ -128,6 +132,7 @@
       </div>
     </div>
   </div>
+
 </div>
 
 <!-- Modal Tambah Data Karyawan -->
@@ -223,7 +228,6 @@
   </div>
 </div>
 
-
 <!-- MODAL EDIT -->
 <div class="modal fade" id="modal-editkaryawan" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
   <div class="modal-dialog">
@@ -232,108 +236,170 @@
         <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Edit Data Karyawan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="loadeditform"> 
+      <div class="modal-body" id="loadeditform">
 
       </div>
-      
+
     </div>
   </div>
 </div>
 
-@endsection
-
-@push('scripts')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- SCRIPTS: pastikan bundle (Popper included) dimuat sebelum script yang memanggil bootstrap.Modal -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-$(function() {
-  const $modal = $('#modal-inputkaryawan');
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Dashboard Karyawan - script loaded');
+
   const defaultPreview = "{{ asset('assets/img/image.png') }}";
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-  $('#btn-tambahkaryawan').on('click', function(e) {
-    e.preventDefault();
-    $('#frmkaryawan')[0].reset();
-    $('#Foto').attr('src', defaultPreview);
-    $('.is-invalid').removeClass('is-invalid');
-    $modal.modal('show');
-  });
+  // Bootstrap modal instances
+  const modalTambahEl = document.getElementById('modal-inputkaryawan');
+  const modalEditEl = document.getElementById('modal-editkaryawan');
+  const bsModalTambah = new bootstrap.Modal(modalTambahEl, {});
+  const bsModalEdit = new bootstrap.Modal(modalEditEl, {});
 
-  
-
-  $('#foto').on('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(ev) { $('#Foto').attr('src', ev.target.result); };
-      reader.readAsDataURL(file);
-    } else { $('#Foto').attr('src', defaultPreview); }
-  });
-
-  $(".edit").click(function() {
-    var nik = $(this).attr('nik');
-    $.ajax({
-        type: 'POST'
-        , url: '/karyawan/edit'
-        , cache: false
-        , data: {
-            _token: "{{  csrf_token() }}"
-            , nik: nik
-        }
-        , success:function(respond){
-            $("#loadeditform").html(respond);
-        }
-    })
-    $("#modal-editkaryawan").modal("show");
-  });
-
-  $('#frmkaryawan').on('submit', function(e) {
-    e.preventDefault();
-
-    const $nik = $('#nik'), $nama = $('#nama_lengkap'), $jab = $('#jabatan'),
-          $hp = $('#no_hp'), $pass = $('#password'), $dept = $('#kode_dept_form');
-
-    const checks = [
-      [$nik, 'NIK wajib diisi.'],
-      [$nama, 'Nama Lengkap wajib diisi.'],
-      [$jab, 'Jabatan wajib diisi.'],
-      [$hp, 'Nomor HP wajib diisi.'],
-      [$pass, 'Password wajib diisi.'],
-      [$dept, 'Silakan pilih Departemen.']
-    ];
-
-    for (let [f, msg] of checks) {
-      if (!f.val().trim()) {
-        f.addClass('is-invalid');
-        Swal.fire({icon:'warning',title:'Form Belum Lengkap',text:msg}).then(()=>f.focus());
-        return false;
+  // Jika tombol "Tambah Data" diklik (data-bs-toggle juga akan bekerja jika Bootstrap JS aktif)
+  const btnTambah = document.getElementById('btn-tambahkaryawan');
+  if (btnTambah) {
+    btnTambah.addEventListener('click', function(e) {
+      // Kalau tombol ada attribute data-bs-toggle, bootstrap sudah bisa buka modal.
+      // Kita reset form supaya bersih.
+      e.preventDefault();
+      const frm = document.getElementById('frmkaryawan');
+      if (frm) {
+        frm.reset();
+        document.getElementById('Foto').src = defaultPreview;
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
       }
+      bsModalTambah.show();
+    });
+  }
+
+  // Preview foto
+  const inputFoto = document.getElementById('foto');
+  if (inputFoto) {
+    inputFoto.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) { document.getElementById('Foto').src = ev.target.result; };
+        reader.readAsDataURL(file);
+      } else {
+        document.getElementById('Foto').src = defaultPreview;
+      }
+    });
+  }
+
+  // Delegated listener untuk tombol Edit (menggunakan attribute nik)
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('.edit');
+    if (!el) return;
+    e.preventDefault();
+    const nik = el.getAttribute('nik');
+    if (!nik) {
+      Swal.fire({ icon: 'error', title: 'Gagal', text: 'NIK tidak ditemukan.' });
+      return;
     }
+    console.log('Memuat form edit untuk NIK:', nik);
 
-    // Kirim data pakai AJAX
-    let formData = new FormData(this);
-    $.ajax({
-      url: '/karyawan/store',
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function(res) {
-        Swal.fire({icon:'success',title:'Berhasil',text:'Data karyawan berhasil disimpan!',timer:2000,showConfirmButton:false});
-        $modal.modal('hide');
-        $('#frmkaryawan')[0].reset();
-        $('#Foto').attr('src', defaultPreview);
-        setTimeout(()=>location.reload(), 2000);
-      },
-      error: function(err) {
-        Swal.fire({icon:'error',title:'Gagal',text:'Terjadi kesalahan saat menyimpan data!'});
-      }
+    // POST menggunakan FormData (mirip jQuery) supaya Laravel mudah menerima
+    const fd = new FormData();
+    fd.append('_token', csrfToken);
+    fd.append('nik', nik);
+
+    fetch('/karyawan/edit', {
+      method: 'POST',
+      body: fd,
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error('Network response was not ok');
+      return resp.text(); // server biasanya mengembalikan HTML berupa form edit
+    })
+    .then(html => {
+      document.getElementById('loadeditform').innerHTML = html;
+      // Show modal edit
+      bsModalEdit.show();
+    })
+    .catch(err => {
+      console.error(err);
+      Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memuat data edit.' });
     });
   });
 
+  // Submit tambah karyawan dengan Fetch + FormData
+  const frmKaryawan = document.getElementById('frmkaryawan');
+  if (frmKaryawan) {
+    frmKaryawan.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Validasi sederhana
+      const checks = [
+        ['nik', 'NIK wajib diisi.'],
+        ['nama_lengkap', 'Nama Lengkap wajib diisi.'],
+        ['jabatan', 'Jabatan wajib diisi.'],
+        ['no_hp', 'Nomor HP wajib diisi.'],
+        ['password', 'Password wajib diisi.'],
+        ['kode_dept', 'Silakan pilih Departemen.']
+      ];
+
+      for (let [name, msg] of checks) {
+        const field = frmKaryawan.querySelector('[name="'+name+'"]');
+        if (!field) continue;
+        if (!field.value || !field.value.toString().trim()) {
+          field.classList.add('is-invalid');
+          Swal.fire({ icon:'warning', title:'Form Belum Lengkap', text: msg }).then(() => field.focus());
+          return;
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      }
+
+      const formData = new FormData(frmKaryawan);
+
+      fetch('/karyawan/store', {
+        method: 'POST',
+        body: formData
+      })
+      .then(resp => {
+        if (!resp.ok) throw new Error('Network response not ok');
+        // Bisa jadi server redirect atau return JSON; kita coba parse JSON, kalau gagal lanjut
+        return resp.json().catch(() => ({ ok: true }));
+      })
+      .then(data => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Data karyawan berhasil disimpan!',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        bsModalTambah.hide();
+        frmKaryawan.reset();
+        document.getElementById('Foto').src = defaultPreview;
+        setTimeout(() => location.reload(), 1200);
+      })
+      .catch(err => {
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menyimpan data!' });
+      });
+    });
+  }
+
+  // Menangani notifikasi dari session (jika ada)
   @if(session('success'))
-    Swal.fire({icon:'success',title:'Berhasil',text:{!! json_encode(session('success')) !!},timer:2200,showConfirmButton:false});
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: {!! json_encode(session('success')) !!},
+      timer: 2200,
+      showConfirmButton: false
+    });
   @endif
+
 });
 </script>
-@endpush
+
+@endsection
