@@ -65,8 +65,8 @@
                 </a>
               </li>
               <li>
-                <a href="{{ asset('components/gridsystem.html') }}">
-                  <span class="sub-item"></span>
+                <a href="/presensi/monitoring">
+                  <span class="sub-item">Monitoring</span>
                 </a>
               </li>
               <li>
@@ -106,6 +106,7 @@
     </div>
   </div>
 </div>
+
 <!-- End Sidebar -->
 
  
