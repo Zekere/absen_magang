@@ -1,6 +1,7 @@
 @extends('layout.admin.template')
 @section('content')
 
+
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 
@@ -40,7 +41,7 @@
                                                     <path d="M7.01 17h.005" />
                                                     <path d="M10.01 17h.005" /></svg>
                                             </span>
-                                            <input type="text" id="tanggal" nama="tanggal" value="" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
+                                            <input type="text" id="tanggal" value="{{  date("Y-m-d")}}"nama="tanggal" value="" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
                                         </div>
                                     </div>
                                 </div>
@@ -93,8 +94,8 @@ $(function () {
 
   });
 
-  $("#tanggal").change(function(e){
-    var tanggal = $(this).val();
+  function loadpresensi(){
+     var tanggal = $("#tanggal").val();
     $.ajax({
         type:'POST',
         url:'/getpresensi',
@@ -107,7 +108,12 @@ $(function () {
             $("#loadpresensi").html(respond);
         }
     });
-   
-  })
-});</script>
+  }
+  $("#tanggal").change(function(e){
+   loadpresensi();
+
+  });
+  loadpresensi();
+});
+</script>
 @endpush

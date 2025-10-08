@@ -79,26 +79,8 @@
                   <span class="sub-item">Notifications</span>
                 </a>
               </li>
-              <li>
-                <a href="{{ asset('components/sweetalert.html') }}">
-                  <span class="sub-item">Sweet Alert</span>
-                </a>
-              </li>
-              <li>
-                <a href="{{ asset('components/font-awesome-icons.html') }}">
-                  <span class="sub-item">Font Awesome Icons</span>
-                </a>
-              </li>
-              <li>
-                <a href="{{ asset('components/simple-line-icons.html') }}">
-                  <span class="sub-item">Simple Line Icons</span>
-                </a>
-              </li>
-              <li>
-                <a href="{{ asset('components/typography.html') }}">
-                  <span class="sub-item">Typography</span>
-                </a>
-              </li>
+            
+              
             </ul>
           </div>
         </li>

@@ -1,3 +1,21 @@
+@php
+ function selisih($jam_masuk, $jam_keluar)
+        {
+            list($h, $m, $s) = explode(":", $jam_masuk);
+            $dtAwal = mktime($h, $m, $s, "1", "1", "1");
+            list($h, $m, $s) = explode(":", $jam_keluar);
+            $dtAkhir = mktime($h, $m, $s, "1", "1", "1");
+            $dtSelisih = $dtAkhir - $dtAwal;
+            $totalmenit = $dtSelisih / 60;
+            $jam = explode(".", $totalmenit / 60);
+            $sisamenit = ($totalmenit / 60) - $jam[0];
+            $sisamenit2 = $sisamenit * 60;
+            $jml_jam = $jam[0];
+            return $jml_jam . ":" . round($sisamenit2);
+        }
+@endphp
+
+
 @foreach ($presensi as $d)
    
 @php
@@ -25,7 +43,10 @@ $foto_out = Storage::url('uploads/absensi/'.$d->foto_out);
     </td>
     <td>
     @if ($d->jam_in > '07:30')
-    <span class="badge bg-danger"> Terlambat</span>
+    @php
+    $jamterlambat= selisih('07:30:00',$d->jam_in);
+    @endphp
+    <span class="badge bg-danger"> Terlambat {{ $jamterlambat }}</span>
     @else
         <span class="badge bg-success">Tepat Waktu</span>
 @endif
