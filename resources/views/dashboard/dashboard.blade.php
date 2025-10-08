@@ -4,58 +4,86 @@
 
 <style>
 
-   /* --- Tampilan Kartu Rekap --- */
-  .rekap-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* Tengah horizontal */
-    gap: 10px; /* Jarak antar kartu */
-  }
+/* ===== Rekap Presensi Modern ===== */
+.rekap-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 10px;
+}
 
+.rekap-card {
+  width: 90px;
+  height: 100px;
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.07);
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.rekap-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.rekap-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.rekap-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ===== Warna Tiap Kategori ===== */
+.bg-hadir {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+.bg-izin {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+.bg-sakit {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+  color: #000 !important;
+}
+.bg-cuti {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+.bg-terlambat {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* ===== Responsif untuk HP ===== */
+@media (max-width: 576px) {
   .rekap-card {
-    width: 100px;
-    height: 100px;
-    border-radius: 15px;
-    background: #fff;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.2s ease-in-out;
+    width: 75px;
+    height: 85px;
   }
-
-  .rekap-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-  }
-
   .rekap-icon-box {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-    font-weight: 600;
+    width: 36px;
+    height: 36px;
     font-size: 0.9rem;
-    margin-bottom: 5px;
   }
-
   .rekap-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #333;
-    text-align: center;
+    font-size: 0.75rem;
   }
-
-  /* --- Warna Kategori --- */
-  .bg-hadir { background-color: #007bff; }     /* Biru */
-  .bg-izin { background-color: #28a745; }      /* Hijau */
-  .bg-sakit { background-color: #ffc107; color: #000 !important; } /* Kuning */
-  .bg-cuti { background-color: #6f42c1; }      /* Ungu */
-  .bg-terlambat { background-color: #dc3545; } /* Merah */
+}
 
 
     .logout {
@@ -361,63 +389,54 @@
         </div>
     </div>
 
-    <div id="rekappresensi" class="mt-3">
-  <h5 class="text-center fw-semibold mb-3">
+    <div id="rekappresensi" class="mt-4">
+  <h5 class="text-center fw-semibold mb-4">
     Rekap Presensi Bulan {{ $namabulan[$bulanini] }} {{ $tahunini }}
   </h5>
 
-  <div class="row g-2 justify-content-center">
+  <div class="rekap-container">
     {{-- HADIR --}}
-    <div class="col-4 col-md-2">
-      <div class="card rekap-card text-center shadow-sm border-0 p-2">
-        <div class="rekap-icon-box bg-hadir">
-          {{ $rekappresensi->jmlhadir ?? 0 }}
-        </div>
-        <div class="rekap-label">Hadir</div>
+    <div class="rekap-card">
+      <div class="rekap-icon-box bg-hadir shadow-sm">
+        {{ $rekappresensi->jmlhadir ?? 0 }}
       </div>
+      <div class="rekap-label">Hadir</div>
     </div>
 
     {{-- IZIN --}}
-    <div class="col-4 col-md-2">
-      <div class="card rekap-card text-center shadow-sm border-0 p-2">
-        <div class="rekap-icon-box bg-izin">
-          {{ $rekapizin->jmlizin ?? 0 }}
-        </div>
-        <div class="rekap-label">Izin</div>
+    <div class="rekap-card">
+      <div class="rekap-icon-box bg-izin shadow-sm">
+        {{ $rekapizin->jmlizin ?? 0 }}
       </div>
+      <div class="rekap-label">Izin</div>
     </div>
 
     {{-- SAKIT --}}
-    <div class="col-4 col-md-2">
-      <div class="card rekap-card text-center shadow-sm border-0 p-2">
-        <div class="rekap-icon-box bg-sakit">
-          {{ $rekapizin->jmlsakit ?? 0 }}
-        </div>
-        <div class="rekap-label">Sakit</div>
+    <div class="rekap-card">
+      <div class="rekap-icon-box bg-sakit shadow-sm">
+        {{ $rekapizin->jmlsakit ?? 0 }}
       </div>
+      <div class="rekap-label">Sakit</div>
     </div>
 
     {{-- CUTI --}}
-    <div class="col-4 col-md-2">
-      <div class="card rekap-card text-center shadow-sm border-0 p-2">
-        <div class="rekap-icon-box bg-cuti">
-          {{ $rekapizin->jmlcuti ?? 0 }}
-        </div>
-        <div class="rekap-label">Cuti</div>
+    <div class="rekap-card">
+      <div class="rekap-icon-box bg-cuti shadow-sm">
+        {{ $rekapizin->jmlcuti ?? 0 }}
       </div>
+      <div class="rekap-label">Cuti</div>
     </div>
 
     {{-- TERLAMBAT --}}
-    <div class="col-4 col-md-2">
-      <div class="card rekap-card text-center shadow-sm border-0 p-2">
-        <div class="rekap-icon-box bg-terlambat">
-          {{ $rekappresensi->jmlterlambat ?? 0 }}
-        </div>
-        <div class="rekap-label">Terlambat</div>
+    <div class="rekap-card">
+      <div class="rekap-icon-box bg-terlambat shadow-sm">
+        {{ $rekappresensi->jmlterlambat ?? 0 }}
       </div>
+      <div class="rekap-label">Terlambat</div>
     </div>
   </div>
 </div>
+
 
     <div class="presencetab mt-2">
         <div class="tab-pane fade show active" id="pilled" role="tabpanel">
@@ -435,50 +454,53 @@
             </ul>
         </div>
         <div class="tab-content mt-2" style="margin-bottom:100px;">
-            <div class="tab-pane fade show active" id="home" role="tabpanel">
-                <ul class="listview image-listview">
-                    @foreach ($histroribulanini as $d)
-                        @php 
-                            $path = Storage::url('uploads/absensi/'.$d->foto_in);
-                        @endphp
-                        <li>
-                            <div class="item">
-                                <div class="icon-box bg-primary">
-                                    <img src="{{ $path }}" 
-                                         alt="avatar" 
-                                         class="imaged w64 foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', 'Absen {{ date("d-m-Y", strtotime($d->tgl_presensi)) }}', '{{ $d->jam_in }}')">
-                                </div>
-                                <div class="in">
-                                    <div>{{ date("d-m-Y", strtotime($d->tgl_presensi)) }}</div>
-                                    <span class="badge badge-success">{{ $d->jam_in }}</span>
-                                    <span class="badge badge-danger">{{ $d->jam_out != null ? $d->jam_out : 'Belum Absen' }}</span>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+    <!-- Tab Bulan Ini -->
+    <div class="tab-pane fade show active" id="home" role="tabpanel">
+        <ul class="listview image-listview">
+            @foreach ($histroribulanini as $d)
+                @php 
+                    $path = Storage::url('uploads/absensi/'.$d->foto_in);
+                    $tanggal = date('d-m-Y', strtotime($d->tgl_presensi));
+                @endphp
+                <li>
+                    <div class="item">
+                        <div class="icon-box bg-primary">
+                            <img src="{{ $path }}" 
+                                 alt="avatar" 
+                                 class="imaged w64 foto-preview" 
+                                 onclick="openLightbox('{{ $path }}', 'Absen {{ $tanggal }}', '{{ $d->jam_in }}')">
+                        </div>
+                        <div class="in">
+                            <div>{{ $tanggal }}</div>
+                            <span class="badge badge-success">{{ $d->jam_in }}</span>
+                            <span class="badge badge-danger">{{ $d->jam_out != null ? $d->jam_out : 'Belum Absen' }}</span>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
 
-            <div class="tab-pane fade" id="profile" role="tabpanel">
-                <ul class="listview image-listview">
-                    @foreach ($leaderboard as $d)
-                        <li>
-                            <div class="item">
-                                <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="image" class="image">
-                                <div class="in">
-                                    <div>
-                                        <b>{{ $d->nama_lengkap }}</b><br>
-                                        <small class="text-muted">{{ $d->jabatan }}</small>
-                                    </div>
-                                    <span class="badge {{ $d->jam_in < '07:30' ? 'bg-success' : 'bg-danger' }}">{{ $d->jam_in }}</span>
-                                </div>
+    <!-- Tab Leaderboard -->
+    <div class="tab-pane fade" id="profile" role="tabpanel">
+        <ul class="listview image-listview">
+            @foreach ($leaderboard as $d)
+                <li>
+                    <div class="item">
+                        <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="image" class="image">
+                        <div class="in">
+                            <div>
+                                <b>{{ $d->nama_lengkap }}</b><br>
+                                <small class="text-muted">{{ $d->jabatan }}</small>
                             </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
+                            <span class="badge {{ $d->jam_in < '07:30' ? 'bg-success' : 'bg-danger' }}">{{ $d->jam_in }}</span>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
     </div>
 </div>
 

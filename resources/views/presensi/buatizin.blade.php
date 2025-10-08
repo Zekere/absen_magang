@@ -1,4 +1,5 @@
 @extends('layout.presensi')
+
 @section('header')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
 <div class="appHeader bg-primary text-light">
@@ -8,93 +9,105 @@
         </a>
     </div>
     <div class="pageTitle">Form Izin</div>
-    <div class="right">
-       
-    </div>
 </div>
-
 @endsection
+
 @section('content')
 <div class="row" style="margin-top: 70px">
-    <div class="col">
-        <div class="col">
-    <form method="POST" action="{{ url('/presensi/storeizin') }}" id="frmIzin">
-        @csrf
-        <div class="row mb-3">
-            <div class="col">
-                <div class="form-group">
-                    <input type="date" id="tgl_izin" name="tgl_izin" class="form-control" placeholder="Tanggal" required>
-                </div>
+    <div class="col s12">
+        <div class="card z-depth-1 rounded-3">
+            <div class="card-content">
+                <form method="POST" action="{{ url('/presensi/storeizin') }}" id="frmIzin">
+                    @csrf
+                    {{-- Tanggal Izin --}}
+                    <div class="input-field">
+                        <input type="date" id="tgl_izin" name="tgl_izin" class="validate" required>
+                        <label for="tgl_izin">Tanggal Izin</label>
+                    </div>
+
+                    {{-- Status --}}
+                    <div class="input-field">
+                        <select name="status" id="status" required>
+                            <option value="" disabled selected>Pilih Status</option>
+                            <option value="1">Izin</option>
+                            <option value="2">Sakit</option>
+                            <option value="3">Cuti</option>
+                        </select>
+                        <label for="status">Status</label>
+                    </div>
+
+                    {{-- Keterangan --}}
+                    <div class="input-field">
+                        <textarea name="keterangan" id="keterangan" class="materialize-textarea" required></textarea>
+                        <label for="keterangan">Keterangan</label>
+                    </div>
+
+                    {{-- Tombol Submit --}}
+                    <div class="input-field center-align">
+                        <button type="submit" class="btn waves-effect waves-light blue w-100" style="width:100%;">
+                            <i class="material-icons left"></i> KIRIM
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div class="row mb-3">
-            <div class="col">
-                <div class="form-group">
-                    <select name="status" id="status" class="form-control" required>
-                        <option value="">Pilih Status</option>
-                        <option value="1">Izin</option>
-                        <option value="2">Sakit</option>
-                        <option value="3">Cuti</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group mb-3">
-            <textarea name="keterangan" id="keterangan" cols="30" rows="5" 
-                      class="form-control" placeholder="Keterangan" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary w-100">Kirim</button>
-        </div>
-    </form>
-</div>
-
+    </div>
 </div>
 @endsection
 
 @push('scripts')
+<!-- jQuery + Materialize + SweetAlert -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    var currYear = (new Date()).getFullYear();
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi komponen Materialize
+    var elems = document.querySelectorAll('select');
+    M.FormSelect.init(elems);
 
-        $(document).ready(function() {
-        $(".datepicker").datepicker({
-           
-            format: "dd/mm/yyyy"    
-        });
+    // Validasi form sebelum submit
+    $('#frmIzin').on('submit', function(e) {
+        const tgl_izin = $('#tgl_izin').val().trim();
+        const status = $('#status').val();
+        const keterangan = $('#keterangan').val().trim();
 
-        $("#frmIzin").submit(function() {
-            var tgl_izin = $("#tgl_izin").val();
-            var status = $("#status").val();
-            var keterangan = $("#keterangan").val();
-                if(tgl_izin == "") {
-                    Swal.fire({
-                            title: 'Oops!',
-                            text: 'Tanggal tidak boleh kosong!',
-                            icon:'Warning!',
-                        });
-                    return false;
-                }else if(status == ""){
-                    Swal.fire({
-                            title: 'Oops!',
-                            text: 'Status tidak boleh kosong!',
-                            icon: 'Warning!',
-                        });
-                    return false;  
-                }else if(keterangan == ""){
-                    Swal.fire({
-                            title: 'Oops!',
-                            text: 'Keterangan tidak boleh kosong!',
-                            icon: 'Warning!',
-                        });
-                    return false;  
-                }
-            
-        });
+        if (!tgl_izin) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: 'Tanggal tidak boleh kosong!',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        if (!status) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: 'Status tidak boleh kosong!',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        if (!keterangan) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: 'Keterangan tidak boleh kosong!',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        // jika semua valid, biarkan form terkirim
     });
-
-
+});
 </script>
 @endpush

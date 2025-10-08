@@ -175,7 +175,7 @@ class PresensiController extends Controller
     $nik = Auth::guard('karyawan')->user()->nik;
     $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
 
-    // Validasi input
+    // 🔒 Validasi input
     $request->validate([
         'nama_lengkap' => 'required|string|max:100',
         'no_hp'        => 'nullable|string|max:15',
@@ -183,39 +183,45 @@ class PresensiController extends Controller
         'foto'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 
-    // Siapkan data update
+    // 🧩 Siapkan data untuk update
     $data = [
         'nama_lengkap' => $request->nama_lengkap,
         'no_hp'        => $request->no_hp,
     ];
 
-    // Update password hanya jika diisi
+    // 🔐 Update password hanya jika diisi
     if (!empty($request->password)) {
         $data['password'] = Hash::make($request->password);
     }
 
-    // Update foto jika ada upload baru
+    // 🖼️ Upload foto baru jika ada
     if ($request->hasFile('foto')) {
         $foto = $nik . "." . $request->file('foto')->getClientOriginalExtension();
         $folderPath = "public/uploads/karyawan";
+
+        // Hapus foto lama jika ada
+        if (!empty($karyawan->foto) && Storage::exists($folderPath . '/' . $karyawan->foto)) {
+            Storage::delete($folderPath . '/' . $karyawan->foto);
+        }
 
         // Simpan foto baru
         $request->file('foto')->storeAs($folderPath, $foto);
         $data['foto'] = $foto;
     } else {
-        $data['foto'] = $karyawan->foto; // tetap pakai foto lama
+        $data['foto'] = $karyawan->foto; // tetap gunakan foto lama
     }
 
-    // Update ke database
+    // 💾 Lakukan update data
     $update = DB::table('karyawan')->where('nik', $nik)->update($data);
 
-    if ($update) {
+    // ✅ Jika ada perubahan atau foto diupload → sukses
+    if ($update || $request->hasFile('foto')) {
         return Redirect::back()->with(['success' => 'Data Berhasil Di Update']);
-    } else {
-        return Redirect::back()->with(['error' => 'Data Gagal Di Update']);
     }
-}
 
+    // ⚠️ Tidak ada data yang berubah
+    return Redirect::back()->with(['warning' => 'Tidak ada perubahan data']);
+}
 
    public function histori(){
 

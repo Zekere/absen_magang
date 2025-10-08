@@ -1,21 +1,18 @@
 @extends('layout.admin.template')
 @section('content')
 
-<!-- ======= Styles ======= -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<div class="container-fluid mt-5">
 
-<div class="container-fluid">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div class="col">
-      <h3 class="fw-bold mb-4">Data Karyawan</h3>
+      <h3 class="fw-bold mb-4">Dashboard</h3>
     </div>
   </div>
 
- <div class="page-body">
+</div>
+
+<div class="page-body">
   <div class="container-xl">
     <div class="row">
       <div class="col-12">
@@ -24,7 +21,6 @@
             <h4 class="mb-0 fw-bold">
               <i class="bi bi-people-fill me-2"></i> Data Karyawan
             </h4>
-            <!-- Tambah: data-bs-toggle agar modal bisa langsung terbuka kalau JS Bootstrap aktif -->
             <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahkaryawan" data-bs-toggle="modal" data-bs-target="#modal-inputkaryawan" role="button" aria-pressed="false">
               <i class="bi bi-plus-circle me-1"></i> Tambah Data
             </a>
@@ -101,16 +97,17 @@
                       <td><span class="badge bg-success px-3 py-2">{{ $d->nama_dept }}</span></td>
                       <td>
                         <div class="d-flex justify-content-center gap-2">
-                          <!-- Edit: gunakan attribute nik (tidak ubah route) -->
-                          <a href="javascript:void(0)" class="edit btn btn-info btn-sm" nik="{{ $d->nik }}" title="Edit">
+                          <!-- Edit: gunakan attribute nik -->
+                          <a href="javascript:void(0)" class="edit btn btn-info btn-sm" data-nik="{{ $d->nik }}" title="Edit">
                             <i class="bi bi-pencil-square"></i>
                           </a>
-                            <!--form action="{{ url('/karyawan'.$d->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')"-->
-                        <form action="/karyawan/{{ $d->nik }}/delete" method="POST" style="display:inline;">
-                              @csrf
-                              <a class="btn btn-sm btn-danger d-inline-flex align-items-center delete-confirm">
-                                <i class="bi bi-trash-fill"></i>
-                            </a>
+
+                          <!-- Hapus -->
+                          <form action="/karyawan/{{ $d->nik }}/delete" method="POST" class="form-delete">
+                            @csrf
+                            <button type="button" class="btn btn-sm btn-danger d-inline-flex align-items-center delete-confirm">
+                              <i class="bi bi-trash-fill"></i>
+                            </button>
                           </form>
                         </div>
                       </td>
@@ -131,9 +128,7 @@
   </div>
 </div>
 
-
-
-<!-- ======= Modal Tambah ======= -->
+<!-- Modal Tambah Data Karyawan -->
 <div class="modal fade" id="modal-inputkaryawan" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
   <div class="modal-dialog">
     <div class="modal-content border-0 shadow-lg rounded-3">
@@ -259,12 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const bsModalTambah = new bootstrap.Modal(modalTambahEl, {});
   const bsModalEdit = new bootstrap.Modal(modalEditEl, {});
 
-  // Jika tombol "Tambah Data" diklik (data-bs-toggle juga akan bekerja jika Bootstrap JS aktif)
+  // Jika tombol "Tambah Data" diklik
   const btnTambah = document.getElementById('btn-tambahkaryawan');
   if (btnTambah) {
     btnTambah.addEventListener('click', function(e) {
-      // Kalau tombol ada attribute data-bs-toggle, bootstrap sudah bisa buka modal.
-      // Kita reset form supaya bersih.
       e.preventDefault();
       const frm = document.getElementById('frmkaryawan');
       if (frm) {
@@ -291,19 +284,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Delegated listener untuk tombol Edit (menggunakan attribute nik)
+  // Delegated listener untuk tombol Edit (menggunakan data-nik)
   document.addEventListener('click', function(e) {
     const el = e.target.closest('.edit');
     if (!el) return;
     e.preventDefault();
-    const nik = el.getAttribute('nik');
+    const nik = el.getAttribute('data-nik');
     if (!nik) {
       Swal.fire({ icon: 'error', title: 'Gagal', text: 'NIK tidak ditemukan.' });
       return;
     }
     console.log('Memuat form edit untuk NIK:', nik);
 
-    // POST menggunakan FormData (mirip jQuery) supaya Laravel mudah menerima
+    // POST menggunakan FormData
     const fd = new FormData();
     fd.append('_token', csrfToken);
     fd.append('nik', nik);
@@ -314,11 +307,10 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(resp => {
       if (!resp.ok) throw new Error('Network response was not ok');
-      return resp.text(); // server biasanya mengembalikan HTML berupa form edit
+      return resp.text();
     })
     .then(html => {
       document.getElementById('loadeditform').innerHTML = html;
-      // Show modal edit
       bsModalEdit.show();
     })
     .catch(err => {
@@ -327,26 +319,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  //HAPUS NGASALDRI DAPLO
- // Tombol Hapus dengan SweetAlert konfirmasi
- document.querySelectorAll('.delete-confirm').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      const form = btn.closest('form');
-      Swal.fire({
-        title: 'Anda yakin?',
-        text: 'Setelah dihapus, data tidak dapat dikembalikan!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-      }).then(result => {
-        if (result.isConfirmed) form.submit();
-      });
+  // Tombol Hapus dengan SweetAlert konfirmasi
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('.delete-confirm');
+    if (!el) return;
+    e.preventDefault();
+    const form = el.closest('form');
+
+    Swal.fire({
+      title: 'Anda Yakin?',
+      text: 'Setelah dihapus, Anda tidak dapat mengembalikannya lagi!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal',
+      dangerMode: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
+      } else {
+        Swal.fire({ icon: 'info', title: 'Dibatalkan', text: 'Data anda aman 😊' });
+      }
     });
   });
-
-
 
   // Submit tambah karyawan dengan Fetch + FormData
   const frmKaryawan = document.getElementById('frmkaryawan');
@@ -384,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .then(resp => {
         if (!resp.ok) throw new Error('Network response not ok');
-        // Bisa jadi server redirect atau return JSON; kita coba parse JSON, kalau gagal lanjut
         return resp.json().catch(() => ({ ok: true }));
       })
       .then(data => {
@@ -418,8 +412,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   @endif
 
+  @if(session('warning'))
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: {!! json_encode(session('warning')) !!},
+      timer: 2200,
+      showConfirmButton: false
+    });
+  @endif
+
 });
 </script>
-
 
 @endsection
