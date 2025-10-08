@@ -3,6 +3,61 @@
 @section('content')
 
 <style>
+
+   /* --- Tampilan Kartu Rekap --- */
+  .rekap-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Tengah horizontal */
+    gap: 10px; /* Jarak antar kartu */
+  }
+
+  .rekap-card {
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .rekap-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .rekap-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+
+  .rekap-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+  }
+
+  /* --- Warna Kategori --- */
+  .bg-hadir { background-color: #007bff; }     /* Biru */
+  .bg-izin { background-color: #28a745; }      /* Hijau */
+  .bg-sakit { background-color: #ffc107; color: #000 !important; } /* Kuning */
+  .bg-cuti { background-color: #6f42c1; }      /* Ungu */
+  .bg-terlambat { background-color: #dc3545; } /* Merah */
+
+
     .logout {
         position: absolute;
         color: white;
@@ -306,59 +361,63 @@
         </div>
     </div>
 
-    <div id="rekappresensi">
-        <h3>Rekap Presensi Bulan {{ $namabulan[$bulanini] }} tahun {{ $tahunini }}</h3>
+    <div id="rekappresensi" class="mt-3">
+  <h5 class="text-center fw-semibold mb-3">
+    Rekap Presensi Bulan {{ $namabulan[$bulanini] }} {{ $tahunini }}
+  </h5>
 
-        <div class="row">
-            <div class="col-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-2" style="position: relative;">
-                        <span class="badge badge-primary" style="position: absolute; top:5px; right:10px; font-size: 0.7rem;">
-                            {{ $rekappresensi->jmlhadir }}
-                        </span>
-                        <ion-icon name="accessibility-outline" class="text-primary mb-1" style="font-size: 1.6rem;"></ion-icon>
-                        <span style="font-size: 0.8rem; font-weight: 500;">Hadir</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-2" style="position: relative;">
-                        <span class="badge badge-primary" style="position: absolute; top:5px; right:10px; font-size: 0.7rem;">
-                            {{ $rekapizin->jmlizin ?? 0 }}
-                        </span>
-                        <ion-icon name="newspaper-outline" class="text-success mb-1" style="font-size: 1.6rem;"></ion-icon>
-                        <span style="font-size: 0.8rem; font-weight: 500;">Izin</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-2" style="position: relative;">
-                        <span class="badge badge-primary" style="position: absolute; top:5px; right:10px; font-size: 0.7rem;">
-                            {{ $rekapizin->jmlsakit ?? 0 }}
-                        </span>
-                        <ion-icon name="medkit-outline" class="text-warning mb-1" style="font-size: 1.6rem;"></ion-icon>
-                        <span style="font-size: 0.8rem; font-weight: 500;">Sakit</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-2" style="position: relative;">
-                        <span class="badge badge-primary" style="position: absolute; top:5px; right:10px; font-size: 0.7rem;">
-                            {{ $rekappresensi->jmlterlambat }}
-                        </span>
-                        <ion-icon name="alarm-outline" class="text-danger mb-1" style="font-size: 1.6rem;"></ion-icon>
-                        <span style="font-size: 0.8rem; font-weight: 500;">Terlambat</span>
-                    </div>
-                </div>
-            </div>
+  <div class="row g-2 justify-content-center">
+    {{-- HADIR --}}
+    <div class="col-4 col-md-2">
+      <div class="card rekap-card text-center shadow-sm border-0 p-2">
+        <div class="rekap-icon-box bg-hadir">
+          {{ $rekappresensi->jmlhadir ?? 0 }}
         </div>
+        <div class="rekap-label">Hadir</div>
+      </div>
     </div>
+
+    {{-- IZIN --}}
+    <div class="col-4 col-md-2">
+      <div class="card rekap-card text-center shadow-sm border-0 p-2">
+        <div class="rekap-icon-box bg-izin">
+          {{ $rekapizin->jmlizin ?? 0 }}
+        </div>
+        <div class="rekap-label">Izin</div>
+      </div>
+    </div>
+
+    {{-- SAKIT --}}
+    <div class="col-4 col-md-2">
+      <div class="card rekap-card text-center shadow-sm border-0 p-2">
+        <div class="rekap-icon-box bg-sakit">
+          {{ $rekapizin->jmlsakit ?? 0 }}
+        </div>
+        <div class="rekap-label">Sakit</div>
+      </div>
+    </div>
+
+    {{-- CUTI --}}
+    <div class="col-4 col-md-2">
+      <div class="card rekap-card text-center shadow-sm border-0 p-2">
+        <div class="rekap-icon-box bg-cuti">
+          {{ $rekapizin->jmlcuti ?? 0 }}
+        </div>
+        <div class="rekap-label">Cuti</div>
+      </div>
+    </div>
+
+    {{-- TERLAMBAT --}}
+    <div class="col-4 col-md-2">
+      <div class="card rekap-card text-center shadow-sm border-0 p-2">
+        <div class="rekap-icon-box bg-terlambat">
+          {{ $rekappresensi->jmlterlambat ?? 0 }}
+        </div>
+        <div class="rekap-label">Terlambat</div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <div class="presencetab mt-2">
         <div class="tab-pane fade show active" id="pilled" role="tabpanel">
