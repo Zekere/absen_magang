@@ -1,6 +1,8 @@
 @extends('layout.admin.template')
 @section('content')
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <div class="container-fluid">
   
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">

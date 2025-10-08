@@ -20,6 +20,7 @@
       @include('layout.admin.sidebar')
 
       <div class="main-panel">
+        
         {{-- Navbar --}}
         @include('layout.admin.navbar')
         

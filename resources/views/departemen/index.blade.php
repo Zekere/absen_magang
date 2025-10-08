@@ -11,7 +11,7 @@
 <div class="container-fluid">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div class="col">
-      <h3 class="fw-bold mb-4">Dashboard</h3>
+      <h3 class="fw-bold mb-4">Departemen</h3>
     </div>
   </div>
 

@@ -121,7 +121,7 @@
                         <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>             
                         <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
-                        <a class="dropdown-item" href="/logoutadmin" id="log">Logout</a>
+                    
                       </li>
                     </div>
                   </ul>
@@ -131,5 +131,32 @@
          
 
           </nav>
+          
   <!-- End Navbar -->
 </div>
+<script>
+      document.getElementById("logout").addEventListener("click", function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+          title: 'Yakin mau logout?',
+          text: "Kamu akan keluar dari akun ini.",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya, Logout',
+          cancelButtonText: 'Batal',
+          showClass: {
+            popup: 'animate_animated animate_zoomIn'
+          },
+          hideClass: {
+            popup: 'animate_animated animate_zoomOut'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "/logoutadmin";
+          }
+        });
+      });
+    </script>
