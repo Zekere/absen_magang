@@ -1,12 +1,15 @@
 @extends('layout.admin.template')
 @section('content')
+
 <div class="container-fluid">
+  
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div>
-        <div class ="col">
-      <h3 class="fw-bold mb-4">Dashboard</h3>
+      <div class ="col">
+        <h3 class="fw-bold mb-4">Dashboard</h3>
+      </div>
     </div>
-    </div>
+  </div>
    
 </div>
 
