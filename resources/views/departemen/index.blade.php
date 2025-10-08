@@ -1,7 +1,12 @@
 @extends('layout.admin.template')
 @section('content')
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="container-fluid mt-5">
+  
 
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
     <div class="col">
