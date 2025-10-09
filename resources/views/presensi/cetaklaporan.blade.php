@@ -64,6 +64,23 @@
 <!-- Set also "landscape" if you need -->
 <body class="A4">
 
+@php
+ function selisih($jam_masuk, $jam_keluar)
+        {
+            list($h, $m, $s) = explode(":", $jam_masuk);
+            $dtAwal = mktime($h, $m, $s, "1", "1", "1");
+            list($h, $m, $s) = explode(":", $jam_keluar);
+            $dtAkhir = mktime($h, $m, $s, "1", "1", "1");
+            $dtSelisih = $dtAkhir - $dtAwal;
+            $totalmenit = $dtSelisih / 60;
+            $jam = explode(".", $totalmenit / 60);
+            $sisamenit = ($totalmenit / 60) - $jam[0];
+            $sisamenit2 = $sisamenit * 60;
+            $jml_jam = $jam[0];
+            return $jml_jam . ":" . round($sisamenit2);
+        }
+@endphp
+
   <!-- Each sheet element should have the class "sheet" -->
   <!-- "padding-**mm" is optional: you can set 10, 15, 20 or 25 -->
   <section class="sheet padding-10mm">
@@ -122,12 +139,13 @@
         <tr>
             <th>No.</th>
             <th>Tanggal</th>
-            
             <th>Jam Masuk</th>
             <th>foto Masuk</th>
             <th>Jam Pulang</th>
             <th>Foto Pulang</th>
             <th>Keterangan</th>
+                        <th>Jumlah Jam Kerja</th>
+
 
         </tr>
         @foreach ($presensi as $d)
@@ -135,7 +153,9 @@
         @php 
         $path_in = Storage::url('uploads/absensi/'.$d->foto_in);
 $path_out = Storage::url('uploads/absensi/'.$d->foto_out);
-        @endphp
+    $jamterlambat= selisih('07:30:00',$d->jam_in);
+    @endphp
+        
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ date("d-m-Y", strtotime($d->tgl_presensi)) }}</td>
@@ -151,17 +171,40 @@ $path_out = Storage::url('uploads/absensi/'.$d->foto_out);
     </td>
     <td>
         @if ($d->jam_in > '07:30')
-        Terlambat 
+        Terlambat {{ $jamterlambat }}
         @else
         Tepat Waktu
         @endif
+    </td>
+
+    <td>
+       @if ($d->jam_out != null )
+       @php
+           $jmljamkerja = selisih($d->jam_in,$d->jam_out);
+       @endphp
+       @else
+       @php
+      $jmljamkerja = 0;
+      @endphp
+      @endif
+      {{ $jmljamkerja }}
     </td>
                     
 
         </tr>
    @endforeach
     </table>
-
+<table width="100%" style="margin-top:100px">
+<tr>
+  <td colspan="2" style="text-align: right">Semarang, {{ date('d-m-Y') }} </td>
+</tr> 
+<tr>
+    <td style="text-align: right; vertical-align:bottom " height ="100px">
+     <u> Deka Abdullah </u><br>
+     <i><b>Kepala Keuangan</b></i>
+    </td>
+  </tr>
+</table>
   </section>
 
 </body>

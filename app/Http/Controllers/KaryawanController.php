@@ -99,57 +99,50 @@ class KaryawanController extends Controller
     }
 
 
-    public function update(Request $request, $nik)
+  public function update(Request $request, $nik)
 {
-    // Validasi input — unique nik di-skip untuk record saat ini
+    $nikLama = $nik;
+
+    // Validasi input
     $request->validate([
-        'nik' => 'required|unique:karyawan,nik,' . $nik . ',nik', // ignore current nik
+        'nik' => 'required|unique:karyawan,nik,' . $nikLama . ',nik',
         'nama_lengkap' => 'required',
         'jabatan' => 'required',
         'no_hp' => 'required',
         'kode_dept' => 'required',
         'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         'password' => 'nullable|min:6',
-    ], [
-        'nik.required' => 'NIK wajib diisi.',
-        'nik.unique' => 'NIK sudah terdaftar.',
-        'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
-        'jabatan.required' => 'Jabatan wajib diisi.',
-        'no_hp.required' => 'Nomor HP wajib diisi.',
-        'kode_dept.required' => 'Departemen wajib dipilih.',
     ]);
 
     try {
         // Ambil data lama
-        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+        $karyawan = DB::table('karyawan')->where('nik', $nikLama)->first();
         if (!$karyawan) {
             return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan.']);
         }
 
         $newNik = $request->nik;
-        $fotoName = $karyawan->foto; // default tetap foto lama
+        $fotoName = $karyawan->foto; // default foto lama
 
-        // Jika ada file foto baru -> upload dan gunakan nama baru berdasarkan newNik
+        // === Upload / Rename Foto ===
         if ($request->hasFile('foto')) {
+            // Jika upload foto baru
             $extension = $request->file('foto')->getClientOriginalExtension();
             $fotoName = $newNik . '.' . $extension;
             $request->file('foto')->storeAs('public/uploads/karyawan', $fotoName);
-        } else {
-            // Jika nik diubah tetapi tidak meng-upload foto baru -> coba rename file lama agar sesuai nama baru
-            if (!empty($karyawan->foto) && $newNik != $karyawan->nik) {
-                $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
-                if (Storage::exists($oldPath)) {
-                    $oldExt = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
-                    $newFotoName = $newNik . '.' . $oldExt;
-                    $newPath = 'public/uploads/karyawan/' . $newFotoName;
-                    // rename/move
-                    Storage::move($oldPath, $newPath);
-                    $fotoName = $newFotoName;
-                }
+        } elseif (!empty($karyawan->foto) && $newNik != $karyawan->nik) {
+            // Rename foto lama jika NIK berubah
+            $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
+            if (Storage::exists($oldPath)) {
+                $oldExt = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
+                $newFotoName = $newNik . '.' . $oldExt;
+                $newPath = 'public/uploads/karyawan/' . $newFotoName;
+                Storage::move($oldPath, $newPath);
+                $fotoName = $newFotoName;
             }
         }
 
-        // Siapkan data update
+        // === Data baru ===
         $updateData = [
             'nik' => $newNik,
             'nama_lengkap' => $request->nama_lengkap,
@@ -159,19 +152,28 @@ class KaryawanController extends Controller
             'foto' => $fotoName,
         ];
 
-        // Jika password diisi -> hash dan update
+        // Kalau password diisi
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
         }
 
-        // Lakukan update berdasarkan nik lama
-        DB::table('karyawan')->where('nik', $nik)->update($updateData);
+        // === Jalankan update ===
+        $updated = DB::table('karyawan')
+            ->where('nik', $nikLama)
+            ->update($updateData);
+
+        // === Jika NIK berubah, update relasi lain (opsional)
+        if ($updated && $newNik != $nikLama) {
+            // Misal update di tabel presensi, user_login, dll.
+            // DB::table('presensi')->where('nik', $nikLama)->update(['nik' => $newNik]);
+        }
 
         return Redirect::to('/karyawan')->with(['success' => 'Data karyawan berhasil diperbarui!']);
     } catch (\Exception $e) {
         return Redirect::back()->with(['warning' => 'Gagal memperbarui data: ' . $e->getMessage()]);
     }
 }
+
 public function delete($nik){
     $delete = DB::table('karyawan')->where('nik',$nik)->delete();
     if ($delete){

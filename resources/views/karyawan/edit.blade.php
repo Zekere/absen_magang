@@ -1,5 +1,6 @@
 <form action="/karyawan/{{ $karyawan->nik }}/update" method="POST" enctype="multipart/form-data" id="frmkaryawan">
   @csrf
+  @method('PUT')
   <div class="modal-body">
     <div class="row g-3">
 

@@ -326,6 +326,7 @@ public function monitoring(){
             ->where('nik',$nik)
             ->whereRAw('MONTH(tgl_presensi)="'.$bulan.'"')
             ->whereRAw('YEAR(tgl_presensi)="'.$tahun.'"')    
+            ->orderBy('tgl_presensi')
             ->get();
 
         return view('presensi.cetaklaporan',compact('bulan','tahun','namabulan','karyawan','presensi'));

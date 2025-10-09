@@ -66,6 +66,7 @@ Route::post('/karyawan/store',[KaryawanController::class, 'store']);
 
 Route::post('/karyawan/edit',[KaryawanController::class, 'edit']);
 Route::post('/karyawan/{nik}/update',[KaryawanController::class, 'update']);
+Route::put('/karyawan/{nik}/update', [KaryawanController::class, 'update']);
 Route::post('/karyawan/{nik}/delete',[KaryawanController::class, 'delete']);
 
 //departemen
@@ -73,6 +74,7 @@ Route::get('/departemen',[DepartemenController::class,'index']);
 Route::post('/departemen/store',[DepartemenController::class,'store']);
 Route::post('/departemen/edit',[DepartemenController::class,'edit']);
 Route::post('/departemen/{kode_dept}/update', [DepartemenController::class, 'update']);
+
 Route::post('/departemen/{kode_dept}/delete',[DepartemenController::class,'delete']);
 
 //monitoring
