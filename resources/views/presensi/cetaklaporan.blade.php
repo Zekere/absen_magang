@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>A4</title>
+  <title>Laporan Presensi - A4</title>
 
   <!-- Normalize or reset CSS with your favorite library -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
@@ -45,17 +45,74 @@
     font-size: 12px;
     font-family: Arial, Helvetica, sans-serif;
   }
+  
   .tabelpresensi tr td { 
     border: 1px solid black;
     padding: 8px;
-   
     font-size: 13px;
     font-family: Arial, Helvetica, sans-serif;
+    vertical-align: middle;
+    text-align: center;
   }
 
-  .foto{
-    width : 40px;
-    height : 30px;
+  /* Perbaikan untuk foto karyawan agar tidak gepeng */
+  .foto-karyawan {
+    width: 120px;
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+  }
+
+  /* Perbaikan untuk foto absensi agar tidak gepeng */
+  .foto {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    object-position: center;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Logo PUPR */
+  .logo-pupr {
+    height: 75px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* Styling untuk badge */
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 3px;
+  }
+
+  .bg-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .badge-success {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .badge-warning {
+    background-color: #ffc107;
+    color: #000;
+  }
+
+  /* Icon styling */
+  .icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
   }
   </style>
 </head>
@@ -70,31 +127,33 @@
 
     <table style="width:100%">
         <tr>
-            <td style="width: 30px">
-                <img src="{{ asset('assets/img/icon/puprlogo.png') }}" alt="avatar" class="imaged w64 rounded" style="height:75px">
+            <td style="width: 100px; vertical-align: middle;">
+                <img src="{{ asset('assets/img/icon/puprlogo.png') }}" alt="Logo PUPR" class="logo-pupr">
             </td>
-            <td>
+            <td style="vertical-align: middle;">
                 <span id="title">
                     LAPORAN PRESENSI KARYAWAN <br>
-                    PERIODE {{ strtoupper ($namabulan [$bulan]) }} {{ $tahun }} <br>
-                    PUPR Cipta Karya</br>
+                    PERIODE {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }} <br>
+                    PUPR Cipta Karya
                 </span>
-                <span style=""><i>Jl. Gajah Mungkur Selatan No.14 - 16, Gajahmungkur, Kec. Gajahmungkur, Kota Semarang, Jawa Tengah 50232</i></span>
+                <br>
+                <span style="font-size: 11px;"><i>Jl. Gajah Mungkur Selatan No.14 - 16, Gajahmungkur, Kec. Gajahmungkur, Kota Semarang, Jawa Tengah 50232</i></span>
             </td>
         </tr>
     </table>
+
     <table class="tabeldatakaryawan">
         <tr>
-            <td rowspan="6">
+            <td rowspan="6" style="padding-right: 20px; vertical-align: top;">
                 @php
                     $path = Storage::url('uploads/karyawan/'.$karyawan->foto);
                 @endphp
-                <img src="{{ url($path) }}" alt="avatar" class="imaged w64 rounded" height="150px" width="120">
+                <img src="{{ url($path) }}" alt="Foto Karyawan" class="foto-karyawan">
             </td>
         </tr>
         <tr>
-            <td>NIK</td>
-            <td>:</td>
+            <td style="width: 150px;">NIK</td>
+            <td style="width: 10px;">:</td>
             <td>{{ $karyawan->nik }}</td>
         </tr>
         <tr>
@@ -118,48 +177,54 @@
             <td>{{ $karyawan->no_hp }}</td>
         </tr>
     </table>
+
     <table class="tabelpresensi">
         <tr>
-            <th>No.</th>
-            <th>Tanggal</th>
-            
-            <th>Jam Masuk</th>
-            <th>foto Masuk</th>
-            <th>Jam Pulang</th>
-            <th>Foto Pulang</th>
-            <th>Keterangan</th>
-
+            <th style="width: 5%;">No.</th>
+            <th style="width: 12%;">Tanggal</th>
+            <th style="width: 10%;">Jam Masuk</th>
+            <th style="width: 10%;">Foto Masuk</th>
+            <th style="width: 10%;">Jam Pulang</th>
+            <th style="width: 10%;">Foto Pulang</th>
+            <th style="width: 13%;">Keterangan</th>
         </tr>
         @foreach ($presensi as $d)
-
         @php 
-        $path_in = Storage::url('uploads/absensi/'.$d->foto_in);
-$path_out = Storage::url('uploads/absensi/'.$d->foto_out);
+            $path_in = Storage::url('uploads/absensi/'.$d->foto_in);
+            $path_out = Storage::url('uploads/absensi/'.$d->foto_out);
         @endphp
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ date("d-m-Y", strtotime($d->tgl_presensi)) }}</td>
-             <td>{{ $d->jam_in }}</td>
-          <td><img src="{{ url($path_in) }}" alt='' class="foto"></td>
-          <td>{!! $d->jam_out != null ? $d->jam_out : '<span class="badge bg-danger">Belum absen</span>' !!}</td>
+            <td>{{ $d->jam_in }}</td>
             <td>
-        @if ($d->jam_out != null)
-        <img src="{{ url( $path_out) }}" class="foto" alt="" >
-@else
-      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clock-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20.926 13.15a9 9 0 1 0 -7.835 7.784" /><path d="M12 7v5l2 2" /><path d="M22 22l-5 -5" /><path d="M17 22l5 -5" /></svg>
-        @endif
-    </td>
-    <td>
-        @if ($d->jam_in > '07:30')
-        Terlambat 
-        @else
-        Tepat Waktu
-        @endif
-    </td>
-                    
-
+                <img src="{{ url($path_in) }}" alt="Foto Masuk" class="foto">
+            </td>
+            <td>
+                {!! $d->jam_out != null ? $d->jam_out : '<span class="badge bg-danger">Belum Absen</span>' !!}
+            </td>
+            <td>
+                @if ($d->jam_out != null)
+                    <img src="{{ url($path_out) }}" alt="Foto Pulang" class="foto">
+                @else
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M20.926 13.15a9 9 0 1 0 -7.835 7.784" />
+                        <path d="M12 7v5l2 2" />
+                        <path d="M22 22l-5 -5" />
+                        <path d="M17 22l5 -5" />
+                    </svg>
+                @endif
+            </td>
+            <td>
+                @if ($d->jam_in > '07:30')
+                    <span class="badge badge-warning">Terlambat</span>
+                @else
+                    <span class="badge badge-success">Tepat Waktu</span>
+                @endif
+            </td>
         </tr>
-   @endforeach
+        @endforeach
     </table>
 
   </section>

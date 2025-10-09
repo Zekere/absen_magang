@@ -25,7 +25,7 @@ class KaryawanController extends Controller
           if(!empty($request->kode_dept)){
             $query->where('karyawan.kode_dept',$request->kode_dept);
         }
-        $karyawan = $query->paginate(10);
+        $karyawan = $query->paginate(5);
 
 
         $departemen = DB::table('departemen') ->get();

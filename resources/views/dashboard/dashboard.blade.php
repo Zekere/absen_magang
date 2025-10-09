@@ -25,6 +25,7 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.07);
   transition: all 0.25s ease;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .rekap-card:hover {
@@ -69,8 +70,63 @@
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-/* ===== Responsif untuk HP ===== */
+/* ===== Wrapper untuk Scroll Indicator ===== */
+.rekap-scroll-wrapper {
+  position: relative;
+}
+
+.scroll-indicator {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.95) 30%, rgba(255,255,255,0.98) 100%);
+  padding: 10px 15px 10px 30px;
+  z-index: 10;
+  pointer-events: none;
+  animation: pulseArrow 2s ease-in-out infinite;
+}
+
+.scroll-indicator ion-icon {
+  font-size: 24px;
+  color: #3b82f6;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+@keyframes pulseArrow {
+  0%, 100% {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-50%) translateX(5px);
+    opacity: 0.7;
+  }
+}
+
+/* ===== Responsif untuk HP - Horizontal Scroll ===== */
 @media (max-width: 576px) {
+  .scroll-indicator {
+    display: block;
+  }
+  
+  .rekap-container {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  
+  .rekap-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  
   .rekap-card {
     width: 75px;
     height: 85px;
@@ -487,7 +543,14 @@
             @foreach ($leaderboard as $d)
                 <li>
                     <div class="item">
-                        <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="image" class="image">
+                        @if(!empty($d->foto))
+                            @php
+                                $fotoPath = Storage::url('uploads/karyawan/' . $d->foto);
+                            @endphp
+                            <img src="{{ url($fotoPath) }}" alt="image" class="image">
+                        @else
+                            <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="image" class="image">
+                        @endif
                         <div class="in">
                             <div>
                                 <b>{{ $d->nama_lengkap }}</b><br>
