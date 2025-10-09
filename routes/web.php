@@ -79,6 +79,7 @@ Route::post('/departemen/{kode_dept}/delete',[DepartemenController::class,'delet
 //Presensi
 Route::get('presensi/monitoring',[PresensiController::class,'monitoring']);
 Route::post('/getpresensi',[PresensiController::class,'getpresensi']);
+Route::post('/map', [PresensiController::class,'map']);
 
 });
 

@@ -296,4 +296,13 @@ public function monitoring(){
 
         return view('presensi.getpresensi', compact('presensi'));
     }
+
+    public function map(Request $request){
+        $id = $request -> id;
+        $presensi = DB::table('presensi')->where('id', $id)
+        ->join('karyawan','presensi.nik','=','karyawan.nik')
+        ->first();
+        return view('presensi.showmap',compact('presensi'));
+    }
 }
+

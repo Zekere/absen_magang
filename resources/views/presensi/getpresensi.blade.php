@@ -1,3 +1,5 @@
+
+
 @php
  function selisih($jam_masuk, $jam_keluar)
         {
@@ -46,12 +48,43 @@ $foto_out = Storage::url('uploads/absensi/'.$d->foto_out);
     @php
     $jamterlambat= selisih('07:30:00',$d->jam_in);
     @endphp
-    <span class="badge bg-danger"> Terlambat {{ $jamterlambat }}</span>
+    <span class="badge bg-danger"> Terlambat {{ $jamterlambat}}</span>
     @else
         <span class="badge bg-success">Tepat Waktu</span>
 @endif
 </td>
+<td>
+    <a href="#" class ="btn btn-primary map" id="{{ $d->id }}"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-map-2"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 18.5l-3 -1.5l-6 3v-13l6 -3l6 3l6 -3v7.5" /><path d="M9 4v13" /><path d="M15 7v5.5" /><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879z" /><path d="M19 18v.01" /></svg></a>
+</td>
          
     </tr>
+    
 
 @endforeach
+
+<script>
+$(document).ready(function() {
+    $(".map").on("click", function(e) {
+        e.preventDefault(); // biar link tidak reload halaman
+        var id = $(this).attr("id");
+
+        $.ajax({
+            type: 'POST',
+            url: '/map',
+            data: {
+                _token: "{{ csrf_token() }}",
+                id: id
+            },
+            cache: false,
+            success: function(respond) {
+                $("#loadmap").html(respond);
+                $("#modal-map").modal("show"); // tampilkan modal setelah data didapat
+            },
+            error: function(xhr, status, error) {
+                console.error("Terjadi kesalahan:", error);
+                alert("Gagal memuat peta. Coba lagi.");
+            }
+        });
+    });
+});
+</script>
