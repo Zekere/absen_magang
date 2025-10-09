@@ -3,6 +3,7 @@
 
 <!-- ======= Styles ======= -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="container-fluid mt-5">
 
