@@ -3,7 +3,10 @@
 
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
 
 <div class="container-fluid mt-5">
 
@@ -64,6 +67,8 @@
                                                     <th style="width: 8%;">Jam Pulang</th>
                                                     <th style="width: 10%;">Foto Pulang</th>
                                                     <th style="width: 10%;">Keterangan</th>
+                                                  <th style="width: 10%;">Maps</th>
+
                                                 </tr>
                                             </thead>
                                             <tbody id="loadpresensi">
@@ -81,6 +86,21 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="modal-map" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg rounded-3">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Lokasi Presensi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="loadmap">
+
+      </div>
+
+    </div>
+  </div>
 </div>
 @endsection
 
