@@ -171,7 +171,7 @@ $path_out = Storage::url('uploads/absensi/'.$d->foto_out);
     </td>
     <td>
         @if ($d->jam_in > '07:30')
-        Terlambat {{ $jamterlambat }}
+        Terlambat ({{ $jamterlambat }})
         @else
         Tepat Waktu
         @endif

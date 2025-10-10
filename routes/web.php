@@ -87,6 +87,10 @@ Route::post('/map', [PresensiController::class,'map']);
 Route::get('/presensi/laporan',[PresensiController::class,'laporan']);
 Route::post('/presensi/cetaklaporan',[PresensiController::class,'cetaklaporan']);
 
+//rekap
+Route::get('/presensi/rekap',[PresensiController::class,'rekap']);
+Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
+
 
 });
 

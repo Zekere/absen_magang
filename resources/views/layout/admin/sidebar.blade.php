@@ -94,12 +94,12 @@
             <ul class="nav nav-collapse">
               <li>
                 <a href="/presensi/laporan">
-                  <span class="sub-item">Presensi</span>
+                  <span class="sub-item">Laporan Presensi</span>
                 </a>
               </li>
               <li>
-                <a href="/laporan/presensi">
-                  <span class="sub-item">Laporan Presensi</span>
+                <a href="/presensi/rekap">
+                  <span class="sub-item">Rekap Presensi</span>
                 </a>
               </li>
             </ul>
