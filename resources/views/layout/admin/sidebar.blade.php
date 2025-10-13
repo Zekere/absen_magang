@@ -64,13 +64,51 @@
                   <span class="sub-item">Departemen</span>
                 </a>
               </li>
-              <li>
+          
+            </ul>
+          </div>
+        </li>
+
+        
+<!-- Monitoring-->
+         <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#dataMaster" role="button" aria-expanded="false" aria-controls="dataMaster">
+            <i class="fas fa-layer-group"></i>
+            <p>Monitoring</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="dataMaster">
+            <ul class="nav nav-collapse">
                 <a href="/presensi/monitoring">
                   <span class="sub-item">Monitoring</span>
                 </a>
               </li>
              
           
+            </ul>
+          </div>
+        </li>
+
+
+          <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#dataMaster" role="button" aria-expanded="false" aria-controls="dataMaster">
+            <i class="fas fa-layer-group"></i>
+            <p>Konfigurasi</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="dataMaster">
+            <ul class="nav nav-collapse">
+                <li>
+                <a href="/konfigurasi">
+                  <span class="sub-item">Konfigurasi Lokasi kantor</span>
+                </a>
+              </li>
+               <li>
+                <a href="/presensi/izinsakit">
+                  <span class="sub-item">Data Izin atau sakit</span>
+                </a>
+              </li>
+              </li>
             </ul>
           </div>
         </li>
@@ -95,11 +133,7 @@
                 </a>
                 </a>
               </li>
-                <li>
-                <a href="/konfigurasi">
-                  <span class="sub-item">Konfigurasi Lokasi kantor</span>
-                </a>
-              </li>
+              
               </li>
             </ul>
           </div>

@@ -75,7 +75,6 @@ Route::get('/departemen',[DepartemenController::class,'index']);
 Route::post('/departemen/store',[DepartemenController::class,'store']);
 Route::post('/departemen/edit',[DepartemenController::class,'edit']);
 Route::post('/departemen/{kode_dept}/update', [DepartemenController::class, 'update']);
-
 Route::post('/departemen/{kode_dept}/delete',[DepartemenController::class,'delete']);
 
 //monitoring
@@ -95,6 +94,14 @@ Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
 //konfigurasi
 Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
 Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+
+//izinsakit
+Route::get('/presensi/izinsakit',[PresensiController::class,'izinsakit']);
+Route::post('/presensi/approved',[PresensiController::class,'approved']);
+Route::get('/presensi/{id}/batalkanizinsakit',[PresensiController::class,'batalkanizinsakit']);
+
+
+
 
 
 });
