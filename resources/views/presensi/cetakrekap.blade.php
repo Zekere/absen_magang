@@ -62,7 +62,7 @@
 
 <!-- Set "A5", "A4" or "A3" for class name -->
 <!-- Set also "landscape" if you need -->
-<body class="A4 landscape">
+<body class="A3 landscape">
 
 
 
@@ -92,7 +92,7 @@
             <th rowspan="2">Nama Karyawan</th>
             <th colspan="31">tanggal</th>
          <th rowspan="2">Total Hadir</th>
-
+                  <th rowspan="2">Total Keterlambatan</th>
         </tr>
         <tr>
             <?php
