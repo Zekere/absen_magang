@@ -8,7 +8,7 @@
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-2">
     <div class="col">
       <h3 class="fw-bold mb-2">Konfigurasi </h3>
-      <h5 class="text-muted mb-3"> Konfoigurasi Lokasi Kantor</h5>
+      <h5 class="text-muted mb-3"> Konfigurasi Lokasi Kantor</h5>
     </div>
   </div>
 

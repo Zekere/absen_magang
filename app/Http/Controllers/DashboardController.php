@@ -79,6 +79,8 @@ class DashboardController extends Controller
     {
         $hariini = date("Y-m-d");
 
+$jmlkaryawan = DB::table('karyawan')->count();
+
         // Rekap presensi
         $rekappresensi = DB::table('presensi')
             ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00",1,0)) as jmlterlambat')
@@ -96,6 +98,6 @@ class DashboardController extends Controller
             ->where('status_approved', 1)
             ->first();
 
-        return view('dashboard.dashboardadmin', compact('rekappresensi', 'rekapizin'));
+        return view('dashboard.dashboardadmin', compact('jmlkaryawan','rekappresensi', 'rekapizin'));
     }
 }

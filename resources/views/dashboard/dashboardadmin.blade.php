@@ -36,7 +36,7 @@
               <path d="M4.9 19a22 22 0 0 1 -.9 -7v-1a8 8 0 0 1 12 -6.95" />
             </svg>
           </span>
-          <div class="font-weight-medium mt-2">132</div>
+          <div class="font-weight-medium mt-2">{{ $jmlkaryawan }}</div>
           <div class="text-secondary">Jumlah Karyawan</div>
         </div>
       </div>
