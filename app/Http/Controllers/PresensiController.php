@@ -388,4 +388,40 @@ public function monitoring(){
 
 return view('presensi.cetakrekap',compact('bulan','tahun','namabulan','rekap'));
     }
-}
+
+    public function izinsakit(){
+
+        $izinsakit= DB::table('pengajuan_izin')
+        ->join('karyawan','pengajuan_izin.nik','=','karyawan.nik')
+        ->orderBy('tgl_izin','desc')
+        ->get();
+        return view('presensi.izinsakit',compact('izinsakit'));
+    }
+
+    public function approved(Request $request){
+
+        $status_approved = $request->status_approved;
+        $id_izinsakit_form=$request ->id_izinsakit_form;
+        $update = DB::table('pengajuan_izin')->where('id',$id_izinsakit_form)->update([
+            'status_approved' => $status_approved
+        ]);
+        if($update){
+            return Redirect::back()->with(['success'=> 'Data Berhasil di update']);
+        }else {
+            return Redirect::back()->with(['warning'=>'Data gagal di update']);
+        }
+        }
+
+        public function batalkanizinsakit($id){
+
+             $update = DB::table('pengajuan_izin')->where('id',$id)->update([
+            'status_approved' => 0
+        ]);
+        if($update){
+            return Redirect::back()->with(['success'=> 'Data Berhasil di update']);
+        }else {
+            return Redirect::back()->with(['warning'=>'Data gagal di update']);
+        }
+        }
+
+    }
