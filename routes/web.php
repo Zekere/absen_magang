@@ -7,7 +7,7 @@ use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\KonfigurasiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KaryawanController; // ⬅ penting
-
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,14 +95,19 @@ Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
 Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
 Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
 
-//izinsakit
-Route::get('/presensi/izinsakit',[PresensiController::class,'izinsakit']);
-Route::post('/presensi/approved',[PresensiController::class,'approved']);
-Route::get('/presensi/{id}/batalkanizinsakit',[PresensiController::class,'batalkanizinsakit']);
+// Izinsakit routes
+Route::get('/presensi/izinsakit', [PresensiController::class, 'izinsakit']);
+Route::get('/presensi/izinsakit/filter', [PresensiController::class, 'filterIzinSakit']); // ⬅️ letakkan di atas
+Route::post('/presensi/approved', [PresensiController::class, 'approved']);
+Route::get('/presensi/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit']);
 
 
-
-
+// Route untuk Data Admin
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::post('/admin/store', [AdminController::class, 'store'])->name('admin.store');
+Route::post('/admin/edit', [AdminController::class, 'edit'])->name('admin.edit');
+Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
+Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
 
 });
 

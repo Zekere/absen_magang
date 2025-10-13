@@ -8,10 +8,12 @@
 <div class="container-fluid mt-4">
   <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-2">
     <div class="col">
-      <h3 class="fw-bold mb-2">Data Izin dan Sakit </h3>
-      <h5 class="text-muted mb-3"> Izin sakit</h5>
+      <h3 class="fw-bold mb-2">Data Izin dan Sakit</h3>
+      <h5 class="text-muted mb-3 ms-3">Pencatatan Izin, Sakit dan Cuti</h5>
     </div>
   </div>
+</div>
+
 
  <div class="page-body">
   <div class="container-xl">

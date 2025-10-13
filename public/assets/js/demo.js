@@ -192,8 +192,8 @@ Circles.create({
 //Notify
 $.notify({
 	icon: 'icon-bell',
-	title: 'Kaiadmin',
-	message: 'Premium Bootstrap 5 Admin Dashboard',
+	title: 'Selamat Datang Admin',
+	message: 'Ini adalah dashboard Admin E-Presensi',
 },{
 	type: 'secondary',
 	placement: {
