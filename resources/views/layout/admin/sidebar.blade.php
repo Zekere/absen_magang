@@ -69,8 +69,16 @@
                   <span class="sub-item">Monitoring</span>
                 </a>
               </li>
-             
-          
+              <li>
+                <a href="{{ asset('components/panels.html') }}">
+                  <span class="sub-item">Panels</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ asset('components/notifications.html') }}">
+                  <span class="sub-item">Notifications</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>
