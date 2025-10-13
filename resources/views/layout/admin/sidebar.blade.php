@@ -101,6 +101,13 @@
                 <a href="/presensi/rekap">
                   <span class="sub-item">Rekap Presensi</span>
                 </a>
+                </a>
+              </li>
+                <li>
+                <a href="/konfigurasi">
+                  <span class="sub-item">Konfigurasi Lokasi kantor</span>
+                </a>
+              </li>
               </li>
             </ul>
           </div>
@@ -109,6 +116,7 @@
     </div>
   </div>
 </div>
+
 <!-- End Sidebar -->
 
 <style>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\KonfigurasiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KaryawanController; // ⬅ penting
 
@@ -90,6 +91,10 @@ Route::post('/presensi/cetaklaporan',[PresensiController::class,'cetaklaporan'])
 //rekap
 Route::get('/presensi/rekap',[PresensiController::class,'rekap']);
 Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
+
+//konfigurasi
+Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
 
 
 });
