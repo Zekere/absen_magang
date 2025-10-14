@@ -409,7 +409,7 @@ return view('presensi.cetakrekap',compact('bulan','tahun','namabulan','rekap'));
 
     public function izinsakit(){
 
-        $izinsakit= DB::table('pengajuan_izin')
+        $izinsakit= DB::table('pengajuan_izin') 
         ->join('karyawan','pengajuan_izin.nik','=','karyawan.nik')
         ->orderBy('tgl_izin','desc')
         ->get();

@@ -138,7 +138,7 @@
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
                 <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan Password">
               </div>
-              <small class="text-muted">Password akan otomatis di-hash di server sebelum disimpan.</small>
+              <small class="text-muted">Masukan Password minimal 8 Karakter.</small>
             </div>
 
           </div>

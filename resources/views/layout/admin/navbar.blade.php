@@ -83,7 +83,7 @@
                   >
                     <div class="avatar-sm">
                       <img
-                        src="{{ asset ('assets/img/profile.jpg')}}"
+                        src="{{ asset ('assets/img/iconadmin.png')}}"
                         alt="..."
                         class="avatar-img rounded-circle"
                       />
@@ -99,7 +99,7 @@
                         <div class="user-box">
                           <div class="avatar-lg">
                             <img
-                              src="{{ asset ('assets/img/profile.jpg')}}"
+                              src="{{ asset ('assets/img/iconadmin.png')}}"
                               alt="image profile"
                               class="avatar-img rounded"
                             />
@@ -107,18 +107,17 @@
                           <div class="u-text">
                             <h4>{{ Auth::guard('user')->user()->name }}</h4>
                             <p class="text-muted">{{ Auth::guard('user')->user()->email }}</p>
-                            <a
+                            {{-- <a
                               href="profile.html"
                               class="btn btn-xs btn-secondary btn-sm"
                               >View Profile</a
-                            >
+                            > --}}
                           </div>
                         </div>
                       </li>
                       <li>
-                        <div class="dropdown-divider"></div>
+                        {{-- <div class="dropdown-divider"></div> --}}
                        
-                        <a class="dropdown-item" href="#">Account Setting</a>
                         <div class="dropdown-divider"></div>             
                         <a class="dropdown-item" href="/logoutadmin" id="logout">Logout</a>
                     
