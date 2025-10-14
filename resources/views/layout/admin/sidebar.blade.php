@@ -63,8 +63,6 @@
           <div class="collapse" id="monitoringMenu" data-bs-parent=".sidebar-content">
             <ul class="nav nav-collapse">
               <li><a href="/presensi/monitoring"><span class="sub-item">Monitoring Presensi</span></a></li>
-              <li><a href="{{ asset('components/panels.html') }}"><span class="sub-item">Panels</span></a></li>
-              <li><a href="{{ asset('components/notifications.html') }}"><span class="sub-item">Notifications</span></a></li>
             </ul>
           </div>
         </li>
