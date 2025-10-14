@@ -331,8 +331,18 @@ public function monitoring(){
             ->orderBy('tgl_presensi')
             ->get();
 
+
+    if (isset($_POST['exportexcel'])) {
+   
+        $time = date("d-M-Y H:i:S");
+   
+        header("Content-type: application/vnd-ms-excel");
+   
+        header("Content-Disposition: attachment; filename=Laporan presensi karyawan $time.xls");
+}
+
         return view('presensi.cetaklaporan',compact('bulan','tahun','namabulan','karyawan','presensi'));
-    }
+}
 
     public function Rekap(){
 
@@ -385,6 +395,14 @@ public function monitoring(){
 ->whereRaw('YEAR(tgl_presensi)="'.$tahun.'"')
 ->groupByRaw('presensi.nik,nama_lengkap')
 ->get();
+
+if (isset($_POST['exportexel'])){
+    $time = date("d-M-Y H:i:S");
+
+    header("Content-type: application/vnd-ms-excel");
+
+    header("Content-Disposition: attachment; filename=Rekap Presensi Karyawan $time.xls");
+}
 
 return view('presensi.cetakrekap',compact('bulan','tahun','namabulan','rekap'));
     }
