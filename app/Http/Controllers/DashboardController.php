@@ -50,17 +50,17 @@ class DashboardController extends Controller
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"
         ];
 
-        // ✅ Rekap izin termasuk cuti
+        // Rekap izin termasuk cuti
         $rekapizin = DB::table('pengajuan_izin')
             ->selectRaw('
-                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as jmlizin,
-                SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as jmlsakit,
-                SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as jmlcuti
+                SUM(CASE WHEN status = "1" THEN 1 ELSE 0 END) as jmlizin,
+                SUM(CASE WHEN status = "2" THEN 1 ELSE 0 END) as jmlsakit,
+                SUM(CASE WHEN status = "3" THEN 1 ELSE 0 END) as jmlcuti
             ')
             ->where('nik', $nik)
             ->whereMonth('tgl_izin', $bulanini)
             ->whereYear('tgl_izin', $tahunini)
-            ->where('status_approved', 1)
+            ->where('status_approved', '1')
             ->first();
 
         return view('dashboard.dashboard', compact(
@@ -79,25 +79,72 @@ class DashboardController extends Controller
     {
         $hariini = date("Y-m-d");
 
-$jmlkaryawan = DB::table('karyawan')->count();
+        // Total karyawan
+        $jmlkaryawan = DB::table('karyawan')->count();
 
-        // Rekap presensi
+        // Rekap presensi hari ini
         $rekappresensi = DB::table('presensi')
             ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00",1,0)) as jmlterlambat')
             ->where('tgl_presensi', $hariini)
             ->first();
 
-        // ✅ Tambahkan hitungan cuti juga di admin
+        // Rekap izin/sakit/cuti hari ini
         $rekapizin = DB::table('pengajuan_izin')
             ->selectRaw('
-                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as jmlizin,
-                SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as jmlsakit,
-                SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as jmlcuti
+                SUM(CASE WHEN status = "1" THEN 1 ELSE 0 END) as jmlizin,
+                SUM(CASE WHEN status = "2" THEN 1 ELSE 0 END) as jmlsakit,
+                SUM(CASE WHEN status = "3" THEN 1 ELSE 0 END) as jmlcuti
             ')
             ->where('tgl_izin', $hariini)
-            ->where('status_approved', 1)
+            ->where('status_approved', '1')
             ->first();
 
-        return view('dashboard.dashboardadmin', compact('jmlkaryawan','rekappresensi', 'rekapizin'));
+        return view('dashboard.dashboardadmin', compact('jmlkaryawan', 'rekappresensi', 'rekapizin'));
+    }
+
+    /**
+     * Get dashboard data berdasarkan tanggal yang dipilih (untuk AJAX)
+     */
+    public function getDashboardData(Request $request)
+    {
+        $date = $request->input('date'); // Format: Y-m-d
+        
+        // Validasi tanggal
+        if (!$date || !strtotime($date)) {
+            return response()->json([
+                'error' => 'Invalid date format'
+            ], 400);
+        }
+        
+        // Total karyawan (tidak berubah berdasarkan tanggal)
+        $jmlkaryawan = DB::table('karyawan')->count();
+        
+        // Rekap presensi berdasarkan tanggal yang dipilih
+        $rekappresensi = DB::table('presensi')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00", 1, 0)) as jmlterlambat')
+            ->where('tgl_presensi', $date)
+            ->first();
+        
+        // Rekap izin berdasarkan tanggal yang dipilih
+        $rekapizin = DB::table('pengajuan_izin')
+            ->selectRaw('
+                SUM(CASE WHEN status = "1" THEN 1 ELSE 0 END) as jmlizin,
+                SUM(CASE WHEN status = "2" THEN 1 ELSE 0 END) as jmlsakit,
+                SUM(CASE WHEN status = "3" THEN 1 ELSE 0 END) as jmlcuti
+            ')
+            ->where('tgl_izin', $date)
+            ->where('status_approved', '1')
+            ->first();
+        
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'jmlkaryawan' => $jmlkaryawan ?? 0,
+            'jmlhadir' => $rekappresensi->jmlhadir ?? 0,
+            'jmlterlambat' => $rekappresensi->jmlterlambat ?? 0,
+            'jmlizin' => $rekapizin->jmlizin ?? 0,
+            'jmlsakit' => $rekapizin->jmlsakit ?? 0,
+            'jmlcuti' => $rekapizin->jmlcuti ?? 0,
+        ]);
     }
 }

@@ -109,5 +109,10 @@ Route::post('/admin/edit', [AdminController::class, 'edit'])->name('admin.edit')
 Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
 Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
 
+// Route untuk dashboard admin
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+// Route untuk AJAX get data dashboard berdasarkan tanggal
+Route::get('/admin/dashboard/data', [DashboardController::class, 'getDashboardData'])->name('admin.dashboard.data');
 });
 
