@@ -443,6 +443,129 @@
     font-size: 14px;
     margin: 5px;
 }
+
+/* Leaderboard Badges Alignment */
+.leaderboard-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    min-width: 80px;
+}
+
+.leaderboard-badges .badge {
+    display: inline-block;
+    text-align: center;
+    min-width: 70px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ===== History List Styling - Bulan Ini ===== */
+.history-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.history-item .icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-right: 15px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-item .icon-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.history-item .in {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item .in .left-content {
+    flex: 1;
+}
+
+.history-item .in .date-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.history-item .in .time-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 85px;
+}
+
+.history-item .badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #fff;
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+}
+
+/* Custom Listview untuk History */
+.listview.image-listview.history-list {
+    padding: 0;
+}
+
+.listview.image-listview.history-list > li {
+    list-style: none;
+    padding: 0;
+    border: none;
+}
+
+.listview.image-listview.history-list .item {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    border: none;
+}
 </style>
 
 <!-- Tambahkan SweetAlert2 -->
@@ -808,24 +931,30 @@
         </div>
         <div class="tab-content mt-2" style="margin-bottom:100px;">
             <div class="tab-pane fade show active" id="home" role="tabpanel">
-                <ul class="listview image-listview">
+                <ul class="listview image-listview history-list">
                     @foreach ($histroribulanini as $d)
                         @php 
                             $path = Storage::url('uploads/absensi/'.$d->foto_in);
                             $tanggal = date('d-m-Y', strtotime($d->tgl_presensi));
                         @endphp
                         <li>
-                            <div class="item">
-                                <div class="icon-box bg-primary">
+                            <div class="history-item">
+                                <div class="icon-box">
                                     <img src="{{ $path }}" 
-                                         alt="avatar" 
-                                         class="imaged w64 foto-preview" 
+                                         alt="foto absen" 
+                                         class="foto-preview" 
                                          onclick="openLightbox('{{ $path }}', 'Absen {{ $tanggal }}', '{{ $d->jam_in }}')">
                                 </div>
                                 <div class="in">
-                                    <div>{{ $tanggal }}</div>
-                                    <span class="badge badge-success">{{ $d->jam_in }}</span>
-                                    <span class="badge badge-danger">{{ $d->jam_out != null ? $d->jam_out : 'Belum Absen' }}</span>
+                                    <div class="left-content">
+                                        <div class="date-text">{{ $tanggal }}</div>
+                                    </div>
+                                    <div class="time-badges">
+                                        <span class="badge badge-success">{{ $d->jam_in }}</span>
+                                        <span class="badge {{ $d->jam_out != null ? 'badge-danger' : 'badge-warning' }}">
+                                            {{ $d->jam_out != null ? $d->jam_out : 'Belum Absen' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </li>
@@ -851,7 +980,9 @@
                                         <b>{{ $d->nama_lengkap }}</b><br>
                                         <small class="text-muted">{{ $d->jabatan }}</small>
                                     </div>
-                                    <span class="badge {{ $d->jam_in < '07:30' ? 'bg-success' : 'bg-danger' }}">{{ $d->jam_in }}</span>
+                                    <div class="leaderboard-badges">
+                                        <span class="badge {{ $d->jam_in < '07:30' ? 'bg-success' : 'bg-danger' }}">{{ $d->jam_in }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </li>
