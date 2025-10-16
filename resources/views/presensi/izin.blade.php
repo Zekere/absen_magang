@@ -55,14 +55,23 @@
 
     {{-- 📄 List Data --}}
     <div class="row g-3" id="dataList">
-        @forelse ($dataizin as $d)
-        <div class="col-12 izin-card" data-status="{{ $d->status }}">
-            <div class="card border-0 shadow-sm hover-card rounded-4">
+        @php
+            // Sorting: Pending (0) dulu, baru Approved (1) & Declined (2)
+            $sortedData = $dataizin->sortBy(function($item) {
+                // Pending = 0, akan muncul paling atas
+                // Approved & Declined akan di bawah
+                return $item->status_approved == 0 ? 0 : 1;
+            });
+        @endphp
+
+        @forelse ($sortedData as $d)
+        <div class="col-12 izin-card" data-status="{{ $d->status }}" data-approved="{{ $d->status_approved }}">
+            <div class="card border-0 shadow-sm hover-card rounded-4 {{ $d->status_approved == 0 ? 'pending-highlight' : '' }}">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-start gap-3">
 
                         {{-- 🧩 Icon --}}
-                        <div class="icon-wrapper">
+                        <div class="icon-wrapper {{ $d->status_approved == 0 ? 'icon-pulse' : '' }}">
                             @if($d->status == 1)
                                 <ion-icon name="calendar-outline" class="icon-izin"></ion-icon>
                             @elseif($d->status == 2)
@@ -143,11 +152,25 @@
     </a>
 </div>
 
-{{-- 💫 Script Filter Dinamis --}}
+{{-- 💫 Script Filter Dinamis dengan Sorting --}}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const buttons = document.querySelectorAll(".filter-btn");
-    const cards = document.querySelectorAll(".izin-card");
+    const dataList = document.getElementById("dataList");
+    const cards = Array.from(document.querySelectorAll(".izin-card"));
+
+    // Fungsi untuk sorting cards: pending dulu
+    function sortCards(cardsToSort) {
+        return cardsToSort.sort((a, b) => {
+            const statusA = parseInt(a.dataset.approved);
+            const statusB = parseInt(b.dataset.approved);
+            
+            // Pending (0) akan di atas, sisanya di bawah
+            if (statusA === 0 && statusB !== 0) return -1;
+            if (statusA !== 0 && statusB === 0) return 1;
+            return 0;
+        });
+    }
 
     buttons.forEach(btn => {
         btn.addEventListener("click", function() {
@@ -155,16 +178,36 @@ document.addEventListener("DOMContentLoaded", function() {
             this.classList.add("active");
             const filter = this.getAttribute("data-filter");
 
-            cards.forEach(card => {
+            // Filter cards berdasarkan status
+            let visibleCards = cards.filter(card => {
                 if (filter === "all" || card.dataset.status === filter) {
-                    card.style.display = "block";
-                    card.classList.add("fadeIn");
-                } else {
-                    card.style.display = "none";
-                    card.classList.remove("fadeIn");
+                    return true;
                 }
+                return false;
+            });
+
+            // Sort cards yang visible (pending dulu)
+            visibleCards = sortCards(visibleCards);
+
+            // Hide semua cards dulu
+            cards.forEach(card => {
+                card.style.display = "none";
+                card.classList.remove("fadeIn");
+            });
+
+            // Append cards yang sudah disort ke container
+            visibleCards.forEach(card => {
+                card.style.display = "block";
+                card.classList.add("fadeIn");
+                dataList.appendChild(card);
             });
         });
+    });
+
+    // Initial sort saat page load
+    const sortedCards = sortCards(cards);
+    sortedCards.forEach(card => {
+        dataList.appendChild(card);
     });
 });
 </script>
@@ -193,6 +236,12 @@ document.addEventListener("DOMContentLoaded", function() {
     transform: scale(1.05);
 }
 
+/* ===== Highlight Pending Card ===== */
+.pending-highlight {
+    border: 2px solid #fbbf24 !important;
+    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
 /* ===== Icon Wrapper ===== */
 .icon-wrapper {
     width: 52px;
@@ -203,6 +252,20 @@ document.addEventListener("DOMContentLoaded", function() {
     justify-content: center;
     font-size: 28px;
     transition: 0.3s;
+}
+
+/* Pulse animation untuk pending */
+.icon-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .icon-izin { color: #3b82f6; background: #dbeafe; }
@@ -230,7 +293,21 @@ document.addEventListener("DOMContentLoaded", function() {
     align-items: center;
     gap: 4px;
 }
-.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-pending { 
+    background: #fef3c7; 
+    color: #92400e;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0);
+    }
+}
+
 .badge-approved { background: #d1fae5; color: #065f46; }
 .badge-declined { background: #fee2e2; color: #991b1b; }
 
