@@ -67,17 +67,33 @@
           </div>
         </li>
 
-        <!-- Konfigurasi -->
+        <!-- Konfigurasi dengan Notifikasi -->
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#konfigurasiMenu" role="button" aria-expanded="false" aria-controls="konfigurasiMenu">
             <i class="fas fa-cogs"></i>
             <p>Konfigurasi</p>
+            @php
+              $pendingCount = DB::table('pengajuan_izin')
+                  ->where('status_approved', '0')
+                  ->count();
+            @endphp
+            @if($pendingCount > 0)
+              <span class="notification-badge pulse">{{ $pendingCount }}</span>
+            @endif
             <span class="caret"></span>
           </a>
           <div class="collapse" id="konfigurasiMenu" data-bs-parent=".sidebar-content">
             <ul class="nav nav-collapse">
               <li><a href="/konfigurasi"><span class="sub-item">Lokasi Kantor</span></a></li>
-              <li><a href="/presensi/izinsakit"><span class="sub-item">Data Izin & Sakit</span></a></li>
+              <li>
+                <a href="/presensi/izinsakit">
+                  <span class="sub-item">Data Izin & Sakit</span>
+                  @if($pendingCount > 0)
+                    <span class="sub-notification-badge">{{ $pendingCount }}</span>
+                    <span class="notification-dot"></span>
+                  @endif
+                </a>
+              </li>
             </ul>
           </div>
         </li>
@@ -103,6 +119,105 @@
 </div>
 
 <style>
+/* ===== Notification Badge Styles ===== */
+
+/* Badge pada menu utama (Konfigurasi) */
+.notification-badge {
+  position: absolute;
+  right: 45px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  z-index: 10;
+}
+
+/* Pulse animation untuk badge */
+.notification-badge.pulse {
+  animation: badgePulseAnimation 2s ease-in-out infinite;
+}
+
+@keyframes badgePulseAnimation {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+
+/* Badge pada submenu (Data Izin & Sakit) */
+.sub-notification-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  margin-left: 8px;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  animation: subBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes subBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Dot indicator untuk submenu */
+.notification-dot {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: dotBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes dotBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Submenu styling */
+.nav-collapse li a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-collapse li a .sub-item {
+  flex: 1;
+}
+
+/* ===== Existing Hover Effects ===== */
 .sidebar .nav-item a {
   transition: all 0.3s ease;
   position: relative;
@@ -142,4 +257,32 @@
 .nav-item a[aria-expanded="true"] .caret {
   transform: rotate(180deg);
 }
+
+/* Hover effect untuk notification badge */
+.nav-item:hover .notification-badge {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-collapse li a:hover .sub-notification-badge {
+  transform: scale(1.15);
+}
+
+/* Responsive adjustment */
+@media (max-width: 991px) {
+  .notification-badge {
+    right: 35px;
+  }
+}
 </style>
+
+<script>
+// Auto refresh notification count setiap 30 detik (opsional)
+setInterval(function() {
+  // Anda bisa menambahkan AJAX call untuk update badge count tanpa reload
+  // fetch('/api/pending-izin-count')
+  //   .then(response => response.json())
+  //   .then(data => {
+  //     document.querySelector('.notification-badge').textContent = data.count;
+  //   });
+}, 30000);
+</script>
