@@ -82,7 +82,7 @@ class DashboardController extends Controller
         // Total karyawan
         $jmlkaryawan = DB::table('karyawan')->count();
 
-        // Rekap presensi hari ini
+        // Rekap presensi hari ini 
         $rekappresensi = DB::table('presensi')
             ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00",1,0)) as jmlterlambat')
             ->where('tgl_presensi', $hariini)

@@ -19,6 +19,7 @@ use App\Http\Controllers\AdminController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 Route::middleware(['guest:karyawan'])->group(function(){
 Route::get('/',function () {
     return view('auth.login');
