@@ -19,7 +19,7 @@
     <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-3">
         <ion-icon name="checkmark-circle" class="me-2" style="font-size: 22px;"></ion-icon>
         {{ Session::get('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert"></button> --}}
     </div>
     @endif
 
@@ -27,7 +27,7 @@
     <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-3">
         <ion-icon name="close-circle" class="me-2" style="font-size: 22px;"></ion-icon>
         {{ Session::get('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert"></button> --}}
     </div>
     @endif
 

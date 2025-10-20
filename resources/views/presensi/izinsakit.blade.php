@@ -1,7 +1,6 @@
 @extends ('layout.admin.template')
 @section('content')
 
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -16,8 +15,7 @@
   </div>
 </div>
 
-
- <div class="page-body">
+<div class="page-body">
   <div class="container-xl">
     <div class="row">
       <div class="col-12">
@@ -72,6 +70,7 @@
                 <th>Jabatan</th>
                 <th>Status</th>
                 <th>Keterangan</th>
+                <th>Bukti</th>
                 <th>Persetujuan</th>
                 <th>Aksi</th>
               </tr>
@@ -86,16 +85,28 @@
                   <td>{{ $d->jabatan }}</td>
                   <td>
                     @if ($d->status == "1")
-                      Izin
+                      <span class="badge bg-info">Izin</span>
                     @elseif ($d->status == "2")
-                      Sakit
+                      <span class="badge bg-warning">Sakit</span>
                     @elseif ($d->status == "3")
-                      Cuti
+                      <span class="badge bg-success">Cuti</span>
                     @else
-                      Tidak Diketahui
+                      <span class="badge bg-secondary">Tidak Diketahui</span>
                     @endif
                   </td>
                   <td>{{ $d->keterangan }}</td>
+                  <td class="text-center">
+                    @if($d->bukti_surat)
+                      <a href="/presensi/{{ $d->id }}/lihatbukti" class="btn btn-sm btn-info" title="Lihat Bukti">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a href="/presensi/{{ $d->id }}/downloadbukti" class="btn btn-sm btn-success" title="Download">
+                        <i class="bi bi-download"></i>
+                      </a>
+                    @else
+                      <span class="badge bg-secondary">Tidak Ada</span>
+                    @endif
+                  </td>
                   <td class="text-center">
                     @if ($d->status_approved == 1)
                       <span class="badge bg-success">Disetujui</span>
@@ -107,7 +118,7 @@
                   </td>
                   <td class="text-center">
                     @if($d->status_approved==0)
-                      <a href="#" class="btn btn-sm btn-primary approved" id_izinsakit="{{ $d->id }}">
+                      <a href="#" class="btn btn-sm btn-primary approved" id_izinsakit="{{ $d->id }}" title="Proses Persetujuan">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-external-link">
                           <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                           <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"></path>
@@ -116,7 +127,7 @@
                         </svg>
                       </a>
                     @else
-                      <a href="/presensi/{{ $d->id }}/batalkanizinsakit" class="btn btn-sm btn-danger">
+                      <a href="/presensi/{{ $d->id }}/batalkanizinsakit" class="btn btn-sm btn-danger" title="Batalkan Persetujuan">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M10 10l4 4m0 -4l-4 4" /></svg>
                       </a>
                     @endif
@@ -160,6 +171,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="form-group">
+                        <label class="form-label">Status Persetujuan:</label>
                         <select name="status_approved" id="status_approved" class="form-select">
                             <option value="1">Disetujui</option>
                             <option value="2">Ditolak</option>
