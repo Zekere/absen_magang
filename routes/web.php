@@ -117,3 +117,9 @@ Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('adm
 Route::get('/admin/dashboard/data', [DashboardController::class, 'getDashboardData'])->name('admin.dashboard.data');
 });
 
+Route::middleware(['auth:karyawan'])->group(function() {
+    Route::post('/presensi/storeizin', [PresensiController::class, 'storeizin']);
+});
+
+Route::get('/presensi/{id}/lihatbukti', [PresensiController::class, 'lihatbukti']);
+Route::get('/presensi/{id}/downloadbukti', [PresensiController::class, 'downloadbukti']);

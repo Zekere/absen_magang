@@ -19,7 +19,7 @@
     <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-3">
         <ion-icon name="checkmark-circle" class="me-2" style="font-size: 22px;"></ion-icon>
         {{ Session::get('success') }}
-        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert"></button> --}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
@@ -27,7 +27,7 @@
     <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-3">
         <ion-icon name="close-circle" class="me-2" style="font-size: 22px;"></ion-icon>
         {{ Session::get('error') }}
-        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert"></button> --}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
@@ -116,10 +116,21 @@
                                 @endif
                             </div>
 
-                            <p class="text-muted small mb-0">
+                            <p class="text-muted small mb-2">
                                 <ion-icon name="document-text-outline" class="me-1"></ion-icon>
                                 {{ $d->keterangan }}
                             </p>
+
+                            {{-- 📎 Bukti Surat --}}
+                            @if(!empty($d->bukti_surat))
+                            <div class="attachment-container">
+                                <button class="attachment-btn" onclick="viewAttachment('{{ asset('storage/uploads/izin/' . $d->bukti_surat) }}', '{{ $d->bukti_surat }}')">
+                                    <ion-icon name="attach-outline"></ion-icon>
+                                    <span>Lihat Bukti Surat</span>
+                                    <ion-icon name="eye-outline" class="view-icon"></ion-icon>
+                                </button>
+                            </div>
+                            @endif
                         </div>
 
                     </div>
@@ -150,6 +161,32 @@
     <a href="/presensi/buatizin" class="fab shadow-lg">
         <ion-icon name="add-outline"></ion-icon>
     </a>
+</div>
+
+{{-- 📎 Modal Attachment Viewer --}}
+<div id="attachmentModal" class="attachment-modal" onclick="closeAttachment(event)">
+    <div class="attachment-modal-content">
+        <div class="attachment-modal-header">
+            <h5 id="attachmentTitle">Bukti Surat</h5>
+            <button class="attachment-close" onclick="closeAttachment(event)">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        <div class="attachment-modal-body" id="attachmentBody">
+            <img id="attachmentImage" src="" alt="Bukti Surat" style="display: none;">
+            <iframe id="attachmentPDF" src="" style="display: none;"></iframe>
+            <div id="attachmentDoc" style="display: none;">
+                <div class="doc-placeholder">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <p>File dokumen tidak dapat ditampilkan di browser</p>
+                    <a id="downloadLink" href="" download class="btn-download">
+                        <ion-icon name="download-outline"></ion-icon>
+                        Download File
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- 💫 Script Filter Dinamis dengan Sorting --}}
@@ -209,6 +246,72 @@ document.addEventListener("DOMContentLoaded", function() {
     sortedCards.forEach(card => {
         dataList.appendChild(card);
     });
+});
+
+// Fungsi untuk melihat attachment
+function viewAttachment(filePath, fileName) {
+    const modal = document.getElementById('attachmentModal');
+    const imageViewer = document.getElementById('attachmentImage');
+    const pdfViewer = document.getElementById('attachmentPDF');
+    const docViewer = document.getElementById('attachmentDoc');
+    const downloadLink = document.getElementById('downloadLink');
+    const title = document.getElementById('attachmentTitle');
+    
+    // Hide all viewers
+    imageViewer.style.display = 'none';
+    pdfViewer.style.display = 'none';
+    docViewer.style.display = 'none';
+    
+    // Set title
+    title.textContent = fileName;
+    
+    // Detect file type
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+        // Image
+        imageViewer.src = filePath;
+        imageViewer.style.display = 'block';
+    } else if (extension === 'pdf') {
+        // PDF
+        pdfViewer.src = filePath;
+        pdfViewer.style.display = 'block';
+    } else {
+        // Doc/Docx or other
+        downloadLink.href = filePath;
+        downloadLink.download = fileName;
+        docViewer.style.display = 'flex';
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Fungsi untuk menutup modal
+function closeAttachment(event) {
+    if (event.target.id === 'attachmentModal' || event.target.closest('.attachment-close')) {
+        const modal = document.getElementById('attachmentModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // Reset viewers
+        document.getElementById('attachmentImage').src = '';
+        document.getElementById('attachmentPDF').src = '';
+    }
+}
+
+// Close with ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('attachmentModal');
+        if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('attachmentImage').src = '';
+            document.getElementById('attachmentPDF').src = '';
+        }
+    }
 });
 </script>
 
@@ -368,6 +471,206 @@ document.addEventListener("DOMContentLoaded", function() {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Attachment Button ===== */
+.attachment-container {
+    margin-top: 8px;
+}
+
+.attachment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.attachment-btn:hover {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.attachment-btn ion-icon {
+    font-size: 16px;
+}
+
+.attachment-btn .view-icon {
+    color: #3b82f6;
+}
+
+/* ===== Attachment Modal ===== */
+.attachment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.attachment-modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.attachment-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.attachment-modal-header h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.attachment-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #fee2e2;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.attachment-close:hover {
+    background: #fecaca;
+    transform: scale(1.1);
+}
+
+.attachment-close ion-icon {
+    font-size: 24px;
+    color: #ef4444;
+}
+
+.attachment-modal-body {
+    padding: 0;
+    max-height: calc(90vh - 70px);
+    overflow: auto;
+    background: #f3f4f6;
+}
+
+.attachment-modal-body img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.attachment-modal-body iframe {
+    width: 100%;
+    height: 80vh;
+    border: none;
+}
+
+.doc-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.doc-placeholder ion-icon {
+    font-size: 80px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+.doc-placeholder p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-download ion-icon {
+    font-size: 20px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 576px) {
+    .attachment-modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .attachment-modal-header {
+        padding: 12px 16px;
+    }
+    
+    .attachment-modal-header h5 {
+        font-size: 14px;
+    }
+    
+    .attachment-modal-body iframe {
+        height: 70vh;
+    }
 }
 </style>
 @endsection
