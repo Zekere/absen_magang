@@ -236,8 +236,11 @@ $(function(){
 
     // Display current page
     function displayPage() {
-        const start = (currentPage - 1) * entriesPerPage;
-        const end = entriesPerPage === 'all' ? filteredRows.length : start + parseInt(entriesPerPage);
+        // FIX: Handle 'all' case properly
+        const isShowAll = entriesPerPage === 'all';
+        const itemsPerPage = isShowAll ? filteredRows.length : parseInt(entriesPerPage);
+        const start = isShowAll ? 0 : (currentPage - 1) * itemsPerPage;
+        const end = isShowAll ? filteredRows.length : start + itemsPerPage;
 
         // Hide all rows
         allRows.forEach(row => row.style.display = 'none');
@@ -245,6 +248,7 @@ $(function(){
         // Show filtered rows for current page
         filteredRows.slice(start, end).forEach((row, index) => {
             row.style.display = '';
+            // FIX: Properly calculate row number
             row.querySelector('td:first-child').textContent = start + index + 1;
         });
 
@@ -262,7 +266,8 @@ $(function(){
 
     // Update pagination buttons
     function updatePaginationButtons() {
-        const totalPages = entriesPerPage === 'all' ? 1 : Math.ceil(filteredRows.length / entriesPerPage);
+        const isShowAll = entriesPerPage === 'all';
+        const totalPages = isShowAll ? 1 : Math.ceil(filteredRows.length / parseInt(entriesPerPage));
         const pagination = $('#pagination');
         pagination.empty();
 
@@ -298,7 +303,7 @@ $(function(){
 
     // Event listeners
     $('#entriesPerPage').on('change', function() {
-        entriesPerPage = $(this).val() === 'all' ? 'all' : parseInt($(this).val());
+        entriesPerPage = $(this).val();
         currentPage = 1;
         displayPage();
     });

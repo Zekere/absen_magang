@@ -31,10 +31,24 @@
 
           <div class="card-body">
             <div class="table-responsive">
-              <!-- Search -->
-              <form action="/karyawan" method="GET" class="mb-4">
+              <!-- Search and Filters -->
+              <form action="/karyawan" method="GET" id="filterForm" class="mb-4">
                 <div class="row g-2 align-items-center">
-                  <div class="col-md-5">
+                  <!-- Show Entries -->
+                  <div class="col-md-2">
+                    <label class="form-label fw-semibold">Show entries:</label>
+                    <select name="per_page" id="per_page" class="form-select">
+                      <option value="5" {{ request('per_page') == '5' ? 'selected' : '' }}>5</option>
+                      <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10</option>
+                      <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25</option>
+                      <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50</option>
+                      <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>All</option>
+                    </select>
+                  </div>
+
+                  <!-- Search Name -->
+                  <div class="col-md-4">
+                    <label class="form-label fw-semibold">Cari Nama:</label>
                     <div class="input-group">
                       <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
                       <input type="text" name="nama_karyawan" id="nama_karyawan"
@@ -43,9 +57,11 @@
                     </div>
                   </div>
 
+                  <!-- Filter Departemen -->
                   <div class="col-md-4">
+                    <label class="form-label fw-semibold">Departemen:</label>
                     <select name="kode_dept" id="kode_dept" class="form-select">
-                      <option value="">Pilih Departemen</option>
+                      <option value="">Semua Departemen</option>
                       @foreach ($departemen as $dept)
                         <option value="{{ $dept->kode_dept }}"
                           {{ request('kode_dept') == $dept->kode_dept ? 'selected' : '' }}>
@@ -55,13 +71,26 @@
                     </select>
                   </div>
 
-                  <div class="col-md-2 d-grid">
+                  <!-- Search Button -->
+                  <div class="col-md-2 d-grid" style="margin-top: 32px;">
                     <button type="submit" class="btn btn-primary">
                       <i class="bi bi-search me-1"></i> Search
                     </button>
                   </div>
                 </div>
               </form>
+
+              <!-- Info Total Data -->
+              <div class="mb-3">
+                <p class="text-muted mb-0">
+                  <strong>Total Data:</strong> 
+                  @if(request('per_page') == 'all')
+                    Menampilkan semua {{ $karyawan->total() }} data
+                  @else
+                    Menampilkan {{ $karyawan->firstItem() ?? 0 }} - {{ $karyawan->lastItem() ?? 0 }} dari {{ $karyawan->total() }} data
+                  @endif
+                </p>
+              </div>
 
               <!-- Table -->
               <table class="table table-hover align-middle text-center">
@@ -78,10 +107,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @foreach ($karyawan as $d)
+                  @forelse ($karyawan as $d)
                     @php $path = Storage::url('uploads/karyawan/'.$d->foto); @endphp
                     <tr>
-                      <td>{{ $loop->iteration + $karyawan->firstItem() -1 }}</td>
+                      <td>
+                        @if(request('per_page') == 'all')
+                          {{ $loop->iteration }}
+                        @else
+                          {{ $loop->iteration + $karyawan->firstItem() - 1 }}
+                        @endif
+                      </td>
                       <td>{{ $d->nik }}</td>
                       <td class="fw-semibold">{{ $d->nama_lengkap }}</td>
                       <td><span class="badge bg-info px-3 py-2">{{ $d->jabatan }}</span></td>
@@ -115,13 +150,23 @@
                         </div>
                       </td>
                     </tr>
-                  @endforeach
+                  @empty
+                    <tr>
+                      <td colspan="8" class="text-center py-4">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="mt-2 text-muted">Tidak ada data karyawan yang ditemukan</p>
+                      </td>
+                    </tr>
+                  @endforelse
                 </tbody>
               </table>
 
-              <div class="d-flex justify-content-center mt-3">
-                {{ $karyawan->links('pagination::bootstrap-5') }}
-              </div>
+              <!-- Pagination -->
+              @if(request('per_page') != 'all')
+                <div class="d-flex justify-content-center mt-3">
+                  {{ $karyawan->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
+              @endif
 
             </div>
           </div>
@@ -256,6 +301,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const modalEditEl = document.getElementById('modal-editkaryawan');
   const bsModalTambah = new bootstrap.Modal(modalTambahEl, {});
   const bsModalEdit = new bootstrap.Modal(modalEditEl, {});
+
+  // Auto submit form when per_page changed
+  const perPageSelect = document.getElementById('per_page');
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function() {
+      document.getElementById('filterForm').submit();
+    });
+  }
 
   // Jika tombol "Tambah Data" diklik
   const btnTambah = document.getElementById('btn-tambahkaryawan');
