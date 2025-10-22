@@ -5,15 +5,179 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<div class="container-fluid mt-5">
+<style>
+  /* Custom styles untuk halaman konfigurasi */
+  .config-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
 
-  <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
-    <div class="col">
-      <h3 class="fw-bold mb-4">Data Admin</h3>
-    </div>
+  .config-header h3 {
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-size: 1.75rem;
+  }
+
+  .config-header h5 {
+    font-weight: 400;
+    opacity: 0.9;
+    font-size: 1rem;
+  }
+
+  .config-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .config-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-header-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border: none;
+  }
+
+  .card-header-custom h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .input-group-custom {
+    margin-bottom: 20px;
+  }
+
+  .input-group-custom .input-group-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  .input-group-custom .form-control {
+    border: 2px solid #e0e0e0;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .input-group-custom .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
+  .info-box {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .info-box i {
+    color: #667eea;
+    margin-right: 10px;
+  }
+
+  .info-box p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .config-header {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .config-header h3 {
+      font-size: 1.5rem;
+    }
+
+    .config-header h5 {
+      font-size: 0.9rem;
+    }
+
+    .card-header-custom {
+      padding: 15px;
+    }
+
+    .card-header-custom h4 {
+      font-size: 1.1rem;
+    }
+
+    .input-group-custom .input-group-text {
+      width: 40px;
+      font-size: 1rem;
+    }
+
+    .input-group-custom .form-control {
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .btn-save {
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .config-header h3 {
+      font-size: 1.25rem;
+    }
+
+    .config-header h5 {
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<div class="container-fluid mt-4 px-3 px-md-4">
+  <!-- Header Section -->
+  <div class="config-header">
+    <h3 class="mb-1">
+      <i class="bi bi-person-badge-fill"></i> Admin
+    </h3>
+    <h5 class="mb-0">Pengaturan Admin</h5>
   </div>
-
-</div>
 
 <div class="page-body">
   <div class="container-xl">
@@ -22,7 +186,7 @@
         <div class="card shadow-lg border-0 rounded-3">
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
             <h4 class="mb-0 fw-bold">
-              <i class="bi bi-person-badge-fill me-2"></i> Data Admin
+             Data Admin
             </h4>
             <a href="#" class="btn btn-light btn-sm fw-semibold" id="btn-tambahadmin" data-bs-toggle="modal" data-bs-target="#modal-inputadmin" role="button" aria-pressed="false">
               <i class="bi bi-plus-circle me-1"></i> Tambah Data

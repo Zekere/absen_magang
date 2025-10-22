@@ -10,6 +10,167 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
+    .config-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .config-header h3 {
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-size: 1.75rem;
+  }
+
+  .config-header h5 {
+    font-weight: 400;
+    opacity: 0.9;
+    font-size: 1rem;
+  }
+
+  .config-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .config-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-header-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border: none;
+  }
+
+  .card-header-custom h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .input-group-custom {
+    margin-bottom: 20px;
+  }
+
+  .input-group-custom .input-group-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  .input-group-custom .form-control {
+    border: 2px solid #e0e0e0;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .input-group-custom .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
+  .info-box {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .info-box i {
+    color: #667eea;
+    margin-right: 10px;
+  }
+
+  .info-box p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .config-header {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .config-header h3 {
+      font-size: 1.5rem;
+    }
+
+    .config-header h5 {
+      font-size: 0.9rem;
+    }
+
+    .card-header-custom {
+      padding: 15px;
+    }
+
+    .card-header-custom h4 {
+      font-size: 1.1rem;
+    }
+
+    .input-group-custom .input-group-text {
+      width: 40px;
+      font-size: 1rem;
+    }
+
+    .input-group-custom .form-control {
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .btn-save {
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .config-header h3 {
+      font-size: 1.25rem;
+    }
+
+    .config-header h5 {
+      font-size: 0.85rem;
+    }
+  }
   /* Custom Responsive Styles */
   @media (max-width: 768px) {
     .card-rekap {
@@ -95,14 +256,15 @@
   }
 </style>
 
-<div class="container-fluid mt-3 mt-md-5">
-  <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-3 pb-md-4">
-    <div class="col">
-      <h3 class="fw-bold mb-2 mb-md-4">
-        <i class="bi bi-calendar3-range me-2"></i>Rekap Presensi
-      </h3>
-      <p class="text-muted d-none d-md-block">Cetak atau export rekap presensi seluruh karyawan</p>
-    </div>
+<div class="container-fluid mt-4 px-3 px-md-4">
+  <!-- Header Section -->
+  <div class="config-header">
+    <h3 class="mb-1">
+      <i class="bi bi-calendar3-range me-2
+"></i> Rekap Presensi
+    </h3>
+        <h5 class="mb-0">Cetak atau export rekap presensi seluruh karyawan</h5>
+
   </div>
 </div>
 

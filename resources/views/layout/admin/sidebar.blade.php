@@ -26,7 +26,7 @@
         <!-- Dashboard -->
         <li class="nav-item active">
           <a href="/panel/dashboardadmin">
-            <i class="fas fa-home"></i>
+            <i class="bi bi-dash-square"></i>
             <p>Dashboard</p>
           </a>
         </li>
