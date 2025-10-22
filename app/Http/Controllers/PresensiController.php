@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class PresensiController extends Controller
 {
@@ -234,7 +239,6 @@ class PresensiController extends Controller
         return view('presensi.buatizin');
     }
 
-    // ✅ Dilengkapi upload bukti izin
     public function storeizin(Request $request)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
@@ -243,7 +247,6 @@ class PresensiController extends Controller
         $keterangan = $request->keterangan;
         $bukti_surat = null;
 
-        // ✅ Upload file ke folder public/storage/uploads/izin
         if ($request->hasFile('bukti_surat')) {
             $file = $request->file('bukti_surat');
             $ext = $file->getClientOriginalExtension();
@@ -271,7 +274,6 @@ class PresensiController extends Controller
         }
     }
 
-    // 📂 lihat bukti
     public function lihatbukti($id)
     {
         $izin = DB::table('pengajuan_izin')->where('id', $id)->first();
@@ -284,7 +286,6 @@ class PresensiController extends Controller
         return response()->file($path);
     }
 
-    // 📥 download bukti
     public function downloadbukti($id)
     {
         $izin = DB::table('pengajuan_izin')->where('id', $id)->first();
@@ -337,6 +338,7 @@ class PresensiController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
         $karyawan = DB::table('karyawan')->where('nik', $nik)
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->first();
@@ -348,19 +350,143 @@ class PresensiController extends Controller
             ->orderBy('tgl_presensi')
             ->get();
 
+        // Export to Excel with Images
         if (isset($_POST['exportexcel'])) {
-            $time = date("d-M-Y H:i:S");
-            header("Content-type: application/vnd-ms-excel");
-            header("Content-Disposition: attachment; filename=Laporan presensi karyawan $time.xls");
+            return $this->exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan);
         }
 
         return view('presensi.cetaklaporan', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'presensi'));
     }
 
+    private function exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(12);
+        $sheet->getColumnDimension('D')->setWidth(12);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+
+        // Header
+        $sheet->setCellValue('A1', 'LAPORAN PRESENSI KARYAWAN');
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Info Karyawan
+        $sheet->setCellValue('A3', 'NIK');
+        $sheet->setCellValue('B3', ': ' . $karyawan->nik);
+        $sheet->setCellValue('A4', 'Nama');
+        $sheet->setCellValue('B4', ': ' . $karyawan->nama_lengkap);
+        $sheet->setCellValue('A5', 'Jabatan');
+        $sheet->setCellValue('B5', ': ' . $karyawan->jabatan);
+        $sheet->setCellValue('A6', 'Departemen');
+        $sheet->setCellValue('B6', ': ' . $karyawan->nama_dept);
+        $sheet->setCellValue('A7', 'Periode');
+        $sheet->setCellValue('B7', ': ' . $namabulan[$bulan] . ' ' . $tahun);
+
+        // Table Header
+        $row = 9;
+        $sheet->setCellValue('A' . $row, 'No');
+        $sheet->setCellValue('B' . $row, 'Tanggal');
+        $sheet->setCellValue('C' . $row, 'Jam Masuk');
+        $sheet->setCellValue('D' . $row, 'Jam Pulang');
+        $sheet->setCellValue('E' . $row, 'Foto Masuk');
+        $sheet->setCellValue('F' . $row, 'Foto Pulang');
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'CCCCCC']]
+        ];
+        $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray($headerStyle);
+
+        // Data
+        $row++;
+        $no = 1;
+        foreach ($presensi as $d) {
+            $startRow = $row;
+            
+            // Set row height for images
+            $sheet->getRowDimension($row)->setRowHeight(80);
+
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, date('d-m-Y', strtotime($d->tgl_presensi)));
+            $sheet->setCellValue('C' . $row, $d->jam_in ?? '-');
+            $sheet->setCellValue('D' . $row, $d->jam_out ?? '-');
+
+            // Center align
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+
+            // Add Foto Masuk
+            if (!empty($d->foto_in)) {
+                $fotoInPath = storage_path('app/public/uploads/absensi/' . $d->foto_in);
+                if (file_exists($fotoInPath)) {
+                    $drawing = new Drawing();
+                    $drawing->setName('Foto Masuk');
+                    $drawing->setDescription('Foto Masuk');
+                    $drawing->setPath($fotoInPath);
+                    $drawing->setHeight(70);
+                    $drawing->setCoordinates('E' . $row);
+                    $drawing->setOffsetX(10);
+                    $drawing->setOffsetY(5);
+                    $drawing->setWorksheet($sheet);
+                } else {
+                    $sheet->setCellValue('E' . $row, 'Tidak Ada Foto');
+                }
+            } else {
+                $sheet->setCellValue('E' . $row, '-');
+            }
+
+            // Add Foto Pulang
+            if (!empty($d->foto_out)) {
+                $fotoOutPath = storage_path('app/public/uploads/absensi/' . $d->foto_out);
+                if (file_exists($fotoOutPath)) {
+                    $drawing = new Drawing();
+                    $drawing->setName('Foto Pulang');
+                    $drawing->setDescription('Foto Pulang');
+                    $drawing->setPath($fotoOutPath);
+                    $drawing->setHeight(70);
+                    $drawing->setCoordinates('F' . $row);
+                    $drawing->setOffsetX(10);
+                    $drawing->setOffsetY(5);
+                    $drawing->setWorksheet($sheet);
+                } else {
+                    $sheet->setCellValue('F' . $row, 'Tidak Ada Foto');
+                }
+            } else {
+                $sheet->setCellValue('F' . $row, '-');
+            }
+
+            // Borders
+            $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+
+            $row++;
+        }
+
+        // Download
+        $filename = 'Laporan_Presensi_' . $karyawan->nama_lengkap . '_' . $namabulan[$bulan] . '_' . $tahun . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
     public function Rekap()
     {
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        $karyawan = DB::table('karyawan')->orderBy('nama_lengkap')->get();
         return view('presensi.rekaplaporan', compact('namabulan'));
     }
 
@@ -369,23 +495,110 @@ class PresensiController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        // Build dynamic columns for all days in month
+        $jumlahHari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+        $selectRaw = 'presensi.nik, nama_lengkap';
+        
+        for ($i = 1; $i <= $jumlahHari; $i++) {
+            $selectRaw .= ', MAX(IF(DAY(tgl_presensi) = ' . $i . ', CONCAT(jam_in, "-", IFNULL(jam_out, "00:00:00")), "")) AS tgl_' . $i;
+        }
+        
         $rekap = DB::table('presensi')
-            ->selectRaw(' presensi.nik,nama_lengkap,
-            MAX(IF(DAY(tgl_presensi) = 1, CONCAT(jam_in, "-", IFNULL(jam_out, "00:00:00")), "")) AS tgl_1,
-            MAX(IF(DAY(tgl_presensi) = 2, CONCAT(jam_in, "-", IFNULL(jam_out, "00:00:00")), "")) AS tgl_2')
+            ->selectRaw($selectRaw)
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
             ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
-            ->groupByRaw('presensi.nik,nama_lengkap')
+            ->groupByRaw('presensi.nik, nama_lengkap')
             ->get();
 
-        if (isset($_POST['exportexel'])) {
-            $time = date("d-M-Y H:i:S");
-            header("Content-type: application/vnd-ms-excel");
-            header("Content-Disposition: attachment; filename=Rekap Presensi Karyawan $time.xls");
+        if (isset($_POST['exportexcel'])) {
+            return $this->exportRekapToExcel($rekap, $bulan, $tahun, $namabulan, $jumlahHari);
         }
 
-        return view('presensi.cetakrekap', compact('bulan', 'tahun', 'namabulan', 'rekap'));
+        return view('presensi.cetakrekap', compact('bulan', 'tahun', 'namabulan', 'rekap', 'jumlahHari'));
+    }
+
+    private function exportRekapToExcel($rekap, $bulan, $tahun, $namabulan, $jumlahHari)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(12);
+        $sheet->getColumnDimension('C')->setWidth(25);
+        
+        for ($i = 1; $i <= $jumlahHari; $i++) {
+            $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $i);
+            $sheet->getColumnDimension($col)->setWidth(15);
+        }
+
+        // Header
+        $sheet->setCellValue('A1', 'REKAP PRESENSI KARYAWAN');
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $jumlahHari);
+        $sheet->mergeCells('A1:' . $lastCol . '1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('A2', 'Periode: ' . $namabulan[$bulan] . ' ' . $tahun);
+        $sheet->mergeCells('A2:' . $lastCol . '2');
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Table Header
+        $row = 4;
+        $sheet->setCellValue('A' . $row, 'No');
+        $sheet->setCellValue('B' . $row, 'NIK');
+        $sheet->setCellValue('C' . $row, 'Nama Karyawan');
+        
+        for ($i = 1; $i <= $jumlahHari; $i++) {
+            $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $i);
+            $sheet->setCellValue($col . $row, $i);
+        }
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'CCCCCC']]
+        ];
+        $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray($headerStyle);
+
+        // Data
+        $row++;
+        $no = 1;
+        foreach ($rekap as $d) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $d->nik);
+            $sheet->setCellValue('C' . $row, $d->nama_lengkap);
+            
+            for ($i = 1; $i <= $jumlahHari; $i++) {
+                $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(3 + $i);
+                $tgl = 'tgl_' . $i;
+                $value = $d->$tgl ?? '';
+                $sheet->setCellValue($col . $row, $value);
+                $sheet->getStyle($col . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            }
+
+            // Borders
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+
+            $row++;
+        }
+
+        // Download
+        $filename = 'Rekap_Presensi_' . $namabulan[$bulan] . '_' . $tahun . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 
     public function izinsakit()
