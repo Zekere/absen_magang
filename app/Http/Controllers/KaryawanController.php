@@ -14,25 +14,39 @@ class KaryawanController extends Controller
 {
     public function index(Request $request)
     {
-
-        $query = Karyawan :: query();
-        $query->select('karyawan.*','nama_dept');
+        $query = Karyawan::query();
+        $query->select('karyawan.*', 'nama_dept');
         $query->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
         $query->orderBy('nama_lengkap');
-        if(!empty($request->nama_karyawan)){
-            $query->where('nama_lengkap','like','%'.$request->nama_karyawan.'%');
+        
+        // Filter by nama karyawan
+        if (!empty($request->nama_karyawan)) {
+            $query->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
         }
-          if(!empty($request->kode_dept)){
-            $query->where('karyawan.kode_dept',$request->kode_dept);
+        
+        // Filter by departemen
+        if (!empty($request->kode_dept)) {
+            $query->where('karyawan.kode_dept', $request->kode_dept);
         }
-        $karyawan = $query->paginate(5);
-
-
-        $departemen = DB::table('departemen') ->get();
-        return view('karyawan.index', compact('karyawan','departemen'));
+        
+        // Handle pagination with per_page parameter
+        $perPage = $request->get('per_page', 10);
+        
+        if ($perPage === 'all') {
+            // Get total count and paginate with that number
+            $totalCount = $query->count();
+            $karyawan = $query->paginate($totalCount > 0 ? $totalCount : 1);
+        } else {
+            // Normal pagination
+            $karyawan = $query->paginate((int)$perPage);
+        }
+        
+        $departemen = DB::table('departemen')->get();
+        
+        return view('karyawan.index', compact('karyawan', 'departemen'));
     }
 
-   public function store(Request $request)
+    public function store(Request $request)
     {
         // ✅ Validasi input
         $request->validate([
@@ -82,105 +96,130 @@ class KaryawanController extends Controller
 
             return Redirect::back()->with(['success' => 'Data karyawan berhasil disimpan!']);
         } catch (\Exception $e) {
-
-
             return Redirect::back()->with(['warning' => 'Gagal menyimpan data: ' . $e->getMessage()]);
         }
     }
 
-    
-
-      public function edit(Request $request)
+    public function edit(Request $request)
     {
         $nik = $request->nik;
-        $departemen = DB::table('departemen') ->get();
+        $departemen = DB::table('departemen')->get();
         $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
         return view('karyawan.edit', compact('departemen', 'karyawan'));
     }
 
+    public function update(Request $request, $nik)
+    {
+        $nikLama = $nik;
 
-  public function update(Request $request, $nik)
-{
-    $nikLama = $nik;
+        // Validasi input
+        $request->validate([
+            'nik' => 'required|unique:karyawan,nik,' . $nikLama . ',nik',
+            'nama_lengkap' => 'required',
+            'jabatan' => 'required',
+            'no_hp' => 'required',
+            'kode_dept' => 'required',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password' => 'nullable|min:6',
+        ]);
 
-    // Validasi input
-    $request->validate([
-        'nik' => 'required|unique:karyawan,nik,' . $nikLama . ',nik',
-        'nama_lengkap' => 'required',
-        'jabatan' => 'required',
-        'no_hp' => 'required',
-        'kode_dept' => 'required',
-        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'password' => 'nullable|min:6',
-    ]);
-
-    try {
-        // Ambil data lama
-        $karyawan = DB::table('karyawan')->where('nik', $nikLama)->first();
-        if (!$karyawan) {
-            return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan.']);
-        }
-
-        $newNik = $request->nik;
-        $fotoName = $karyawan->foto; // default foto lama
-
-        // === Upload / Rename Foto ===
-        if ($request->hasFile('foto')) {
-            // Jika upload foto baru
-            $extension = $request->file('foto')->getClientOriginalExtension();
-            $fotoName = $newNik . '.' . $extension;
-            $request->file('foto')->storeAs('public/uploads/karyawan', $fotoName);
-        } elseif (!empty($karyawan->foto) && $newNik != $karyawan->nik) {
-            // Rename foto lama jika NIK berubah
-            $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
-            if (Storage::exists($oldPath)) {
-                $oldExt = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
-                $newFotoName = $newNik . '.' . $oldExt;
-                $newPath = 'public/uploads/karyawan/' . $newFotoName;
-                Storage::move($oldPath, $newPath);
-                $fotoName = $newFotoName;
+        try {
+            // Ambil data lama
+            $karyawan = DB::table('karyawan')->where('nik', $nikLama)->first();
+            if (!$karyawan) {
+                return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan.']);
             }
+
+            $newNik = $request->nik;
+            $fotoName = $karyawan->foto; // default foto lama
+
+            // === Upload / Rename Foto ===
+            if ($request->hasFile('foto')) {
+                // Hapus foto lama jika ada
+                if (!empty($karyawan->foto)) {
+                    $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
+                    if (Storage::exists($oldPath)) {
+                        Storage::delete($oldPath);
+                    }
+                }
+                
+                // Upload foto baru
+                $extension = $request->file('foto')->getClientOriginalExtension();
+                $fotoName = $newNik . '.' . $extension;
+                $request->file('foto')->storeAs('public/uploads/karyawan', $fotoName);
+            } elseif (!empty($karyawan->foto) && $newNik != $karyawan->nik) {
+                // Rename foto lama jika NIK berubah
+                $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
+                if (Storage::exists($oldPath)) {
+                    $oldExt = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
+                    $newFotoName = $newNik . '.' . $oldExt;
+                    $newPath = 'public/uploads/karyawan/' . $newFotoName;
+                    Storage::move($oldPath, $newPath);
+                    $fotoName = $newFotoName;
+                }
+            }
+
+            // === Data baru ===
+            $updateData = [
+                'nik' => $newNik,
+                'nama_lengkap' => $request->nama_lengkap,
+                'jabatan' => $request->jabatan,
+                'no_hp' => $request->no_hp,
+                'kode_dept' => $request->kode_dept,
+                'foto' => $fotoName,
+            ];
+
+            // Kalau password diisi
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            // === Jalankan update ===
+            $updated = DB::table('karyawan')
+                ->where('nik', $nikLama)
+                ->update($updateData);
+
+            // === Jika NIK berubah, update relasi lain (opsional)
+            if ($updated && $newNik != $nikLama) {
+                // Update di tabel terkait jika diperlukan
+                // DB::table('presensi')->where('nik', $nikLama)->update(['nik' => $newNik]);
+                // DB::table('pengajuan_izin')->where('nik', $nikLama)->update(['nik' => $newNik]);
+            }
+
+            return Redirect::to('/karyawan')->with(['success' => 'Data karyawan berhasil diperbarui!']);
+        } catch (\Exception $e) {
+            return Redirect::back()->with(['warning' => 'Gagal memperbarui data: ' . $e->getMessage()]);
         }
-
-        // === Data baru ===
-        $updateData = [
-            'nik' => $newNik,
-            'nama_lengkap' => $request->nama_lengkap,
-            'jabatan' => $request->jabatan,
-            'no_hp' => $request->no_hp,
-            'kode_dept' => $request->kode_dept,
-            'foto' => $fotoName,
-        ];
-
-        // Kalau password diisi
-        if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-
-        // === Jalankan update ===
-        $updated = DB::table('karyawan')
-            ->where('nik', $nikLama)
-            ->update($updateData);
-
-        // === Jika NIK berubah, update relasi lain (opsional)
-        if ($updated && $newNik != $nikLama) {
-            // Misal update di tabel presensi, user_login, dll.
-            // DB::table('presensi')->where('nik', $nikLama)->update(['nik' => $newNik]);
-        }
-
-        return Redirect::to('/karyawan')->with(['success' => 'Data karyawan berhasil diperbarui!']);
-    } catch (\Exception $e) {
-        return Redirect::back()->with(['warning' => 'Gagal memperbarui data: ' . $e->getMessage()]);
     }
-}
 
-public function delete($nik){
-    $delete = DB::table('karyawan')->where('nik',$nik)->delete();
-    if ($delete){
-        return Redirect::back()->with(['success' => 'Data Berhasil Dihapus']);
-    } else {
-        return Redirect::back()->with(['warning' => 'Data Gagal Dihapus']);
+    public function delete($nik)
+    {
+        try {
+            // Ambil data karyawan untuk hapus foto
+            $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+            
+            if ($karyawan) {
+                // Hapus foto jika ada
+                if (!empty($karyawan->foto)) {
+                    $fotoPath = 'public/uploads/karyawan/' . $karyawan->foto;
+                    if (Storage::exists($fotoPath)) {
+                        Storage::delete($fotoPath);
+                    }
+                }
+                
+                // Hapus data karyawan
+                $delete = DB::table('karyawan')->where('nik', $nik)->delete();
+                
+                if ($delete) {
+                    return Redirect::back()->with(['success' => 'Data karyawan berhasil dihapus!']);
+                } else {
+                    return Redirect::back()->with(['warning' => 'Data gagal dihapus!']);
+                }
+            } else {
+                return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan!']);
+            }
+        } catch (\Exception $e) {
+            return Redirect::back()->with(['warning' => 'Gagal menghapus data: ' . $e->getMessage()]);
+        }
     }
-}
-
 }
