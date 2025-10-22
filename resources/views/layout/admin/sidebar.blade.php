@@ -77,9 +77,9 @@
                   ->where('status_approved', '0')
                   ->count();
             @endphp
-            @if($pendingCount > 0)
-              <span class="notification-badge pulse">{{ $pendingCount }}</span>
-            @endif
+            <span class="notification-badge pulse" id="mainNotificationBadge" style="display: {{ $pendingCount > 0 ? 'flex' : 'none' }};">
+              {{ $pendingCount }}
+            </span>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="konfigurasiMenu" data-bs-parent=".sidebar-content">
@@ -88,10 +88,10 @@
               <li>
                 <a href="/presensi/izinsakit">
                   <span class="sub-item">Data Izin & Sakit</span>
-                  @if($pendingCount > 0)
-                    <span class="sub-notification-badge">{{ $pendingCount }}</span>
-                    <span class="notification-dot"></span>
-                  @endif
+                  <span class="sub-notification-badge" id="subNotificationBadge" style="display: {{ $pendingCount > 0 ? 'inline-flex' : 'none' }};">
+                    {{ $pendingCount }}
+                  </span>
+                  <span class="notification-dot" id="notificationDot" style="display: {{ $pendingCount > 0 ? 'block' : 'none' }};"></span>
                 </a>
               </li>
             </ul>
@@ -140,6 +140,7 @@
   padding: 0 6px;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
   z-index: 10;
+  transition: all 0.3s ease;
 }
 
 /* Pulse animation untuk badge */
@@ -172,6 +173,7 @@
   margin-left: 8px;
   box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
   animation: subBadgePulse 2s ease-in-out infinite;
+  transition: all 0.3s ease;
 }
 
 @keyframes subBadgePulse {
@@ -203,6 +205,39 @@
   50% {
     opacity: 0.3;
   }
+}
+
+/* Animation untuk update badge */
+@keyframes badgeUpdate {
+  0% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.3);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+@keyframes subBadgeUpdate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badge-updating {
+  animation: badgeUpdate 0.5s ease;
+}
+
+.sub-badge-updating {
+  animation: subBadgeUpdate 0.5s ease;
 }
 
 /* Submenu styling */
@@ -276,13 +311,72 @@
 </style>
 
 <script>
-// Auto refresh notification count setiap 30 detik (opsional)
-setInterval(function() {
-  // Anda bisa menambahkan AJAX call untuk update badge count tanpa reload
-  // fetch('/api/pending-izin-count')
-  //   .then(response => response.json())
-  //   .then(data => {
-  //     document.querySelector('.notification-badge').textContent = data.count;
-  //   });
-}, 30000);
+// Auto update notification count
+(function() {
+  let lastCount = {{ $pendingCount }};
+  
+  function updateNotificationBadge() {
+    fetch('/api/pending-izin-count', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const count = data.count;
+        const mainBadge = document.getElementById('mainNotificationBadge');
+        const subBadge = document.getElementById('subNotificationBadge');
+        const notifDot = document.getElementById('notificationDot');
+        
+        // Update badge values dan visibility
+        if (count > 0) {
+          // Tambahkan animasi jika ada perubahan
+          if (count !== lastCount) {
+            mainBadge.classList.add('badge-updating');
+            subBadge.classList.add('sub-badge-updating');
+            
+            setTimeout(() => {
+              mainBadge.classList.remove('badge-updating');
+              subBadge.classList.remove('sub-badge-updating');
+            }, 500);
+          }
+          
+          mainBadge.textContent = count;
+          subBadge.textContent = count;
+          mainBadge.style.display = 'flex';
+          subBadge.style.display = 'inline-flex';
+          notifDot.style.display = 'block';
+        } else {
+          mainBadge.style.display = 'none';
+          subBadge.style.display = 'none';
+          notifDot.style.display = 'none';
+        }
+        
+        lastCount = count;
+      }
+    })
+    .catch(error => {
+      console.error('Error updating notification:', error);
+    });
+  }
+  
+  // Update setiap 30 detik
+  setInterval(updateNotificationBadge, 30000);
+  
+  // Update saat tab menjadi aktif kembali
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      updateNotificationBadge();
+    }
+  });
+  
+  // Update saat halaman di-load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Delay sedikit untuk memastikan DOM sudah siap
+    setTimeout(updateNotificationBadge, 1000);
+  });
+})();
 </script>

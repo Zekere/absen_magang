@@ -28,8 +28,11 @@
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <div class="input-icon mb-3">
-                                            <span class="input-icon-addon">
+                                        <div class="input-group mb-3">
+                                            <button class="btn btn-outline-primary" type="button" id="btn-prev">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </button>
+                                            <span class="input-icon-addon input-group-text">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                     <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
@@ -44,7 +47,10 @@
                                                     <path d="M7.01 17h.005" />
                                                     <path d="M10.01 17h.005" /></svg>
                                             </span>
-                                            <input type="text" id="tanggal" value="{{  date("Y-m-d")}}"nama="tanggal" value="" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
+                                            <input type="text" id="tanggal" value="{{  date("Y-m-d")}}" name="tanggal" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
+                                            <button class="btn btn-outline-primary" type="button" id="btn-next">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -67,13 +73,16 @@
                                                     <th style="width: 8%;">Jam Pulang</th>
                                                     <th style="width: 10%;">Foto Pulang</th>
                                                     <th style="width: 10%;">Keterangan</th>
-                                                  <th style="width: 10%;">Maps</th>
-
+                                                    <th style="width: 10%;">Maps</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="loadpresensi">
                                                 <tr>
-                                                    <td colspan="9" class="text-center">Pilih tanggal untuk memuat data presensi.</td>
+                                                    <td colspan="10" class="text-center">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -111,7 +120,6 @@ $(function () {
         autoclose: true, 
         todayHighlight: true,
         format:'yyyy-mm-dd'
-
   });
 
   function loadpresensi(){
@@ -129,10 +137,31 @@ $(function () {
         }
     });
   }
+
+  // Event handler untuk perubahan tanggal manual
   $("#tanggal").change(function(e){
    loadpresensi();
-
   });
+
+  // Event handler untuk tombol Previous
+  $("#btn-prev").click(function(e){
+    e.preventDefault();
+    var currentDate = $("#tanggal").datepicker('getDate');
+    currentDate.setDate(currentDate.getDate() - 1);
+    $("#tanggal").datepicker('setDate', currentDate);
+    loadpresensi();
+  });
+
+  // Event handler untuk tombol Next
+  $("#btn-next").click(function(e){
+    e.preventDefault();
+    var currentDate = $("#tanggal").datepicker('getDate');
+    currentDate.setDate(currentDate.getDate() + 1);
+    $("#tanggal").datepicker('setDate', currentDate);
+    loadpresensi();
+  });
+
+  // Load data presensi saat halaman pertama kali dibuka
   loadpresensi();
 });
 </script>
