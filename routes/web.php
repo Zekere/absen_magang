@@ -123,3 +123,12 @@ Route::middleware(['auth:karyawan'])->group(function() {
 
 Route::get('/presensi/{id}/lihatbukti', [PresensiController::class, 'lihatbukti']);
 Route::get('/presensi/{id}/downloadbukti', [PresensiController::class, 'downloadbukti']);
+
+// Route untuk monitoring presensi
+Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
+
+// Route untuk menghapus presensi
+Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
+
+// Route untuk menampilkan map (jika belum ada)
+Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);

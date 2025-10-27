@@ -326,18 +326,18 @@ class PresensiController extends Controller
         return view('presensi.monitoring');
     }
 
-    public function getpresensi(Request $request)
-    {
-        $tanggal = $request->tanggal;
-        $presensi = DB::table('presensi')
-            ->select('presensi.*', 'nama_lengkap', 'nama_dept')
-            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->where('tgl_presensi', $tanggal)
-            ->get();
+    // public function getpresensi(Request $request)
+    // {
+    //     $tanggal = $request->tanggal;
+    //     $presensi = DB::table('presensi')
+    //         ->select('presensi.*', 'nama_lengkap', 'nama_dept')
+    //         ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+    //         ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+    //         ->where('tgl_presensi', $tanggal)
+    //         ->get();
 
-        return view('presensi.getpresensi', compact('presensi'));
-    }
+    //     return view('presensi.getpresensi', compact('presensi'));
+    // }
 
     public function map(Request $request)
     {
@@ -660,4 +660,168 @@ class PresensiController extends Controller
             return Redirect::back()->with(['warning' => 'Data gagal di update']);
         }
     }
+
+    public function getpresensi(Request $request)
+{
+    $tanggal = $request->tanggal;
+    
+    $presensi = DB::table('presensi')
+        ->select('presensi.*', 'nama_lengkap', 'nama_dept')
+        ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
+        ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+        ->where('tgl_presensi', $tanggal)
+        ->get();
+
+    // Ambil lokasi kantor untuk perhitungan radius
+    $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+    $lokasi_kantor = explode(',', $lok_kantor->lokasi_kantor);
+    $lat_kantor = $lokasi_kantor[0];
+    $long_kantor = $lokasi_kantor[1];
+    $radius_kantor = $lok_kantor->radius;
+
+    $no = 0;
+    $html = '';
+
+    if ($presensi->isEmpty()) {
+        $html .= '<tr>';
+        $html .= '<td colspan="13" class="text-center">Tidak ada data presensi pada tanggal ini</td>';
+        $html .= '</tr>';
+    } else {
+        foreach ($presensi as $d) {
+            $no++;
+            
+            // Hitung jarak lokasi masuk
+            $lokasi_masuk_status = '';
+            if (!empty($d->lokasi_in)) {
+                $lok_masuk = explode(',', $d->lokasi_in);
+                $jarak_masuk = $this->hitungJarak($lat_kantor, $long_kantor, $lok_masuk[0], $lok_masuk[1]);
+                
+                if ($jarak_masuk <= $radius_kantor) {
+                    $lokasi_masuk_status = '<span class="badge-dalam-kantor"><i class="bi bi-check-circle-fill"></i> Dalam Kantor</span>';
+                } else {
+                    $lokasi_masuk_status = '<span class="badge-luar-kantor"><i class="bi bi-exclamation-triangle-fill"></i> Luar Kantor (' . round($jarak_masuk) . 'm)</span>';
+                }
+            } else {
+                $lokasi_masuk_status = '<span class="text-muted">-</span>';
+            }
+
+            // Hitung jarak lokasi pulang
+            $lokasi_pulang_status = '';
+            if (!empty($d->lokasi_out)) {
+                $lok_pulang = explode(',', $d->lokasi_out);
+                $jarak_pulang = $this->hitungJarak($lat_kantor, $long_kantor, $lok_pulang[0], $lok_pulang[1]);
+                
+                if ($jarak_pulang <= $radius_kantor) {
+                    $lokasi_pulang_status = '<span class="badge-dalam-kantor"><i class="bi bi-check-circle-fill"></i> Dalam Kantor</span>';
+                } else {
+                    $lokasi_pulang_status = '<span class="badge-luar-kantor"><i class="bi bi-exclamation-triangle-fill"></i> Luar Kantor (' . round($jarak_pulang) . 'm)</span>';
+                }
+            } else {
+                $lokasi_pulang_status = '<span class="text-muted">-</span>';
+            }
+
+            // Foto masuk
+            $foto_in = !empty($d->foto_in) 
+                ? '<img src="' . Storage::url('uploads/absensi/' . $d->foto_in) . '" class="img-thumbnail" style="max-width: 60px; cursor: pointer;" onclick="showImage(this.src)">' 
+                : '<span class="text-muted">-</span>';
+
+            // Foto pulang
+            $foto_out = !empty($d->foto_out) 
+                ? '<img src="' . Storage::url('uploads/absensi/' . $d->foto_out) . '" class="img-thumbnail" style="max-width: 60px; cursor: pointer;" onclick="showImage(this.src)">' 
+                : '<span class="text-muted">-</span>';
+
+            $html .= '<tr>';
+            $html .= '<td>' . $no . '</td>';
+            $html .= '<td>' . $d->nik . '</td>';
+            $html .= '<td>' . $d->nama_lengkap . '</td>';
+            $html .= '<td>' . $d->nama_dept . '</td>';
+            $html .= '<td>' . ($d->jam_in ?? '-') . '</td>';
+            $html .= '<td>' . $foto_in . '</td>';
+            $html .= '<td>' . $lokasi_masuk_status . '</td>';
+            $html .= '<td>' . ($d->jam_out ?? '-') . '</td>';
+            $html .= '<td>' . $foto_out . '</td>';
+            $html .= '<td>' . $lokasi_pulang_status . '</td>';
+            $html .= '<td>' . ($d->keterangan ?? '-') . '</td>';
+            $html .= '<td>';
+            
+            // Tombol Map
+            if (!empty($d->lokasi_in)) {
+                $html .= '<button class="btn btn-sm btn-primary btn-action" onclick="tampilkanMap(\'' . $d->id . '\')">
+                    <i class="bi bi-geo-alt-fill"></i> Map
+                </button>';
+            } else {
+                $html .= '<span class="text-muted">-</span>';
+            }
+            
+            $html .= '</td>';
+            
+            // Tombol Aksi Hapus
+            $html .= '<td>';
+            $html .= '<button class="btn btn-sm btn-delete btn-action" onclick="deletePresensi(\'' . $d->id . '\')">
+                <i class="bi bi-trash-fill"></i> Hapus
+            </button>';
+            $html .= '</td>';
+            $html .= '</tr>';
+        }
+    }
+
+    echo $html;
 }
+
+// Fungsi untuk menghitung jarak menggunakan Haversine formula
+private function hitungJarak($lat1, $lon1, $lat2, $lon2)
+{
+    $R = 6371000; // Radius bumi dalam meter
+    $φ1 = deg2rad($lat1);
+    $φ2 = deg2rad($lat2);
+    $Δφ = deg2rad($lat2 - $lat1);
+    $Δλ = deg2rad($lon2 - $lon1);
+
+    $a = sin($Δφ / 2) * sin($Δφ / 2) +
+         cos($φ1) * cos($φ2) *
+         sin($Δλ / 2) * sin($Δλ / 2);
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+    $jarak = $R * $c; // Jarak dalam meter
+    return $jarak;
+}
+
+// Method untuk menghapus presensi
+public function deletePresensi($id)
+{
+    try {
+        $presensi = DB::table('presensi')->where('id', $id)->first();
+        
+        if ($presensi) {
+            // Hapus foto jika ada
+            if (!empty($presensi->foto_in)) {
+                Storage::delete('public/uploads/absensi/' . $presensi->foto_in);
+            }
+            if (!empty($presensi->foto_out)) {
+                Storage::delete('public/uploads/absensi/' . $presensi->foto_out);
+            }
+            
+            // Hapus data presensi
+            DB::table('presensi')->where('id', $id)->delete();
+            
+            return response()->json(['status' => 'success', 'message' => 'Data presensi berhasil dihapus']);
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan'], 404);
+        }
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+    }
+}
+
+// Fungsi untuk menampilkan map (opsional, jika belum ada)
+public function showmap(Request $request)
+{
+    $id = $request->id;
+    $presensi = DB::table('presensi')->where('id', $id)->first();
+    $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+    
+    return view('presensi.showmap', compact('presensi', 'lok_kantor'));
+}
+
+}
+

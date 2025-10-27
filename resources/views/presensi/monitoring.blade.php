@@ -1,12 +1,10 @@
 @extends('layout.admin.template')
 @section('content')
 
-
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
 
 <style>
   /* Custom styles untuk halaman konfigurasi */
@@ -123,6 +121,51 @@
     font-size: 0.9rem;
   }
 
+  /* Badge untuk status lokasi */
+  .badge-dalam-kantor {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .badge-luar-kantor {
+    background-color: #ffc107;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Tombol aksi */
+  .btn-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    margin: 2px;
+  }
+
+  .btn-delete {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+  }
+
+  .btn-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+  }
+
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .config-header {
@@ -160,6 +203,17 @@
       padding: 10px;
       font-size: 0.95rem;
     }
+
+    .badge-dalam-kantor,
+    .badge-luar-kantor {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+    }
+
+    .btn-action {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
   }
 
   @media (max-width: 576px) {
@@ -170,6 +224,13 @@
     .config-header h5 {
       font-size: 0.85rem;
     }
+
+    /* Untuk mobile, stack tombol aksi */
+    .btn-action {
+      display: block;
+      width: 100%;
+      margin-bottom: 5px;
+    }
   }
 </style>
 
@@ -179,101 +240,101 @@
     <h3 class="mb-1">
       <i class="bi bi-eye-fill"></i> Monitoring
     </h3>
-        <h5 class="mb-0">Monitoring Presensi Karyawan</h5>
-
-  
+    <h5 class="mb-0">Monitoring Presensi Karyawan</h5>
   </div>
 
-<div class="page-body">
+  <div class="page-body">
     <div class="container-xl">
-        <div class="row">
-            <div class="col-12">
-                <div class="form-group">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <div class="input-group mb-3">
-                                            <button class="btn btn-outline-primary" type="button" id="btn-prev">
-                                                <i class="bi bi-chevron-left"></i> Previous
-                                            </button>
-                                            <span class="input-icon-addon input-group-text">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                                                    <path d="M16 3v4" />
-                                                    <path d="M8 3v4" />
-                                                    <path d="M4 11h16" />
-                                                    <path d="M7 14h.013" />
-                                                    <path d="M10.01 14h.005" />
-                                                    <path d="M13.01 14h.005" />
-                                                    <path d="M16.015 14h.005" />
-                                                    <path d="M13.015 17h.005" />
-                                                    <path d="M7.01 17h.005" />
-                                                    <path d="M10.01 17h.005" /></svg>
-                                            </span>
-                                            <input type="text" id="tanggal" value="{{  date("Y-m-d")}}" name="tanggal" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
-                                            <button class="btn btn-outline-primary" type="button" id="btn-next">
-                                                Next <i class="bi bi-chevron-right"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    {{-- Menggunakan class 'table-responsive' untuk tampilan mobile yang lebih baik --}}
-                                    <div class="table-responsive">
-                                        {{-- Menambahkan class 'table-bordered' untuk garis tepi yang lebih jelas --}}
-                                        <table class="table table-striped table-hover table-bordered text-center">
-                                            <thead>
-                                                <tr>
-                                                    {{-- Menyesuaikan lebar kolom untuk kerapihan --}}
-                                                    <th style="width: 5%;">No</th>
-                                                    <th style="width: 10%;">NIK</th>
-                                                    <th style="width: 15%;">Nama Karyawan</th>
-                                                    <th style="width: 15%;">Departemen</th>
-                                                    <th style="width: 8%;">Jam Masuk</th>
-                                                    <th style="width: 10%;">Foto Masuk</th>
-                                                    <th style="width: 8%;">Jam Pulang</th>
-                                                    <th style="width: 10%;">Foto Pulang</th>
-                                                    <th style="width: 10%;">Keterangan</th>
-                                                    <th style="width: 10%;">Maps</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="loadpresensi">
-                                                <tr>
-                                                    <td colspan="10" class="text-center">
-                                                        <div class="spinner-border text-primary" role="status">
-                                                            <span class="visually-hidden">Loading...</span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="form-group">
+                      <div class="input-group mb-3">
+                        <button class="btn btn-outline-primary" type="button" id="btn-prev">
+                          <i class="bi bi-chevron-left"></i> Previous
+                        </button>
+                        <span class="input-icon-addon input-group-text">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
+                            <path d="M16 3v4" />
+                            <path d="M8 3v4" />
+                            <path d="M4 11h16" />
+                            <path d="M7 14h.013" />
+                            <path d="M10.01 14h.005" />
+                            <path d="M13.01 14h.005" />
+                            <path d="M16.015 14h.005" />
+                            <path d="M13.015 17h.005" />
+                            <path d="M7.01 17h.005" />
+                            <path d="M10.01 17h.005" />
+                          </svg>
+                        </span>
+                        <input type="text" id="tanggal" value="{{ date("Y-m-d") }}" name="tanggal" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
+                        <button class="btn btn-outline-primary" type="button" id="btn-next">
+                          Next <i class="bi bi-chevron-right"></i>
+                        </button>
+                      </div>
                     </div>
+                  </div>
                 </div>
+                <div class="row">
+                  <div class="col-12">
+                    <div class="table-responsive">
+                      <table class="table table-striped table-hover table-bordered text-center">
+                        <thead>
+                          <tr>
+                            <th style="width: 3%;">No</th>
+                            <th style="width: 8%;">NIK</th>
+                            <th style="width: 12%;">Nama Karyawan</th>
+                            <th style="width: 10%;">Departemen</th>
+                            <th style="width: 7%;">Jam Masuk</th>
+                            <th style="width: 8%;">Foto Masuk</th>
+                            <th style="width: 9%;">Lokasi Masuk</th>
+                            <th style="width: 7%;">Jam Pulang</th>
+                            <th style="width: 8%;">Foto Pulang</th>
+                            <th style="width: 9%;">Lokasi Pulang</th>
+                            <th style="width: 8%;">Keterangan</th>
+                            <th style="width: 6%;">Maps</th>
+                            <th style="width: 5%;">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody id="loadpresensi">
+                          <tr>
+                            <td colspan="13" class="text-center">
+                              <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
+<!-- Modal Map -->
 <div class="modal fade" id="modal-map" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content border-0 shadow-lg rounded-3">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Lokasi Presensi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="loadmap">
-
+        <!-- Map akan di-load di sini -->
       </div>
-
     </div>
   </div>
 </div>
@@ -283,30 +344,30 @@
 <script>
 $(function () {
   $("#tanggal").datepicker({ 
-        autoclose: true, 
-        todayHighlight: true,
-        format:'yyyy-mm-dd'
+    autoclose: true, 
+    todayHighlight: true,
+    format:'yyyy-mm-dd'
   });
 
   function loadpresensi(){
-     var tanggal = $("#tanggal").val();
+    var tanggal = $("#tanggal").val();
     $.ajax({
-        type:'POST',
-        url:'/getpresensi',
-        data:{
-            _token:"{{ csrf_token() }}",
-            tanggal: tanggal
-        },
-        cache:false,
-        success:function(respond){
-            $("#loadpresensi").html(respond);
-        }
+      type:'POST',
+      url:'/getpresensi',
+      data:{
+        _token:"{{ csrf_token() }}",
+        tanggal: tanggal
+      },
+      cache:false,
+      success:function(respond){
+        $("#loadpresensi").html(respond);
+      }
     });
   }
 
   // Event handler untuk perubahan tanggal manual
   $("#tanggal").change(function(e){
-   loadpresensi();
+    loadpresensi();
   });
 
   // Event handler untuk tombol Previous
@@ -330,5 +391,111 @@ $(function () {
   // Load data presensi saat halaman pertama kali dibuka
   loadpresensi();
 });
+
+// Fungsi untuk menghapus presensi dengan konfirmasi SweetAlert
+function deletePresensi(id) {
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: "Data presensi ini akan dihapus secara permanen!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Tampilkan loading
+      Swal.fire({
+        title: 'Menghapus...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Kirim request hapus ke server
+      $.ajax({
+        type: 'POST',
+        url: '/presensi/delete/' + id,
+        data: {
+          _token: "{{ csrf_token() }}",
+          _method: 'DELETE'
+        },
+        cache: false,
+        success: function(respond) {
+          Swal.fire({
+            title: 'Berhasil!',
+            text: 'Data presensi berhasil dihapus',
+            icon: 'success',
+            confirmButtonColor: '#28a745'
+          }).then(() => {
+            // Reload data presensi
+            loadpresensi();
+          });
+        },
+        error: function(xhr) {
+          Swal.fire({
+            title: 'Gagal!',
+            text: 'Terjadi kesalahan saat menghapus data',
+            icon: 'error',
+            confirmButtonColor: '#dc3545'
+          });
+          console.error("Error:", xhr);
+        }
+      });
+    }
+  });
+}
+
+// Fungsi untuk reload presensi (bisa dipanggil dari luar)
+function loadpresensi() {
+  var tanggal = $("#tanggal").val();
+  $.ajax({
+    type:'POST',
+    url:'/getpresensi',
+    data:{
+      _token:"{{ csrf_token() }}",
+      tanggal: tanggal
+    },
+    cache:false,
+    success:function(respond){
+      $("#loadpresensi").html(respond);
+    }
+  });
+}
+
+// Fungsi untuk menampilkan gambar full screen
+function showImage(src) {
+  Swal.fire({
+    imageUrl: src,
+    imageAlt: 'Foto Presensi',
+    showConfirmButton: false,
+    showCloseButton: true,
+    background: '#000',
+    width: 'auto',
+    padding: '20px'
+  });
+}
+
+// Fungsi untuk menampilkan map
+function tampilkanMap(id) {
+  $.ajax({
+    type: 'POST',
+    url: '/presensi/showmap',
+    data: {
+      _token: "{{ csrf_token() }}",
+      id: id
+    },
+    cache: false,
+    success: function(respond) {
+      $("#loadmap").html(respond);
+      $("#modal-map").modal('show');
+    }
+  });
+}
 </script>
 @endpush

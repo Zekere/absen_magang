@@ -33,3 +33,4 @@ class KonfigurasiController extends Controller
         }
     }
 }
+
