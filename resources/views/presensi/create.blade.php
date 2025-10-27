@@ -73,7 +73,12 @@
 
     <div class="row mt-4 justify-content-center">
         <div class="col-12 col-md-6 text-center">
-            @if($cek > 0)
+            @if($cek >= 2)
+                <button class="btn btn-secondary btn-lg shadow rounded-pill" disabled>
+                    <ion-icon name="checkmark-done-outline"></ion-icon> Absen Hari Ini Sudah Selesai
+                </button>
+                <p class="mt-2 text-muted">Anda sudah melakukan absen masuk dan pulang hari ini</p>
+            @elseif($cek == 1)
                 <button id="takeabsen" class="btn btn-danger btn-lg shadow rounded-pill">
                     <ion-icon name="camera-outline"></ion-icon> Absen Pulang
                 </button>
@@ -196,7 +201,7 @@
                 error: function(xhr) {
                     Swal.fire({
                         title:"Error!",
-                        text:"status[1]",
+                        text:"Terjadi kesalahan saat mengirim data presensi",
                         icon: "error",
                     });
                     console.error("Error AJAX:", xhr); 

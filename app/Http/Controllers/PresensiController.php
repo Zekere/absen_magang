@@ -21,10 +21,12 @@ class PresensiController extends Controller
         $hariini = date('Y-m-d');
         $nik = Auth::guard('karyawan')->user()->nik;
 
+        // Hitung jumlah presensi hari ini (bukan cek apakah ada, tapi hitung total)
         $cek = DB::table('presensi')
             ->where('tgl_presensi', $hariini)
             ->where('nik', $nik)
             ->count();
+        
         $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
 
         return view('presensi.create', compact('cek', 'lok_kantor'));
@@ -42,6 +44,18 @@ class PresensiController extends Controller
             $nik = $user->nik;
             $tgl_presensi = date('Y-m-d');
             $jam = date('H:i:s');
+
+            // Cek jumlah presensi hari ini
+            $cek_count = DB::table('presensi')
+                ->where('tgl_presensi', $tgl_presensi)
+                ->where('nik', $nik)
+                ->count();
+
+            // Jika sudah absen 2 kali (masuk dan pulang), tolak
+            if ($cek_count >= 2) {
+                echo "error|Anda sudah melakukan absen masuk dan pulang hari ini|x";
+                return;
+            }
 
             $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
             $lok = explode(",", $lok_kantor->lokasi_kantor);
@@ -65,6 +79,7 @@ class PresensiController extends Controller
             $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
             $radius = round($jarak['meters']);
 
+            // Cek apakah sudah ada record presensi hari ini
             $cek = DB::table('presensi')
                 ->where('tgl_presensi', $tgl_presensi)
                 ->where('nik', $nik)
@@ -94,6 +109,7 @@ class PresensiController extends Controller
             $file = $folderPath . $fileName;
 
             if (!$cek) {
+                // Absen Masuk
                 if ($radius > $lok_kantor->radius) {
                     echo "error|Maaf Anda Berada Diluar Jangkauan|x";
                     return;
@@ -115,6 +131,13 @@ class PresensiController extends Controller
                     return;
                 }
             } else {
+                // Absen Pulang
+                // Cek apakah sudah absen pulang
+                if (!empty($cek->jam_out)) {
+                    echo "error|Anda sudah melakukan absen pulang hari ini|x";
+                    return;
+                }
+
                 $data_pulang = [
                     'jam_out' => $jam,
                     'foto_out' => $fileName,
