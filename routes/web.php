@@ -6,7 +6,7 @@ use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\KonfigurasiController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KaryawanController; // ⬅ penting
+use App\Http\Controllers\KaryawanController; 
 use App\Http\Controllers\AdminController;
 
 /*
@@ -87,7 +87,7 @@ Route::post('/map', [PresensiController::class,'map']);
 //laporan
 Route::get('/presensi/laporan',[PresensiController::class,'laporan']);
 Route::post('/presensi/cetaklaporan',[PresensiController::class,'cetaklaporan']);
-
+// Route untuk generate PDF. Sesuaikan method dan Controller.
 //rekap
 Route::get('/presensi/rekap',[PresensiController::class,'rekap']);
 Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
