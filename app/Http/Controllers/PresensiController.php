@@ -339,7 +339,7 @@ class PresensiController extends Controller
         $radius_kantor = $lok_kantor->radius;
 
         // JAM KERJA DEFAULT (Sesuaikan dengan jam kerja kantor Anda)
-        $jam_masuk_default = '08:00:00';
+        $jam_masuk_default = '07:30:00';
 
         $no = 0;
         $html = '';
@@ -519,31 +519,31 @@ class PresensiController extends Controller
         return view('presensi.laporan', compact('namabulan', 'karyawan'));
     }
 
-    public function cetaklaporan(Request $request)
-    {
-        $nik = $request->nik;
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
-        $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        
-        $karyawan = DB::table('karyawan')->where('nik', $nik)
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->first();
+public function cetaklaporan(Request $request)
+{
+    $nik = $request->nik;
+    $bulan = $request->bulan;
+    $tahun = $request->tahun;
+    $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    $karyawan = DB::table('karyawan')->where('nik', $nik)
+        ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+        ->first();
 
-        $presensi = DB::table('presensi')
-            ->where('nik', $nik)
-            ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
-            ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
-            ->orderBy('tgl_presensi')
-            ->get();
+    $presensi = DB::table('presensi')
+        ->where('nik', $nik)
+        ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
+        ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
+        ->orderBy('tgl_presensi')
+        ->get();
 
-        if (isset($_POST['exportexcel'])) {
-            return $this->exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan);
-        }
-
-        return view('presensi.cetaklaporan', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'presensi'));
+    // Export to Excel with Images
+    if (isset($_POST['exportexcel'])) {
+        return $this->exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan);
     }
 
+    return view('presensi.cetaklaporan', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'presensi'));
+}
     private function exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan)
     {
         $spreadsheet = new Spreadsheet();
