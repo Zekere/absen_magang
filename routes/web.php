@@ -123,3 +123,34 @@ Route::middleware(['auth:karyawan'])->group(function() {
 
 Route::get('/presensi/{id}/lihatbukti', [PresensiController::class, 'lihatbukti']);
 Route::get('/presensi/{id}/downloadbukti', [PresensiController::class, 'downloadbukti']);
+
+// Route untuk monitoring presensi
+Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
+
+// Route untuk menghapus presensi
+Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
+
+// Route untuk menampilkan map (jika belum ada)
+Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
+
+Route::post('/map', [PresensiController::class, 'showMap'])->name('map.show');
+
+
+//NEW
+
+// Route untuk monitoring presensi
+Route::post('/getpresensi', [PresensiController::class, 'getpresensi'])->middleware('auth:user');
+
+// Route untuk show map
+Route::post('/presensi/showmap', [PresensiController::class, 'showmap'])->middleware('auth:user');
+
+// Route untuk delete presensi
+Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi'])->middleware('auth:user');
+
+// Routes untuk Monitoring Presensi (untuk Admin)
+Route::middleware(['auth:user'])->group(function () {
+    Route::get('/presensi/monitoring', [PresensiController::class, 'monitoring']);
+    Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
+    Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
+    Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
+});
