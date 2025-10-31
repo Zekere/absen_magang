@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <title>Laporan Presensi Karyawan</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
-
   <style>
     @page {
-      size: A4;
-      margin: 0;
+      size: A4 portrait;
+      margin: 15mm;
     }
 
     body {
@@ -20,68 +16,60 @@
       color: #000;
     }
 
-    body.A4 {
-      background: #f5f5f5;
-    }
-
-    /* ✅ Sheet = 1 halaman A4 */
-    .sheet {
-      margin: 0;
-      overflow: hidden;
-      position: relative;
-      box-sizing: border-box;
-      page-break-after: always;
-    }
-
-    /* ✅ Padding dalam sheet */
-    .sheet.padding-10mm {
-      padding: 10mm;
-    }
-
     #title {
       font-size: 18px;
       font-weight: bold;
       line-height: 1.4;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .wrapper {
+      width: 95%;
+      margin: 0 auto;
+    }
+
+    hr {
+      border: 1px solid #333;
+      margin: 10px 0;
     }
 
     .tabeldatakaryawan {
-      margin-top: 15px;
-      margin-bottom: 15px;
+      margin-top: 10px;
+      margin-bottom: 10px;
       width: 100%;
+      border-collapse: collapse;
     }
 
-    .tabeldatakaryawan tr td {
+    .tabeldatakaryawan td {
       padding: 4px;
       font-size: 11px;
       vertical-align: top;
     }
 
-    .tabeldatakaryawan tr td:nth-child(2) {
-      width: 130px;
-    }
-
-    .tabeldatakaryawan tr td:nth-child(3) {
-      width: 10px;
-    }
-
-    /* ✅ Tabel presensi dengan page break */
+    /* ✅ Tabel presensi auto-break */
     .tabelpresensi {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 10px;
       page-break-inside: auto;
+      table-layout: fixed;
+      word-wrap: break-word;
     }
 
     .tabelpresensi thead {
-      display: table-header-group; /* ✅ Header muncul di setiap halaman */
+      display: table-header-group;
+    }
+
+    .tabelpresensi tbody {
+      display: table-row-group;
     }
 
     .tabelpresensi tr {
       page-break-inside: avoid;
-      page-break-after: auto;
     }
 
-    .tabelpresensi th,
-    .tabelpresensi td {
+    .tabelpresensi th, .tabelpresensi td {
       border: 1px solid #000;
       padding: 6px 4px;
       text-align: center;
@@ -98,37 +86,31 @@
       background-color: #f9f9f9;
     }
 
-    /* ✅ Foto proporsional */
-    img.foto,
-    img.foto-karyawan {
+    img.foto {
+      width: 45px;
+      height: 45px;
       object-fit: cover;
       border-radius: 4px;
-    }
-
-    img.foto {
-      width: 50px;
-      height: 50px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
     }
 
     img.foto-karyawan {
-      width: 110px;
-      height: 140px;
+      width: 100px;
+      height: 130px;
       border: 2px solid #ccc;
+      object-fit: cover;
     }
 
-    /* ✅ Badge untuk status */
     .badge {
-      padding: 3px 8px;
+      padding: 3px 6px;
       border-radius: 4px;
       font-size: 9px;
       font-weight: bold;
-      display: inline-block;
     }
 
     .badge-success {
       background-color: #28a745;
-      color: white;
+      color: #fff;
     }
 
     .badge-warning {
@@ -138,57 +120,32 @@
 
     .badge-danger {
       background-color: #dc3545;
-      color: white;
+      color: #fff;
     }
 
-    /* ✅ Footer tanda tangan */
     .footer {
       width: 100%;
       text-align: right;
-      margin-top: 30px;
+      margin-top: 20px;
       page-break-inside: avoid;
     }
 
-    .footer td {
-      vertical-align: bottom;
-      font-size: 11px;
-    }
-
-    /* ✅ Untuk print */
     @media print {
-      body {
-        background: white;
-        margin: 0;
-        padding: 0;
-      }
-
-      .sheet {
-        margin: 0;
-        box-shadow: none;
-        page-break-after: always;
-      }
-
-      .no-print {
-        display: none !important;
-      }
-
-      /* ✅ Pastikan warna print keluar */
       body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
 
-      .tabelpresensi thead {
-        display: table-header-group;
+      .no-print {
+        display: none;
       }
 
-      /* ✅ Footer hanya muncul di halaman terakhir */
       .footer {
+        position: relative;
         page-break-inside: avoid;
       }
     }
 
-    /* ✅ Tombol print (hilang saat di-print) */
     .print-button {
       position: fixed;
       top: 20px;
@@ -200,25 +157,14 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       z-index: 9999;
-      font-size: 14px;
-    }
-
-    .print-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .print-button i {
-      margin-right: 5px;
     }
   </style>
 </head>
 
-<body class="A4">
-
-  @php
+<body>
+  <button class="print-button no-print" onclick="window.print()">🖨 Cetak PDF</button>
+@php
   function selisih($jam_masuk, $jam_keluar) {
       list($h, $m, $s) = explode(":", $jam_masuk);
       $dtAwal = mktime($h, $m, $s, "1", "1", "1");
@@ -233,83 +179,53 @@
       return $jml_jam . ":" . round($sisamenit2);
   }
   @endphp
-
-  <!-- ✅ Tombol Print (Hidden saat print) -->
-  <button class="print-button no-print" onclick="window.print()">
-    🖨️ Cetak PDF
-  </button>
-
-  <!-- ✅ Section = 1 Halaman A4 -->
-  <section class="sheet padding-10mm">
-
-    <!-- Header dengan Logo -->
+  <div class="wrapper">
+    <!-- Header -->
     <table style="width:100%; margin-bottom: 10px;">
       <tr>
         <td style="width: 80px; vertical-align: top;">
           <img src="{{ asset('assets/img/icon/puprlogo.png') }}" alt="logo" style="height:70px">
         </td>
-        <td style="vertical-align: top;">
-          <span id="title">
-            LAPORAN PRESENSI KARYAWAN <br>
-            PERIODE {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }} <br>
-          </span>
+        <td style="text-align:center;">
+          <div id="title">
+            LAPORAN PRESENSI KARYAWAN<br>
+            PERIODE {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }}<br>
+          </div>
           <span style="font-size: 14px; font-weight: bold;">PUPR Cipta Karya</span><br>
-          <small style="font-size: 9px;"><i>Jl. Gajah Mungkur Selatan No.14 - 16, Gajahmungkur, Kota Semarang, Jawa Tengah 50232</i></small>
+          <small><i>Jl. Gajah Mungkur Selatan No.14 - 16, Kota Semarang, Jawa Tengah 50232</i></small>
         </td>
       </tr>
     </table>
 
-    <hr style="border: 1px solid #333; margin: 10px 0;">
+    <hr>
 
     <!-- Data Karyawan -->
     <table class="tabeldatakaryawan">
       <tr>
         <td rowspan="6" width="130" style="vertical-align: top;">
-          @php 
-            $path = Storage::url('uploads/karyawan/'.$karyawan->foto); 
-          @endphp
+          @php $path = Storage::url('uploads/karyawan/'.$karyawan->foto); @endphp
           <img src="{{ url($path) }}" alt="foto karyawan" class="foto-karyawan">
         </td>
       </tr>
-      <tr>
-        <td><strong>NIK</strong></td>
-        <td>:</td>
-        <td>{{ $karyawan->nik }}</td>
-      </tr>
-      <tr>
-        <td><strong>Nama Karyawan</strong></td>
-        <td>:</td>
-        <td>{{ $karyawan->nama_lengkap }}</td>
-      </tr>
-      <tr>
-        <td><strong>Jabatan</strong></td>
-        <td>:</td>
-        <td>{{ $karyawan->jabatan }}</td>
-      </tr>
-      <tr>
-        <td><strong>Departemen</strong></td>
-        <td>:</td>
-        <td>{{ $karyawan->nama_dept }}</td>
-      </tr>
-      <tr>
-        <td><strong>No HP</strong></td>
-        <td>:</td>
-        <td>{{ $karyawan->no_hp }}</td>
-      </tr>
+      <tr><td><strong>NIK</strong></td><td>:</td><td>{{ $karyawan->nik }}</td></tr>
+      <tr><td><strong>Nama Karyawan</strong></td><td>:</td><td>{{ $karyawan->nama_lengkap }}</td></tr>
+      <tr><td><strong>Jabatan</strong></td><td>:</td><td>{{ $karyawan->jabatan }}</td></tr>
+      <tr><td><strong>Departemen</strong></td><td>:</td><td>{{ $karyawan->nama_dept }}</td></tr>
+      <tr><td><strong>No HP</strong></td><td>:</td><td>{{ $karyawan->no_hp }}</td></tr>
     </table>
 
     <!-- Tabel Presensi -->
     <table class="tabelpresensi">
       <thead>
         <tr>
-          <th style="width: 4%;">No.</th>
-          <th style="width: 10%;">Tanggal</th>
-          <th style="width: 8%;">Jam Masuk</th>
-          <th style="width: 12%;">Foto Masuk</th>
-          <th style="width: 8%;">Jam Pulang</th>
-          <th style="width: 12%;">Foto Pulang</th>
-          <th style="width: 15%;">Keterangan</th>
-          <th style="width: 10%;">Jam Kerja</th>
+          <th>No.</th>
+          <th>Tanggal</th>
+          <th>Jam Masuk</th>
+          <th>Foto Masuk</th>
+          <th>Jam Pulang</th>
+          <th>Foto Pulang</th>
+          <th>Keterangan</th>
+          <th>Jam Kerja</th>
         </tr>
       </thead>
       <tbody>
@@ -323,9 +239,7 @@
             <td>{{ $loop->iteration }}</td>
             <td>{{ date("d-m-Y", strtotime($d->tgl_presensi)) }}</td>
             <td>{{ $d->jam_in }}</td>
-            <td>
-              <img src="{{ url($path_in) }}" alt="foto masuk" class="foto">
-            </td>
+            <td><img src="{{ url($path_in) }}" class="foto"></td>
             <td>
               @if($d->jam_out)
                 {{ $d->jam_out }}
@@ -335,7 +249,7 @@
             </td>
             <td>
               @if ($d->jam_out)
-                <img src="{{ url($path_out) }}" alt="foto pulang" class="foto">
+                <img src="{{ url($path_out) }}" class="foto">
               @else
                 <span style="font-size: 9px; color: #999;">-</span>
               @endif
@@ -360,27 +274,13 @@
       </tbody>
     </table>
 
-    <!-- Footer Tanda Tangan -->
-    <table class="footer">
-      <tr>
-        <td style="padding-right: 50px;">
-          <p>Semarang, {{ date('d F Y') }}</p>
-          <p><strong>Mengetahui,</strong></p>
-          <br><br><br>
-          <p style="margin-top: 60px;">
-            <u><strong>Deka Abdullah</strong></u><br>
-            <i>Kepala Keuangan</i>
-          </p>
-        </td>
-      </tr>
-    </table>
-
-  </section>
-
-  <script>
-    // Optional: Auto print saat halaman dimuat
-    // window.onload = function() { window.print(); }
-  </script>
-
+    <!-- Footer -->
+    <div class="footer">
+      <p>Semarang, {{ date('d F Y') }}</p>
+      <p><strong>Mengetahui,</strong></p>
+      <br><br><br>
+      <p><u><strong>Deka Abdullah</strong></u><br><i>Kepala Keuangan</i></p>
+    </div>
+  </div>
 </body>
 </html>
