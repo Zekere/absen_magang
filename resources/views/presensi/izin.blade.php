@@ -31,6 +31,47 @@
     </div>
     @endif
 
+    {{-- 📅 Filter Bulan & Tahun --}}
+    <div class="month-filter-container mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <div class="month-label">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>Periode:</span>
+            </div>
+            
+            {{-- Filter Bulan --}}
+            <select id="monthFilter" class="form-select month-select flex-grow-1">
+                <option value="">Semua Bulan</option>
+                <option value="01">Januari</option>
+                <option value="02">Februari</option>
+                <option value="03">Maret</option>
+                <option value="04">April</option>
+                <option value="05">Mei</option>
+                <option value="06">Juni</option>
+                <option value="07">Juli</option>
+                <option value="08">Agustus</option>
+                <option value="09">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+            </select>
+            
+            {{-- Filter Tahun --}}
+            <select id="yearFilter" class="form-select year-select">
+                @php
+                    $currentYear = date('Y');
+                    $startYear = $currentYear - 3; // 3 tahun ke belakang
+                @endphp
+                <option value="">Semua</option>
+                @for($year = $currentYear; $year >= $startYear; $year--)
+                    <option value="{{ $year }}" {{ $year == $currentYear ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endfor
+            </select>
+        </div>
+    </div>
+
     {{-- 🔍 Filter Tabs --}}
     <div class="filter-tabs mb-3 text-center">
         <div class="d-flex justify-content-between gap-2 overflow-auto pb-2">
@@ -53,19 +94,33 @@
         </div>
     </div>
 
+    {{-- 📊 Info Counter --}}
+    <div class="info-counter mb-3">
+        <div class="counter-item">
+            <span class="counter-label">Total Data:</span>
+            <span class="counter-value" id="totalCounter">0</span>
+        </div>
+        <div class="counter-item">
+            <span class="counter-label">Ditampilkan:</span>
+            <span class="counter-value" id="visibleCounter">0</span>
+        </div>
+    </div>
+
     {{-- 📄 List Data --}}
     <div class="row g-3" id="dataList">
         @php
             // Sorting: Pending (0) dulu, baru Approved (1) & Declined (2)
             $sortedData = $dataizin->sortBy(function($item) {
-                // Pending = 0, akan muncul paling atas
-                // Approved & Declined akan di bawah
                 return $item->status_approved == 0 ? 0 : 1;
             });
         @endphp
 
         @forelse ($sortedData as $d)
-        <div class="col-12 izin-card" data-status="{{ $d->status }}" data-approved="{{ $d->status_approved }}">
+        <div class="col-12 izin-card" 
+             data-status="{{ $d->status }}" 
+             data-approved="{{ $d->status_approved }}"
+             data-month="{{ date('m', strtotime($d->tgl_izin)) }}"
+             data-year="{{ date('Y', strtotime($d->tgl_izin)) }}">
             <div class="card border-0 shadow-sm hover-card rounded-4 {{ $d->status_approved == 0 ? 'pending-highlight' : '' }}">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-start gap-3">
@@ -139,7 +194,7 @@
         </div>
         @empty
         {{-- 🚫 Empty State --}}
-        <div class="col-12">
+        <div class="col-12" id="emptyState">
             <div class="empty-state">
                 <div class="empty-state-icon">
                     <ion-icon name="document-text-outline"></ion-icon>
@@ -153,6 +208,19 @@
             </div>
         </div>
         @endforelse
+    </div>
+
+    {{-- Empty State untuk Filter --}}
+    <div class="row g-3" id="emptyFilterState" style="display: none;">
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <ion-icon name="search-outline"></ion-icon>
+                </div>
+                <h5 class="fw-bold mb-2">Tidak Ada Data</h5>
+                <p class="text-muted">Tidak ada data untuk periode yang dipilih.</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -189,12 +257,36 @@
     </div>
 </div>
 
-{{-- 💫 Script Filter Dinamis dengan Sorting --}}
+{{-- 💫 Script Filter Dinamis dengan Sorting dan Filter Bulan/Tahun --}}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const buttons = document.querySelectorAll(".filter-btn");
     const dataList = document.getElementById("dataList");
     const cards = Array.from(document.querySelectorAll(".izin-card"));
+    const monthFilter = document.getElementById("monthFilter");
+    const yearFilter = document.getElementById("yearFilter");
+    const emptyState = document.getElementById("emptyState");
+    const emptyFilterState = document.getElementById("emptyFilterState");
+    const totalCounter = document.getElementById("totalCounter");
+    const visibleCounter = document.getElementById("visibleCounter");
+
+    let currentStatusFilter = "all";
+    let currentMonthFilter = "";
+    let currentYearFilter = yearFilter ? yearFilter.value : "";
+
+    // Set bulan saat ini sebagai default
+    if (monthFilter) {
+        const currentMonth = new Date().getMonth() + 1;
+        monthFilter.value = currentMonth.toString().padStart(2, '0');
+        currentMonthFilter = monthFilter.value;
+    }
+
+    // Update counter
+    function updateCounter() {
+        const visibleCards = cards.filter(card => card.style.display !== "none").length;
+        if (totalCounter) totalCounter.textContent = cards.length;
+        if (visibleCounter) visibleCounter.textContent = visibleCards;
+    }
 
     // Fungsi untuk sorting cards: pending dulu
     function sortCards(cardsToSort) {
@@ -202,50 +294,80 @@ document.addEventListener("DOMContentLoaded", function() {
             const statusA = parseInt(a.dataset.approved);
             const statusB = parseInt(b.dataset.approved);
             
-            // Pending (0) akan di atas, sisanya di bawah
             if (statusA === 0 && statusB !== 0) return -1;
             if (statusA !== 0 && statusB === 0) return 1;
             return 0;
         });
     }
 
+    // Fungsi filter gabungan (status + bulan + tahun)
+    function applyFilters() {
+        let visibleCards = cards.filter(card => {
+            // Filter berdasarkan status
+            const statusMatch = currentStatusFilter === "all" || card.dataset.status === currentStatusFilter;
+            
+            // Filter berdasarkan bulan (jika dipilih)
+            const monthMatch = !currentMonthFilter || card.dataset.month === currentMonthFilter;
+            
+            // Filter berdasarkan tahun (jika dipilih)
+            const yearMatch = !currentYearFilter || card.dataset.year === currentYearFilter;
+            
+            return statusMatch && monthMatch && yearMatch;
+        });
+
+        // Sort cards yang visible
+        visibleCards = sortCards(visibleCards);
+
+        // Hide semua cards dulu
+        cards.forEach(card => {
+            card.style.display = "none";
+            card.classList.remove("fadeIn");
+        });
+
+        // Show/hide empty state
+        if (emptyState) emptyState.style.display = "none";
+        if (emptyFilterState) {
+            emptyFilterState.style.display = visibleCards.length === 0 ? "block" : "none";
+        }
+
+        // Append cards yang sudah disort ke container
+        visibleCards.forEach(card => {
+            card.style.display = "block";
+            card.classList.add("fadeIn");
+            dataList.appendChild(card);
+        });
+
+        updateCounter();
+    }
+
+    // Event listener untuk filter status
     buttons.forEach(btn => {
         btn.addEventListener("click", function() {
             buttons.forEach(b => b.classList.remove("active"));
             this.classList.add("active");
-            const filter = this.getAttribute("data-filter");
-
-            // Filter cards berdasarkan status
-            let visibleCards = cards.filter(card => {
-                if (filter === "all" || card.dataset.status === filter) {
-                    return true;
-                }
-                return false;
-            });
-
-            // Sort cards yang visible (pending dulu)
-            visibleCards = sortCards(visibleCards);
-
-            // Hide semua cards dulu
-            cards.forEach(card => {
-                card.style.display = "none";
-                card.classList.remove("fadeIn");
-            });
-
-            // Append cards yang sudah disort ke container
-            visibleCards.forEach(card => {
-                card.style.display = "block";
-                card.classList.add("fadeIn");
-                dataList.appendChild(card);
-            });
+            currentStatusFilter = this.getAttribute("data-filter");
+            applyFilters();
         });
     });
 
-    // Initial sort saat page load
-    const sortedCards = sortCards(cards);
-    sortedCards.forEach(card => {
-        dataList.appendChild(card);
-    });
+    // Event listener untuk filter bulan
+    if (monthFilter) {
+        monthFilter.addEventListener("change", function() {
+            currentMonthFilter = this.value;
+            applyFilters();
+        });
+    }
+
+    // Event listener untuk filter tahun
+    if (yearFilter) {
+        yearFilter.addEventListener("change", function() {
+            currentYearFilter = this.value;
+            applyFilters();
+        });
+    }
+
+    // Initial load
+    applyFilters();
 });
 
 // Fungsi untuk melihat attachment
@@ -257,51 +379,41 @@ function viewAttachment(filePath, fileName) {
     const downloadLink = document.getElementById('downloadLink');
     const title = document.getElementById('attachmentTitle');
     
-    // Hide all viewers
     imageViewer.style.display = 'none';
     pdfViewer.style.display = 'none';
     docViewer.style.display = 'none';
     
-    // Set title
     title.textContent = fileName;
     
-    // Detect file type
     const extension = fileName.split('.').pop().toLowerCase();
     
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
-        // Image
         imageViewer.src = filePath;
         imageViewer.style.display = 'block';
     } else if (extension === 'pdf') {
-        // PDF
         pdfViewer.src = filePath;
         pdfViewer.style.display = 'block';
     } else {
-        // Doc/Docx or other
         downloadLink.href = filePath;
         downloadLink.download = fileName;
         docViewer.style.display = 'flex';
     }
     
-    // Show modal
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
-// Fungsi untuk menutup modal
 function closeAttachment(event) {
     if (event.target.id === 'attachmentModal' || event.target.closest('.attachment-close')) {
         const modal = document.getElementById('attachmentModal');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         
-        // Reset viewers
         document.getElementById('attachmentImage').src = '';
         document.getElementById('attachmentPDF').src = '';
     }
 }
 
-// Close with ESC key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         const modal = document.getElementById('attachmentModal');
@@ -317,6 +429,87 @@ document.addEventListener('keydown', function(event) {
 
 {{-- 🎨 CSS Modern --}}
 <style>
+/* ===== Month Filter ===== */
+.month-filter-container {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.month-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.month-label ion-icon {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+.month-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+    background: white;
+    max-width: 180px;
+}
+
+.year-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+    background: white;
+    width: 100px;
+}
+
+.month-select:focus,
+.year-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== Info Counter ===== */
+.info-counter {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.counter-item {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    padding: 8px 16px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.counter-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.counter-value {
+    color: #1f2937;
+    font-weight: 700;
+    font-size: 15px;
+}
+
 /* ===== Filter Buttons ===== */
 .filter-btn {
     border: none;
@@ -357,18 +550,13 @@ document.addEventListener('keydown', function(event) {
     transition: 0.3s;
 }
 
-/* Pulse animation untuk pending */
 .icon-pulse {
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
 .icon-izin { color: #3b82f6; background: #dbeafe; }
@@ -403,12 +591,8 @@ document.addEventListener('keydown', function(event) {
 }
 
 @keyframes badgePulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0);
-    }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
 }
 
 .badge-approved { background: #d1fae5; color: #065f46; }
@@ -655,6 +839,45 @@ document.addEventListener('keydown', function(event) {
 
 /* ===== Responsive ===== */
 @media (max-width: 576px) {
+    .month-filter-container {
+        padding: 10px 12px;
+    }
+    
+    .month-filter-container .d-flex {
+        flex-wrap: wrap;
+    }
+    
+    .month-label {
+        font-size: 13px;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .month-select {
+        font-size: 13px;
+        padding: 6px 10px;
+        max-width: none;
+    }
+    
+    .year-select {
+        font-size: 13px;
+        padding: 6px 10px;
+        width: 90px;
+    }
+    
+    .info-counter {
+        gap: 8px;
+    }
+    
+    .counter-item {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .counter-value {
+        font-size: 14px;
+    }
+    
     .attachment-modal-content {
         width: 95%;
         max-height: 95vh;
