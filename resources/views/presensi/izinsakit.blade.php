@@ -177,9 +177,7 @@
     <h3 class="mb-1">
       <i class="bi bi-clipboard2-data"></i> Izin Sakit Cuti
     </h3>
-        <h5 class="mb-0">Pencatatan data izin sakit cuti</h5>
-
-  
+    <h5 class="mb-0">Pencatatan data izin sakit cuti</h5>
   </div>
 
 <div class="page-body">
@@ -244,7 +242,7 @@
             </thead>
             <tbody id="tableBody">
               @foreach ($izinsakit as $d)
-                <tr data-status="{{ $d->status }}" data-approved="{{ $d->status_approved }}">
+                <tr data-status="{{ $d->status }}" data-approved="{{ $d->status_approved }}" data-nik="{{ $d->nik }}">
                   <td class="text-center">{{ $loop->iteration }}</td>
                   <td>{{ date('d-m-Y', strtotime($d->tgl_izin)) }}</td>
                   <td>{{ $d->nik }}</td>
@@ -285,7 +283,7 @@
                   </td>
                   <td class="text-center">
                     @if($d->status_approved==0)
-                      <a href="#" class="btn btn-sm btn-primary approved" id_izinsakit="{{ $d->id }}" title="Proses Persetujuan">
+                      <a href="#" class="btn btn-sm btn-primary approved" id_izinsakit="{{ $d->id }}" data-nik="{{ $d->nik }}" data-nama="{{ $d->nama_lengkap }}" data-tanggal="{{ date('d-m-Y', strtotime($d->tgl_izin)) }}" title="Proses Persetujuan">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-external-link">
                           <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                           <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"></path>
@@ -324,34 +322,62 @@
   </div>
 </div>
 
-<div class="modal fade" id="modal-izinsakit" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
-  <div class="modal-dialog">
+{{-- MODAL PERSETUJUAN - DENGAN INPUT ALASAN TOLAK --}}
+<div class="modal fade" id="modal-izinsakit" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-3">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold"><i class="bi bi-check-circle-fill me-2"></i> Persetujuan </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-check-circle-fill me-2"></i> 
+          Persetujuan Izin
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form action="/presensi/approved" method="POST">
+        <form action="/presensi/approved" method="POST" id="formApproval">
             @csrf 
             <input type="hidden" id="id_izinsakit_form" name="id_izinsakit_form">
+            <input type="hidden" id="nik_karyawan" name="nik_karyawan">
+            
+            {{-- Info Karyawan --}}
+            <div class="alert alert-info mb-3">
+              <strong>Karyawan:</strong> <span id="info_nama">-</span><br>
+              <strong>Tanggal:</strong> <span id="info_tanggal">-</span>
+            </div>
+            
             <div class="row">
                 <div class="col-12">
-                    <div class="form-group">
-                        <label class="form-label">Status Persetujuan:</label>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Status Persetujuan:</label>
                         <select name="status_approved" id="status_approved" class="form-select">
-                            <option value="1">Disetujui</option>
-                            <option value="2">Ditolak</option>
+                            <option value="1">✅ Disetujui</option>
+                            <option value="2">❌ Ditolak</option>
                         </select>
                     </div>
                 </div>
             </div>
+            
+            {{-- Alasan Tolak (hidden by default) --}}
+            <div class="row" id="alasan_container" style="display: none;">
+                <div class="col-12">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold text-danger">Alasan Penolakan:</label>
+                        <textarea name="alasan_tolak" id="alasan_tolak" class="form-control" rows="3" placeholder="Contoh: Kuota cuti sudah habis, Tidak sesuai jadwal, dll"></textarea>
+                        <small class="text-muted">Karyawan akan menerima notifikasi dengan alasan ini</small>
+                    </div>
+                </div>
+            </div>
+            
             <div class="row mt-3">
                 <div class="col-12">
-                    <div class="form-group">
-                        <button class="btn btn-primary w-100" type="submit">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-send"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 14l11 -11" /><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" /></svg>
-                          Submit
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg" type="submit">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-send">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M10 14l11 -11" />
+                            <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
+                          </svg>
+                          Kirim Persetujuan
                         </button>
                     </div>
                 </div>
@@ -403,7 +429,6 @@ $(function(){
 
     // Display current page
     function displayPage() {
-        // FIX: Handle 'all' case properly
         const isShowAll = entriesPerPage === 'all';
         const itemsPerPage = isShowAll ? filteredRows.length : parseInt(entriesPerPage);
         const start = isShowAll ? 0 : (currentPage - 1) * itemsPerPage;
@@ -415,7 +440,6 @@ $(function(){
         // Show filtered rows for current page
         filteredRows.slice(start, end).forEach((row, index) => {
             row.style.display = '';
-            // FIX: Properly calculate row number
             row.querySelector('td:first-child').textContent = start + index + 1;
         });
 
@@ -493,12 +517,42 @@ $(function(){
         }
     });
 
-    // Modal approved
+    // ============================================
+    // 🔔 MODAL APPROVAL HANDLER
+    // ============================================
     $(document).on('click', '.approved', function(e) {
         e.preventDefault();
         const id_izinsakit = $(this).attr("id_izinsakit");
+        const nik = $(this).attr("data-nik");
+        const nama = $(this).attr("data-nama");
+        const tanggal = $(this).attr("data-tanggal");
+        
+        // Set data ke form
         $("#id_izinsakit_form").val(id_izinsakit);
+        $("#nik_karyawan").val(nik);
+        $("#info_nama").text(nama);
+        $("#info_tanggal").text(tanggal);
+        
+        // Reset form
+        $("#status_approved").val("1");
+        $("#alasan_tolak").val("");
+        $("#alasan_container").hide();
+        
+        // Show modal
         $("#modal-izinsakit").modal("show");
+    });
+
+    // ============================================
+    // 🔔 TOGGLE ALASAN TOLAK
+    // ============================================
+    $('#status_approved').on('change', function() {
+        if ($(this).val() == '2') {
+            $('#alasan_container').slideDown();
+            $('#alasan_tolak').prop('required', true);
+        } else {
+            $('#alasan_container').slideUp();
+            $('#alasan_tolak').prop('required', false);
+        }
     });
 
     // Initialize on page load

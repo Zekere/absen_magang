@@ -8,6 +8,10 @@ use App\Http\Controllers\KonfigurasiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KaryawanController; 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\IzinController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -153,4 +157,55 @@ Route::middleware(['auth:user'])->group(function () {
     Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
     Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
     Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
+
+
+    // Route Notifikasi
+    
+Route::middleware('auth:sanctum')->get('/check-izin-updates', function () {
+    try {
+        $userId = Auth::user()->nik; // Menggunakan NIK bukan ID
+        
+        // Get last check time
+        $lastCheck = session('last_izin_check', now()->subMinutes(3));
+        
+        // Check for recent status updates
+        $recentUpdate = DB::table('pengajuan_izin')
+            ->where('nik', $userId)
+            ->where('updated_at', '>', $lastCheck)
+            ->whereIn('status_approved', [1, 2])
+            ->orderBy('updated_at', 'desc')
+            ->first();
+        
+        // Update last check time
+        session(['last_izin_check' => now()]);
+        
+        if ($recentUpdate) {
+            $status = $recentUpdate->status_approved == 1 ? 'approved' : 'rejected';
+            $message = $status == 'approved' 
+                ? 'Pengajuan izin Anda tanggal ' . date('d/m/Y', strtotime($recentUpdate->tgl_izin)) . ' disetujui!'
+                : 'Pengajuan izin ditolak. Alasan: ' . ($recentUpdate->alasan_tolak ?? 'Tidak memenuhi syarat');
+            
+            return response()->json([
+                'success' => true,
+                'has_update' => true,
+                'notification' => [
+                    'status' => $status,
+                    'message' => $message
+                ]
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'has_update' => false
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 });

@@ -896,4 +896,321 @@ document.addEventListener('keydown', function(event) {
     }
 }
 </style>
+
+{{-- 🔔 PUSH NOTIFICATION SYSTEM FOR IZIN --}}
+<script>
+// ============================================
+// 📌 KONFIGURASI
+// ============================================
+const NOTIF_CONFIG = {
+    icon: '/images/logo.png',  // Ganti dengan path logo Anda
+    badge: '/images/badge.png'
+};
+
+// ============================================
+// 📌 CEK DUKUNGAN BROWSER
+// ============================================
+function isNotificationSupported() {
+    return 'Notification' in window;
+}
+
+// ============================================
+// 📌 REQUEST PERMISSION (Auto on page load)
+// ============================================
+async function requestNotificationPermission() {
+    if (!isNotificationSupported()) {
+        console.log('Browser tidak support notifikasi');
+        return false;
+    }
+
+    if (Notification.permission === 'granted') {
+        return true;
+    }
+
+    if (Notification.permission === 'default') {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                console.log('✅ Notifikasi diaktifkan');
+                showWelcomeNotification();
+                return true;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    return false;
+}
+
+// ============================================
+// 📌 WELCOME NOTIFICATION (Test)
+// ============================================
+function showWelcomeNotification() {
+    new Notification('🔔 Notifikasi Aktif!', {
+        body: 'Anda akan mendapat notifikasi saat izin disetujui/ditolak',
+        icon: NOTIF_CONFIG.icon,
+        tag: 'welcome',
+        requireInteraction: false
+    });
+}
+
+// ============================================
+// 📌 SHOW APPROVAL/REJECTION NOTIFICATION
+// ============================================
+function showIzinNotification(status, message) {
+    if (Notification.permission !== 'granted') {
+        console.log('Notifikasi tidak diizinkan');
+        return;
+    }
+
+    let title, body, icon;
+
+    if (status === 'approved') {
+        title = '✅ Izin Disetujui!';
+        body = message || 'Pengajuan izin Anda telah disetujui oleh atasan';
+        icon = NOTIF_CONFIG.icon;
+    } else if (status === 'rejected') {
+        title = '❌ Izin Ditolak';
+        body = message || 'Pengajuan izin Anda ditolak. Hubungi atasan untuk info lebih lanjut';
+        icon = NOTIF_CONFIG.icon;
+    }
+
+    const notification = new Notification(title, {
+        body: body,
+        icon: icon,
+        badge: NOTIF_CONFIG.badge,
+        tag: 'izin-status',
+        requireInteraction: true,
+        vibrate: [200, 100, 200]
+    });
+
+    // Auto close after 10 seconds
+    setTimeout(() => notification.close(), 10000);
+
+    // Handle click - reload page
+    notification.onclick = function() {
+        window.focus();
+        location.reload();
+        notification.close();
+    };
+}
+
+// ============================================
+// 📌 IN-PAGE TOAST NOTIFICATION
+// ============================================
+function showToastNotification(status, message) {
+    // Remove existing toast
+    const existing = document.querySelector('.izin-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `izin-toast toast-${status}`;
+    
+    const icon = status === 'approved' ? 'checkmark-circle' : 'close-circle';
+    const title = status === 'approved' ? '✅ Disetujui!' : '❌ Ditolak';
+    const bgColor = status === 'approved' ? '#10b981' : '#ef4444';
+    
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 48px; height: 48px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: ${bgColor};">
+                <ion-icon name="${icon}"></ion-icon>
+            </div>
+            <div style="flex: 1;">
+                <strong style="display: block; font-size: 16px; margin-bottom: 4px;">${title}</strong>
+                <p style="margin: 0; font-size: 14px; opacity: 0.95;">${message}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <ion-icon name="close-outline" style="font-size: 20px;"></ion-icon>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Auto hide after 8 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 8000);
+}
+
+// ============================================
+// 📌 CHECK FOR NOTIFICATION FROM BACKEND
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Request permission on page load (once)
+    if (isNotificationSupported() && Notification.permission === 'default') {
+        // Show permission request after 2 seconds
+        setTimeout(() => {
+            if (confirm('Aktifkan notifikasi untuk mendapat update status izin Anda?')) {
+                requestNotificationPermission();
+            }
+        }, 2000);
+    }
+
+    // Check if there's notification trigger from backend
+    @if(Session::has('trigger_notification'))
+        const notifData = @json(Session::get('trigger_notification'));
+        const currentUserId = '{{ Auth::id() }}';
+        
+        // Only show if it's for current user
+        if (notifData.user_id == currentUserId) {
+            // Show push notification
+            showIzinNotification(notifData.status, notifData.message);
+            
+            // Also show toast
+            showToastNotification(notifData.status, notifData.message);
+        }
+    @endif
+
+    // Periodic check for updates (every 2 minutes)
+    setInterval(checkForUpdates, 120000);
+});
+
+// ============================================
+// 📌 PERIODIC CHECK FOR NEW STATUS
+// ============================================
+async function checkForUpdates() {
+    try {
+        const response = await fetch('/api/check-izin-updates', {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.has_update && data.notification) {
+            showIzinNotification(data.notification.status, data.notification.message);
+            showToastNotification(data.notification.status, data.notification.message);
+            
+            // Reload page to show updated status
+            setTimeout(() => location.reload(), 3000);
+        }
+    } catch (error) {
+        console.error('Error checking updates:', error);
+    }
+}
+
+// ============================================
+// 📌 MANUAL TEST FUNCTION (untuk testing)
+// ============================================
+window.testNotification = function() {
+    showIzinNotification('approved', 'Testing notifikasi izin disetujui!');
+    showToastNotification('approved', 'Testing notifikasi izin disetujui!');
+};
+</script>
+
+{{-- 🎨 TOAST NOTIFICATION STYLES --}}
+<style>
+/* ===== Toast Notification ===== */
+.izin-toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    min-width: 350px;
+    max-width: 450px;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    color: white;
+    z-index: 10000;
+    transform: translateX(500px);
+    transition: transform 0.3s ease;
+}
+
+.izin-toast.show {
+    transform: translateX(0);
+}
+
+.toast-approved {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.toast-rejected {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .izin-toast {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+    }
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(500px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+
+{{-- 📌 PERMISSION BANNER (Optional - lebih friendly) --}}
+<div id="permissionBanner" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 9999; animation: slideUp 0.3s ease;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 32px;">
+            <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+        <div style="flex: 1;">
+            <strong style="display: block; font-size: 15px; margin-bottom: 4px;">Aktifkan Notifikasi</strong>
+            <p style="margin: 0; font-size: 13px; opacity: 0.95;">Dapatkan update langsung saat izin Anda disetujui/ditolak</p>
+        </div>
+        <button onclick="handleAllowNotification()" style="background: white; color: #3b82f6; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+            Izinkan
+        </button>
+        <button onclick="closeBanner()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="close-outline" style="font-size: 20px;"></ion-icon>
+        </button>
+    </div>
+</div>
+
+<script>
+@keyframes slideUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+// Show banner if permission not granted
+setTimeout(() => {
+    if (isNotificationSupported() && Notification.permission === 'default') {
+        const banner = document.getElementById('permissionBanner');
+        if (banner) banner.style.display = 'block';
+    }
+}, 3000);
+
+function handleAllowNotification() {
+    requestNotificationPermission();
+    closeBanner();
+}
+
+function closeBanner() {
+    const banner = document.getElementById('permissionBanner');
+    if (banner) {
+        banner.style.animation = 'slideDown 0.3s ease';
+        setTimeout(() => banner.style.display = 'none', 300);
+    }
+}
+</script>
+
 @endsection
