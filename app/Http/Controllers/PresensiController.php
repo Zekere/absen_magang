@@ -31,129 +31,146 @@ class PresensiController extends Controller
         return view('presensi.create', compact('cek', 'lok_kantor'));
     }
 
-    public function store(Request $request)
-    {
-        try {
-            $user = Auth::guard('karyawan')->user();
-            if (!$user) {
-                echo "error|User tidak ditemukan|x";
-                return;
-            }
-
-            $nik = $user->nik;
-            $tgl_presensi = date('Y-m-d');
-            $jam = date('H:i:s');
-
-            $cek_count = DB::table('presensi')
-                ->where('tgl_presensi', $tgl_presensi)
-                ->where('nik', $nik)
-                ->count();
-
-            if ($cek_count >= 2) {
-                echo "error|Anda sudah melakukan absen masuk dan pulang hari ini|x";
-                return;
-            }
-
-            $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-            $lok = explode(",", $lok_kantor->lokasi_kantor);
-            $latitudekantor = $lok[0];
-            $longitudekantor = $lok[1];
-
-            $lokasi = $request->lokasi;
-            if (!$lokasi) {
-                echo "error|Lokasi tidak dikirim|x";
-                return;
-            }
-
-            $lokasiuser = explode(",", $lokasi);
-            if (count($lokasiuser) < 2) {
-                echo "error|Format lokasi tidak valid|x";
-                return;
-            }
-
-            $latitudeuser = floatval(trim($lokasiuser[0]));
-            $longitudeuser = floatval(trim($lokasiuser[1]));
-            $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
-            $radius = round($jarak['meters']);
-
-            $cek = DB::table('presensi')
-                ->where('tgl_presensi', $tgl_presensi)
-                ->where('nik', $nik)
-                ->first();
-
-            $ket = $cek ? "out" : "in";
-            $image = $request->image;
-            if (!$image) {
-                echo "error|Foto tidak dikirim|x";
-                return;
-            }
-
-            $image_parts = explode(";base64,", $image);
-            if (count($image_parts) < 2) {
-                echo "error|Format foto tidak valid|x";
-                return;
-            }
-
-            $image_base64 = base64_decode($image_parts[1]);
-            if ($image_base64 === false) {
-                echo "error|Gagal decode gambar|x";
-                return;
-            }
-
-            $folderPath = 'public/uploads/absensi/';
-            $fileName = $nik . "-" . $tgl_presensi . "-" . $ket . '.png';
-            $file = $folderPath . $fileName;
-
-            if (!$cek) {
-                if ($radius > $lok_kantor->radius) {
-                    echo "error|Maaf Anda Berada Diluar Jangkauan|x";
-                    return;
-                }
-
-                $data_masuk = [
-                    'nik' => $nik,
-                    'tgl_presensi' => $tgl_presensi,
-                    'jam_in' => $jam,
-                    'foto_in' => $fileName,
-                    'lokasi_in' => $lokasi,
-                ];
-
-                $simpan = DB::table('presensi')->insert($data_masuk);
-
-                if ($simpan) {
-                    Storage::put($file, $image_base64);
-                    echo "success|Terima Kasih, Selamat Bekerja!|in";
-                    return;
-                }
-            } else {
-                if (!empty($cek->jam_out)) {
-                    echo "error|Anda sudah melakukan absen pulang hari ini|x";
-                    return;
-                }
-
-                $data_pulang = [
-                    'jam_out' => $jam,
-                    'foto_out' => $fileName,
-                    'lokasi_out' => $lokasi,
-                ];
-
-                $update = DB::table('presensi')
-                    ->where('tgl_presensi', $tgl_presensi)
-                    ->where('nik', $nik)
-                    ->update($data_pulang);
-
-                if ($update) {
-                    Storage::put($file, $image_base64);
-                    echo "success|Terima Kasih, Hati-hati di jalan!|out";
-                    return;
-                }
-            }
-
-            echo "error|Gagal menyimpan presensi|x";
-        } catch (\Exception $e) {
-            echo "error|Terjadi kesalahan: " . $e->getMessage() . "|x";
+   public function store(Request $request)
+{
+    try {
+        $user = Auth::guard('karyawan')->user();
+        if (!$user) {
+            echo "error|User tidak ditemukan|x";
+            return;
         }
+
+        $nik = $user->nik;
+        $tgl_presensi = date('Y-m-d');
+        $jam = date('H:i:s');
+
+        $cek_count = DB::table('presensi')
+            ->where('tgl_presensi', $tgl_presensi)
+            ->where('nik', $nik)
+            ->count();
+
+        if ($cek_count >= 2) {
+            echo "error|Anda sudah melakukan absen masuk dan pulang hari ini|x";
+            return;
+        }
+
+        $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+        $lok = explode(",", $lok_kantor->lokasi_kantor);
+        $latitudekantor = $lok[0];
+        $longitudekantor = $lok[1];
+
+        $lokasi = $request->lokasi;
+        if (!$lokasi) {
+            echo "error|Lokasi tidak dikirim|x";
+            return;
+        }
+
+        $lokasiuser = explode(",", $lokasi);
+        if (count($lokasiuser) < 2) {
+            echo "error|Format lokasi tidak valid|x";
+            return;
+        }
+
+        $latitudeuser = floatval(trim($lokasiuser[0]));
+        $longitudeuser = floatval(trim($lokasiuser[1]));
+        $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
+        $radius = round($jarak['meters']);
+
+        // ===== BAGIAN YANG DIUBAH =====
+        // Tentukan status lokasi (JANGAN BLOKIR, HANYA CATAT)
+        $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
+        
+        $cek = DB::table('presensi')
+            ->where('tgl_presensi', $tgl_presensi)
+            ->where('nik', $nik)
+            ->first();
+
+        $ket = $cek ? "out" : "in";
+        $image = $request->image;
+        if (!$image) {
+            echo "error|Foto tidak dikirim|x";
+            return;
+        }
+
+        $image_parts = explode(";base64,", $image);
+        if (count($image_parts) < 2) {
+            echo "error|Format foto tidak valid|x";
+            return;
+        }
+
+        $image_base64 = base64_decode($image_parts[1]);
+        if ($image_base64 === false) {
+            echo "error|Gagal decode gambar|x";
+            return;
+        }
+
+        $folderPath = 'public/uploads/absensi/';
+        $fileName = $nik . "-" . $tgl_presensi . "-" . $ket . '.png';
+        $file = $folderPath . $fileName;
+
+        if (!$cek) {
+            // ===== ABSEN MASUK (HAPUS VALIDASI RADIUS) =====
+            $data_masuk = [
+                'nik' => $nik,
+                'tgl_presensi' => $tgl_presensi,
+                'jam_in' => $jam,
+                'foto_in' => $fileName,
+                'lokasi_in' => $lokasi,
+                'status_lokasi_in' => $status_lokasi, // Tambahkan status
+                'jarak_in' => $radius // Tambahkan jarak
+            ];
+
+            $simpan = DB::table('presensi')->insert($data_masuk);
+
+            if ($simpan) {
+                Storage::put($file, $image_base64);
+                
+                // Beri pesan berbeda berdasarkan lokasi
+                if ($status_lokasi == 'luar_kantor') {
+                    echo "success|Absen berhasil! Anda berada di luar kantor (Jarak: {$radius}m)|in";
+                } else {
+                    echo "success|Terima Kasih, Selamat Bekerja!|in";
+                }
+                return;
+            }
+        } else {
+            // ===== ABSEN PULANG =====
+            if (!empty($cek->jam_out)) {
+                echo "error|Anda sudah melakukan absen pulang hari ini|x";
+                return;
+            }
+
+            $data_pulang = [
+                'jam_out' => $jam,
+                'foto_out' => $fileName,
+                'lokasi_out' => $lokasi,
+                'status_lokasi_out' => $status_lokasi, // Tambahkan status
+                'jarak_out' => $radius // Tambahkan jarak
+            ];
+
+            $update = DB::table('presensi')
+                ->where('tgl_presensi', $tgl_presensi)
+                ->where('nik', $nik)
+                ->update($data_pulang);
+
+            if ($update) {
+                Storage::put($file, $image_base64);
+                
+                // Beri pesan berbeda berdasarkan lokasi
+                if ($status_lokasi == 'luar_kantor') {
+                    echo "success|Absen pulang berhasil! Anda berada di luar kantor (Jarak: {$radius}m)|out";
+                } else {
+                    echo "success|Terima Kasih, Hati-hati di jalan!|out";
+                }
+                return;
+            }
+        }
+
+        echo "error|Gagal menyimpan presensi|x";
+    } catch (\Exception $e) {
+        echo "error|Terjadi kesalahan: " . $e->getMessage() . "|x";
     }
+}
 
     private function distance($lat1, $lon1, $lat2, $lon2)
     {
