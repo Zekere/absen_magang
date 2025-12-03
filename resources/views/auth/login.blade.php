@@ -70,7 +70,7 @@
                 </div>
                 
                 <div class="form-options">
-                    <a href="page-forgot-password.html" class="forgot-password">Forgot Password?</a>
+                    <a href="/register" class="forgot-password">Daftarkan Akun</a>
                 </div>
                 
                 <button type="submit" class="btn btn-login">Login</button>

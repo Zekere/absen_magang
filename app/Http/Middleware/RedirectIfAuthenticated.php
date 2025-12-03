@@ -17,21 +17,21 @@ class RedirectIfAuthenticated
      * @param  string|null  ...$guards
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle (Request $request, Closure $next, ...$guards)
-    {
-        $guards = empty($guards) ? [null] : $guards;
+    public function handle(Request $request, Closure $next, ...$guards)
+{
+    $guards = empty($guards) ? [null] : $guards;
 
-        foreach ($guards as $guard) {
-            if (Auth::guard('karyawan')->check()) {
-                return redirect(RouteServiceProvider::HOME);
+    foreach ($guards as $guard) {
+        if (Auth::guard($guard)->check()) {
+            // Jika sudah login, redirect ke dashboard
+            if ($guard === 'karyawan') {
+                return redirect('/dashboard');
+            } elseif ($guard === 'user') {
+                return redirect('/panel/dashboardadmin');
             }
-
-               if (Auth::guard('user')->check()) {
-                return redirect(RouteServiceProvider::HOMEADMIN);
         }
-    
-
-        return $next($request);
     }
+
+    return $next($request);
 }
 }

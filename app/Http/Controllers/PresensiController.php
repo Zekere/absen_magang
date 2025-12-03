@@ -44,6 +44,14 @@ class PresensiController extends Controller
         $tgl_presensi = date('Y-m-d');
         $jam = date('H:i:s');
 
+        // ===== VALIDASI FACE VERIFICATION =====
+        $face_verified = $request->face_verified ?? 0;
+        
+        if ($face_verified != 1) {
+            echo "error|Wajah Anda belum terverifikasi! Pastikan wajah terlihat jelas di kamera.|x";
+            return;
+        }
+
         $cek_count = DB::table('presensi')
             ->where('tgl_presensi', $tgl_presensi)
             ->where('nik', $nik)
@@ -76,8 +84,7 @@ class PresensiController extends Controller
         $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
         $radius = round($jarak['meters']);
 
-        // ===== BAGIAN YANG DIUBAH =====
-        // Tentukan status lokasi (JANGAN BLOKIR, HANYA CATAT)
+        // Tentukan status lokasi
         $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
         
         $cek = DB::table('presensi')
@@ -109,15 +116,15 @@ class PresensiController extends Controller
         $file = $folderPath . $fileName;
 
         if (!$cek) {
-            // ===== ABSEN MASUK (HAPUS VALIDASI RADIUS) =====
+            // ===== ABSEN MASUK =====
             $data_masuk = [
                 'nik' => $nik,
                 'tgl_presensi' => $tgl_presensi,
                 'jam_in' => $jam,
                 'foto_in' => $fileName,
                 'lokasi_in' => $lokasi,
-                'status_lokasi_in' => $status_lokasi, // Tambahkan status
-                'jarak_in' => $radius // Tambahkan jarak
+                'status_lokasi_in' => $status_lokasi,
+                'jarak_in' => $radius
             ];
 
             $simpan = DB::table('presensi')->insert($data_masuk);
@@ -125,11 +132,10 @@ class PresensiController extends Controller
             if ($simpan) {
                 Storage::put($file, $image_base64);
                 
-                // Beri pesan berbeda berdasarkan lokasi
                 if ($status_lokasi == 'luar_kantor') {
-                    echo "success|Absen berhasil! Anda berada di luar kantor (Jarak: {$radius}m)|in";
+                    echo "success|Absen berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|in";
                 } else {
-                    echo "success|Terima Kasih, Selamat Bekerja!|in";
+                    echo "success|Terima Kasih, Wajah Terverifikasi! Selamat Bekerja!|in";
                 }
                 return;
             }
@@ -144,8 +150,8 @@ class PresensiController extends Controller
                 'jam_out' => $jam,
                 'foto_out' => $fileName,
                 'lokasi_out' => $lokasi,
-                'status_lokasi_out' => $status_lokasi, // Tambahkan status
-                'jarak_out' => $radius // Tambahkan jarak
+                'status_lokasi_out' => $status_lokasi,
+                'jarak_out' => $radius
             ];
 
             $update = DB::table('presensi')
@@ -156,11 +162,10 @@ class PresensiController extends Controller
             if ($update) {
                 Storage::put($file, $image_base64);
                 
-                // Beri pesan berbeda berdasarkan lokasi
                 if ($status_lokasi == 'luar_kantor') {
-                    echo "success|Absen pulang berhasil! Anda berada di luar kantor (Jarak: {$radius}m)|out";
+                    echo "success|Absen pulang berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|out";
                 } else {
-                    echo "success|Terima Kasih, Hati-hati di jalan!|out";
+                    echo "success|Terima Kasih, Wajah Terverifikasi! Hati-hati di jalan!|out";
                 }
                 return;
             }
@@ -273,39 +278,53 @@ class PresensiController extends Controller
     }
 
     public function storeizin(Request $request)
-    {
-        $nik = Auth::guard('karyawan')->user()->nik;
-        $tgl_izin = $request->tgl_izin;
-        $status = $request->status;
-        $keterangan = $request->keterangan;
-        $bukti_surat = null;
+{
+    $nik = Auth::guard('karyawan')->user()->nik;
+    $tgl_izin = $request->tgl_izin;
+    $status = $request->status;
+    $keterangan = $request->keterangan;
+    $bukti_surat = null;
 
-        if ($request->hasFile('bukti_surat')) {
-            $file = $request->file('bukti_surat');
-            $ext = $file->getClientOriginalExtension();
-            $filename = $nik . '-' . date('YmdHis') . '.' . $ext;
-            $path = public_path('storage/uploads/izin');
-            $file->move($path, $filename);
-            $bukti_surat = $filename;
-        }
+    // 🔍 Cek apakah sudah ada izin di tanggal yang sama
+    $cekIzin = DB::table('pengajuan_izin')
+        ->where('nik', $nik)
+        ->whereDate('tgl_izin', $tgl_izin)
+        ->first();
 
-        $data = [
-            'nik' => $nik,
-            'tgl_izin' => $tgl_izin,
-            'status' => $status,
-            'keterangan' => $keterangan,
-            'bukti_surat' => $bukti_surat,
-            'status_approved' => 0,
-        ];
-
-        $simpan = DB::table('pengajuan_izin')->insert($data);
-
-        if ($simpan) {
-            return redirect('/presensi/izin')->with('success', 'Data berhasil disimpan');
-        } else {
-            return redirect('/presensi/izin')->with('error', 'Data gagal disimpan');
-        }
+    if ($cekIzin) {
+        return redirect('/presensi/buatizin')
+            ->with('error', 'Anda sudah mengajukan izin pada tanggal tersebut!');
     }
+
+    // 📎 Upload file jika ada
+    if ($request->hasFile('bukti_surat')) {
+        $file = $request->file('bukti_surat');
+        $ext = $file->getClientOriginalExtension();
+        $filename = $nik . '-' . date('YmdHis') . '.' . $ext;
+        $path = public_path('storage/uploads/izin');
+        $file->move($path, $filename);
+        $bukti_surat = $filename;
+    }
+
+    // 💾 Simpan data baru
+    $data = [
+        'nik' => $nik,
+        'tgl_izin' => $tgl_izin,
+        'status' => $status,
+        'keterangan' => $keterangan,
+        'bukti_surat' => $bukti_surat,
+        'status_approved' => 0,
+    ];
+
+    $simpan = DB::table('pengajuan_izin')->insert($data);
+
+    if ($simpan) {
+        return redirect('/presensi/izin')->with('success', 'Pengajuan izin berhasil dikirim');
+    } else {
+        return redirect('/presensi/izin')->with('error', 'Gagal mengirim pengajuan izin');
+    }
+}
+
 
     public function lihatbukti($id)
     {
@@ -662,7 +681,7 @@ public function cetaklaporan(Request $request)
             $row++;
         }
 
-        $filename = 'Laporan_Presensi_' . $karyawan->nama_lengkap . '_' . $namabulan[$bulan] . '_' . $tahun . '.xlsx';
+        $filename = 'Laporan_Presensi_' . $karyawan->nama_lengkap . '' . $namabulan[$bulan] . '' . $tahun . '.xlsx';
         
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');

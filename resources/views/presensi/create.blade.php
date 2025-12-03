@@ -12,42 +12,106 @@
 </div>
 
 <style>
-    /* Fix konten agar tidak tertutup navbar */
     .container {
         padding-top: 70px;
-        padding-bottom: 80px; /* Ruang untuk bottom navbar jika ada */
+        padding-bottom: 80px;
     }
 
-    /* Webcam responsif */
-    .webcam-capture,
-    .webcam-capture video {
+    .webcam-capture {
+        position: relative;
         display: block;
         width: 100% !important;
         max-width: 600px;
         margin: auto;
-        height: auto !important;
         border-radius: 15px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
-    /* Map responsif dengan posisi yang lebih baik */
+    .webcam-capture video,
+    .webcam-capture canvas {
+        display: block;
+        width: 100% !important;
+        height: auto !important;
+        border-radius: 15px;
+    }
+
+    #face-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    #face-status {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        animation: pulse 2s infinite;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .face-detecting {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .face-verified {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        color: white;
+        animation: none;
+    }
+
+    .face-not-verified {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        color: white;
+    }
+
+    .face-loading {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        color: white;
+    }
+
     #map {
         width: 100%;
         height: 300px;
         min-height: 200px;
         border-radius: 10px;
         margin-top: 15px;
-        z-index: 1; /* Pastikan di bawah navbar */
+        z-index: 1;
     }
 
-    /* Tombol Absen */
     #takeabsen {
         font-size: 1rem;
         padding: 12px 30px;
         border-radius: 50px;
+        transition: all 0.3s ease;
     }
 
-    /* Status Lokasi */
+    #takeabsen:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     #location-status {
         margin-top: 15px;
         padding: 12px 20px;
@@ -69,7 +133,6 @@
         border: 2px solid #ffeaa7;
     }
 
-    /* Spacing section */
     .webcam-section {
         margin-bottom: 20px;
     }
@@ -83,10 +146,29 @@
         margin-bottom: 30px;
     }
 
-    /* Mobile-friendly */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Hidden image for face comparison */
+    #reference-face {
+        display: none;
+    }
+
     @media (max-width: 768px) {
         .container {
             padding-top: 60px;
+            padding-bottom: 100px;
         }
         
         .pageTitle {
@@ -101,16 +183,13 @@
             width: 100%;
         }
 
-        .webcam-capture,
-        .webcam-capture video {
+        .webcam-capture {
             max-width: 100%;
         }
-    }
 
-    /* Untuk device dengan navbar bottom */
-    @media (max-width: 768px) {
-        .container {
-            padding-bottom: 100px;
+        #face-status {
+            font-size: 11px;
+            padding: 8px 12px;
         }
     }
 </style>
@@ -121,15 +200,30 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+
+<!-- Face-API.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 @endsection
 
 @section('content')
 <div class="container">
+    <!-- Hidden Reference Face Image -->
+    <img id="reference-face" crossorigin="anonymous" 
+         src="{{ asset('storage/uploads/faces/' . Auth::guard('karyawan')->user()->nik . '_face.jpg') }}" 
+         alt="Reference Face">
+
     <!-- Webcam Section -->
     <div class="row justify-content-center webcam-section">
         <div class="col-12 col-md-8 text-center">
             <input type="hidden" id="lokasi">
-            <div class="webcam-capture"></div>
+            <div class="webcam-capture">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="face-overlay"></canvas>
+                <div id="face-status" class="face-loading" style="display: none;">
+                    <span class="spinner"></span>
+                    <span>Memuat model...</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -149,13 +243,15 @@
                 </button>
                 <p class="mt-2 text-muted">Anda sudah melakukan absen masuk dan pulang hari ini</p>
             @elseif($cek == 1)
-                <button id="takeabsen" class="btn btn-danger btn-lg shadow rounded-pill">
+                <button id="takeabsen" class="btn btn-danger btn-lg shadow rounded-pill" disabled>
                     <ion-icon name="camera-outline"></ion-icon> Absen Pulang
                 </button>
+                <p class="mt-2 text-muted small" id="button-hint">Tunggu verifikasi wajah...</p>
             @else
-                <button id="takeabsen" class="btn btn-success btn-lg shadow rounded-pill">
+                <button id="takeabsen" class="btn btn-success btn-lg shadow rounded-pill" disabled>
                     <ion-icon name="camera-outline"></ion-icon> Absen Masuk
                 </button>
+                <p class="mt-2 text-muted small" id="button-hint">Tunggu verifikasi wajah...</p>
             @endif
         </div>
     </div>
@@ -171,40 +267,266 @@
 
 @push('scripts')
 <script>
-    // Setup Webcam
-    Webcam.set({
-        width: 420,
-        height: 320,
-        image_format: 'jpeg',
-        jpeg_quality: 90
+    // ===== GLOBAL VARIABLES =====
+    let faceVerified = false;
+    let isInRadius = false;
+    let userLatitude, userLongitude;
+    let video, canvas, faceStatus, takeAbsenBtn, referenceImage;
+    let faceDetectionInterval;
+    let modelsLoaded = false;
+    let referenceFaceDescriptor = null;
+
+    const SIMILARITY_THRESHOLD = 0.6; // Threshold untuk face matching (semakin rendah = semakin strict)
+    const userNik = '{{ Auth::guard("karyawan")->user()->nik }}';
+
+    // ===== INISIALISASI =====
+    document.addEventListener('DOMContentLoaded', async function() {
+        video = document.getElementById('webcam');
+        canvas = document.getElementById('face-overlay');
+        faceStatus = document.getElementById('face-status');
+        takeAbsenBtn = document.getElementById('takeabsen');
+        referenceImage = document.getElementById('reference-face');
+
+        // Load Face-API Models
+        await loadFaceModels();
+
+        // Load Reference Face Descriptor
+        await loadReferenceFace();
+
+        // Setup Webcam
+        await setupWebcam();
+
+        // Start Face Detection
+        startFaceDetection();
+
+        // Setup Location & Map
+        setupLocation();
     });
-    Webcam.attach('.webcam-capture');
 
-    // Variabel global untuk menyimpan status lokasi
-    var isInRadius = false;
-    var userLatitude, userLongitude;
+    // ===== LOAD FACE-API MODELS =====
+    async function loadFaceModels() {
+        try {
+            faceStatus.style.display = 'flex';
+            faceStatus.innerHTML = '<span class="spinner"></span><span>Memuat model AI...</span>';
 
-    // Fungsi untuk menghitung jarak antara dua koordinat (Haversine formula)
-    function hitungJarak(lat1, lon1, lat2, lon2) {
-        var R = 6371e3; // Radius bumi dalam meter
-        var φ1 = lat1 * Math.PI / 180;
-        var φ2 = lat2 * Math.PI / 180;
-        var Δφ = (lat2 - lat1) * Math.PI / 180;
-        var Δλ = (lon2 - lon1) * Math.PI / 180;
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+            
+            await Promise.all([
+                faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
 
-        var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        var jarak = R * c; // Jarak dalam meter
-        return jarak;
+            modelsLoaded = true;
+            console.log('✅ Face-API models loaded');
+        } catch (error) {
+            console.error('❌ Error loading models:', error);
+            faceStatus.className = 'face-not-verified';
+            faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Gagal memuat model</span>';
+        }
     }
 
-    // Lokasi
-    var lokasi = document.getElementById('lokasi');
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+    // ===== LOAD REFERENCE FACE (Foto saat register) =====
+    async function loadReferenceFace() {
+        try {
+            faceStatus.innerHTML = '<span class="spinner"></span><span>Memuat foto referensi...</span>';
+            
+            // Pastikan gambar loaded
+            await new Promise((resolve, reject) => {
+                if (referenceImage.complete) {
+                    resolve();
+                } else {
+                    referenceImage.onload = resolve;
+                    referenceImage.onerror = () => reject(new Error('Gagal memuat foto referensi'));
+                }
+            });
+
+            // Deteksi wajah dari foto referensi
+            const detection = await faceapi
+                .detectSingleFace(referenceImage)
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                throw new Error('Tidak ada wajah terdeteksi di foto referensi');
+            }
+
+            referenceFaceDescriptor = detection.descriptor;
+            console.log('✅ Reference face loaded');
+            
+            faceStatus.innerHTML = '<span class="spinner"></span><span>Mendeteksi wajah...</span>';
+        } catch (error) {
+            console.error('❌ Error loading reference face:', error);
+            Swal.fire({
+                title: "Error!",
+                text: "Gagal memuat foto wajah Anda. Pastikan foto wajah sudah tersimpan saat registrasi.",
+                icon: "error",
+            });
+            faceStatus.className = 'face-not-verified';
+            faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Foto wajah tidak ditemukan</span>';
+        }
+    }
+
+    // ===== SETUP WEBCAM =====
+    async function setupWebcam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: 640, 
+                    height: 480,
+                    facingMode: 'user'
+                } 
+            });
+            video.srcObject = stream;
+            
+            await new Promise(resolve => {
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    resolve();
+                };
+            });
+
+            console.log('✅ Webcam initialized');
+        } catch (error) {
+            console.error('❌ Webcam error:', error);
+            Swal.fire({
+                title: "Error!",
+                text: "Tidak dapat mengakses kamera!",
+                icon: "error",
+            });
+        }
+    }
+
+    // ===== START FACE DETECTION =====
+    function startFaceDetection() {
+        if (!modelsLoaded || !referenceFaceDescriptor) {
+            setTimeout(startFaceDetection, 1000);
+            return;
+        }
+
+        faceDetectionInterval = setInterval(async () => {
+            await detectAndVerifyFace();
+        }, 500);
+    }
+
+    // ===== DETECT & VERIFY FACE =====
+    async function detectAndVerifyFace() {
+        if (!video || video.readyState !== 4 || !referenceFaceDescriptor) return;
+
+        try {
+            const detections = await faceapi
+                .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (detections.length === 0) {
+                // Tidak ada wajah
+                faceVerified = false;
+                faceStatus.className = 'face-detecting';
+                faceStatus.innerHTML = '<ion-icon name="scan-outline"></ion-icon><span>Tidak ada wajah</span>';
+                faceStatus.style.display = 'flex';
+                takeAbsenBtn.disabled = true;
+                document.getElementById('button-hint').textContent = 'Posisikan wajah Anda di depan kamera';
+            } else if (detections.length > 1) {
+                // Lebih dari 1 wajah
+                faceVerified = false;
+                faceStatus.className = 'face-not-verified';
+                faceStatus.innerHTML = '<ion-icon name="warning"></ion-icon><span>Terdeteksi ' + detections.length + ' wajah!</span>';
+                faceStatus.style.display = 'flex';
+                takeAbsenBtn.disabled = true;
+                document.getElementById('button-hint').textContent = 'Hanya 1 orang yang diizinkan';
+
+                detections.forEach(detection => {
+                    drawFaceBox(detection.detection.box, '#ff0000');
+                });
+            } else {
+                // 1 wajah terdeteksi - bandingkan dengan foto referensi
+                const detection = detections[0];
+                const distance = faceapi.euclideanDistance(referenceFaceDescriptor, detection.descriptor);
+                
+                console.log('Face distance:', distance, '(Threshold:', SIMILARITY_THRESHOLD, ')');
+
+                if (distance < SIMILARITY_THRESHOLD) {
+                    // ✅ WAJAH COCOK
+                    faceVerified = true;
+                    const similarity = Math.round((1 - distance) * 100);
+                    faceStatus.className = 'face-verified';
+                    faceStatus.innerHTML = '<ion-icon name="checkmark-circle"></ion-icon><span>Wajah Cocok! (' + similarity + '%)</span>';
+                    faceStatus.style.display = 'flex';
+                    
+                    if (@if($cek < 2) true @else false @endif) {
+                        takeAbsenBtn.disabled = false;
+                        document.getElementById('button-hint').textContent = '✅ Klik tombol untuk absen';
+                    }
+
+                    drawFaceBox(detection.detection.box, '#00ff00');
+                } else {
+                    // ❌ WAJAH TIDAK COCOK
+                    faceVerified = false;
+                    const similarity = Math.round((1 - distance) * 100);
+                    faceStatus.className = 'face-not-verified';
+                    faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Wajah Tidak Cocok! (' + similarity + '%)</span>';
+                    faceStatus.style.display = 'flex';
+                    takeAbsenBtn.disabled = true;
+                    document.getElementById('button-hint').textContent = '❌ Ini bukan wajah Anda!';
+
+                    drawFaceBox(detection.detection.box, '#ff0000');
+                }
+            }
+        } catch (error) {
+            console.error('Detection error:', error);
+        }
+    }
+
+    // ===== DRAW FACE BOX =====
+    function drawFaceBox(box, color) {
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+        const cornerLength = 20;
+        ctx.lineWidth = 5;
+        
+        // Top-left
+        ctx.beginPath();
+        ctx.moveTo(box.x, box.y + cornerLength);
+        ctx.lineTo(box.x, box.y);
+        ctx.lineTo(box.x + cornerLength, box.y);
+        ctx.stroke();
+
+        // Top-right
+        ctx.beginPath();
+        ctx.moveTo(box.x + box.width - cornerLength, box.y);
+        ctx.lineTo(box.x + box.width, box.y);
+        ctx.lineTo(box.x + box.width, box.y + cornerLength);
+        ctx.stroke();
+
+        // Bottom-left
+        ctx.beginPath();
+        ctx.moveTo(box.x, box.y + box.height - cornerLength);
+        ctx.lineTo(box.x, box.y + box.height);
+        ctx.lineTo(box.x + cornerLength, box.y + box.height);
+        ctx.stroke();
+
+        // Bottom-right
+        ctx.beginPath();
+        ctx.moveTo(box.x + box.width - cornerLength, box.y + box.height);
+        ctx.lineTo(box.x + box.width, box.y + box.height);
+        ctx.lineTo(box.x + box.width, box.y + box.height - cornerLength);
+        ctx.stroke();
+    }
+
+    // ===== SETUP LOCATION =====
+    function setupLocation() {
+        var lokasi = document.getElementById('lokasi');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+        }
     }
 
     function successCallback(position) {
@@ -220,13 +542,9 @@
         var long_kantor = parseFloat(lok[1]);
         var radius = parseFloat("{{$lok_kantor->radius}}");
 
-        // Hitung jarak user dari kantor
         var jarakDariKantor = hitungJarak(userLatitude, userLongitude, lat_kantor, long_kantor);
-        
-        // Cek apakah dalam radius
         isInRadius = jarakDariKantor <= radius;
 
-        // Tampilkan status lokasi
         var statusDiv = document.getElementById('location-status');
         statusDiv.style.display = 'block';
         
@@ -238,13 +556,11 @@
             statusDiv.innerHTML = '<ion-icon name="warning-outline"></ion-icon> Anda di Luar Kantor (Jarak: ' + Math.round(jarakDariKantor) + ' meter)';
         }
 
-        // Setup peta
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        // Marker posisi user (biru)
         var userMarker = L.marker([userLatitude, userLongitude], {
             icon: L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -256,7 +572,6 @@
             })
         }).addTo(map);
 
-        // Marker kantor (merah)
         var kantorMarker = L.marker([lat_kantor, long_kantor], {
             icon: L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
@@ -268,7 +583,6 @@
             })
         }).addTo(map);
 
-        // Circle radius kantor
         var circle = L.circle([lat_kantor, long_kantor], {
             color: isInRadius ? 'green' : 'red',
             fillColor: isInRadius ? '#5cb85c' : '#f03',
@@ -279,82 +593,110 @@
         userMarker.bindPopup("<b>Lokasi Anda</b><br>Jarak: " + Math.round(jarakDariKantor) + " meter").openPopup();
         kantorMarker.bindPopup("<b>Kantor</b>");
 
-        // Sesuaikan zoom agar kedua marker terlihat
         var group = L.featureGroup([userMarker, kantorMarker, circle]);
         map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    function hitungJarak(lat1, lon1, lat2, lon2) {
+        var R = 6371e3;
+        var φ1 = lat1 * Math.PI / 180;
+        var φ2 = lat2 * Math.PI / 180;
+        var Δφ = (lat2 - lat1) * Math.PI / 180;
+        var Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
     }
 
     function errorCallback() {
         Swal.fire({
             title: "Error!",
-            text: "Tidak bisa mendapatkan lokasi! Pastikan GPS aktif dan izinkan akses lokasi.",
+            text: "Tidak bisa mendapatkan lokasi! Pastikan GPS aktif.",
             icon: "error",
         });
     }
 
-    // Tombol Absen
+    // ===== TOMBOL ABSEN =====
     $('#takeabsen').click(function(e) {
         e.preventDefault();
 
-        Webcam.snap(function(uri) {
-            let image = uri; 
-            let lokasi = $('#lokasi').val();
+        if (!faceVerified) {
+            Swal.fire({
+                title: "Peringatan!",
+                text: "Wajah Anda tidak cocok dengan data yang tersimpan!",
+                icon: "warning",
+            });
+            return;
+        }
 
-            // Debug lokasi
-            console.log("Lokasi yang dikirim:", lokasi);
-            console.log("Status dalam radius:", isInRadius);
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = video.videoWidth;
+        tempCanvas.height = video.videoHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(video, 0, 0);
+        
+        const image = tempCanvas.toDataURL('image/jpeg', 0.9);
+        const lokasi = $('#lokasi').val();
 
-            if(!lokasi){
-                Swal.fire({
-                    title:"Error!",
-                    text:"Lokasi tidak terbaca. Pastikan GPS aktif dan izinkan akses lokasi!",
-                    icon: "error",
-                });
-                return;
-            }
+        if(!lokasi){
+            Swal.fire({
+                title:"Error!",
+                text:"Lokasi tidak terbaca!",
+                icon: "error",
+            });
+            return;
+        }
 
-            // Kirim ke server dengan info status lokasi
-            $.ajax({
-                url: '/presensi/store',
-                type: "POST",
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    lokasi: lokasi,
-                    image: image,
-                    is_in_radius: isInRadius ? 1 : 0
-                },
-                cache: false,
-                success: function(respond) {
-                    var status = respond.split("|"); 
+        $.ajax({
+            url: '/presensi/store',
+            type: "POST",
+            data: {
+                _token: '{{ csrf_token() }}',
+                lokasi: lokasi,
+                image: image,
+                is_in_radius: isInRadius ? 1 : 0,
+                face_verified: faceVerified ? 1 : 0
+            },
+            cache: false,
+            success: function(respond) {
+                var status = respond.split("|");
 
-                    console.log("Respon server:", status);
-
-                    if (status[0] === "success") {
-                        Swal.fire({
-                            title: "Success!",
-                            text: status[1],
-                            icon: "success",
-                        });
-                        setTimeout("location.href='/dashboard'", 3000);
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            text: status[1],
-                            icon: "error",
-                        });
-                        setTimeout("location.href='/dashboard'", 3000);
-                    }
-                },
-                error: function(xhr) {
+                if (status[0] === "success") {
                     Swal.fire({
-                        title:"Error!",
-                        text:"Terjadi kesalahan saat mengirim data presensi",
+                        title: "Success!",
+                        text: status[1],
+                        icon: "success",
+                    });
+                    setTimeout("location.href='/dashboard'", 3000);
+                } else {
+                    Swal.fire({
+                        title: "Error!",
+                        text: status[1],
                         icon: "error",
                     });
-                    console.error("Error AJAX:", xhr); 
                 }
-            });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    title:"Error!",
+                    text:"Terjadi kesalahan",
+                    icon: "error",
+                });
+            }
         });
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (faceDetectionInterval) {
+            clearInterval(faceDetectionInterval);
+        }
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
     });
 </script>
 @endpush

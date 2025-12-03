@@ -9,203 +9,162 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KaryawanController; 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\IzinController;
+use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
 
+// ==================== ROUTE UNTUK GUEST (Belum Login) ====================
 Route::middleware(['guest:karyawan'])->group(function(){
-Route::get('/',function () {
-    return view('auth.login');
-})->name('login');
-Route::post('/proseslogin', [AuthController::class, 'proseslogin']);
-});
-
-
-Route::middleware(['guest:user'])->group(function(){
-Route::get('/panel',function () {
-    return view('auth.loginadmin');
-})->name('loginadmin');
-
-Route::post('/prosesloginadmin', [AuthController::class, 'prosesloginadmin']);
-
-});
-
-Route::middleware(['auth:karyawan'])->group(function(){
-    Route::get( '/dashboard', [DashboardController::class, 'index']);
-Route::get('/logout',[AuthController::class,'logout']);
-
-Route::get('/presensi/create',[PresensiController::class,'create']);
-Route::post('/presensi/store',[PresensiController::class,'store']);
-
-Route::get('/editprofile',[PresensiController::class,'editprofile']);
-Route::post('/presensi/{nik}/updateprofile', [PresensiController::class,'updateprofile']);
-
-//histori presensi
-
-Route::get('/presensi/histori',[PresensiController::class,'histori']);
-Route::post('/gethistori',[PresensiController::class,'gethistori'] );
-
-//izin
-Route::get('/presensi/izin',[PresensiController::class,'izin']);
-Route::get('/presensi/buatizin',[PresensiController::class,'buatizin']);
-Route::post('/presensi/storeizin',[PresensiController::class,'storeizin']);
-});
-
-Route::middleware(['auth:user'])->group(function (){
-Route::get('/logoutadmin',[AuthController::class,'logoutadmin']);
-Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin']);
-
-//data karyawan
-Route::get('/karyawan', [KaryawanController::class, 'index']);
-Route::post('/karyawan/store',[KaryawanController::class, 'store']);
-
-Route::post('/karyawan/edit',[KaryawanController::class, 'edit']);
-Route::post('/karyawan/{nik}/update',[KaryawanController::class, 'update']);
-Route::put('/karyawan/{nik}/update', [KaryawanController::class, 'update']);
-Route::post('/karyawan/{nik}/delete',[KaryawanController::class, 'delete']);
-
-//departemen
-Route::get('/departemen',[DepartemenController::class,'index']);
-Route::post('/departemen/store',[DepartemenController::class,'store']);
-Route::post('/departemen/edit',[DepartemenController::class,'edit']);
-Route::post('/departemen/{kode_dept}/update', [DepartemenController::class, 'update']);
-Route::post('/departemen/{kode_dept}/delete',[DepartemenController::class,'delete']);
-
-//monitoring
-//Presensi
-Route::get('presensi/monitoring',[PresensiController::class,'monitoring']);
-Route::post('/getpresensi',[PresensiController::class,'getpresensi']);
-Route::post('/map', [PresensiController::class,'map']);
-
-//laporan
-Route::get('/presensi/laporan',[PresensiController::class,'laporan']);
-Route::post('/presensi/cetaklaporan',[PresensiController::class,'cetaklaporan']);
-// Route untuk generate PDF. Sesuaikan method dan Controller.
-//rekap
-Route::get('/presensi/rekap',[PresensiController::class,'rekap']);
-Route::post('/presensi/cetakrekap',[PresensiController::class,'cetakrekap']);
-
-//konfigurasi
-Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
-Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
-
-// Izinsakit routes
-Route::get('/presensi/izinsakit', [PresensiController::class, 'izinsakit']);
-Route::get('/presensi/izinsakit/filter', [PresensiController::class, 'filterIzinSakit']); // ⬅️ letakkan di atas
-Route::post('/presensi/approved', [PresensiController::class, 'approved']);
-Route::get('/presensi/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit']);
-
-
-// Route untuk Data Admin
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-Route::post('/admin/store', [AdminController::class, 'store'])->name('admin.store');
-Route::post('/admin/edit', [AdminController::class, 'edit'])->name('admin.edit');
-Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
-Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
-
-// Route untuk dashboard admin
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
-// Route untuk AJAX get data dashboard berdasarkan tanggal
-Route::get('/admin/dashboard/data', [DashboardController::class, 'getDashboardData'])->name('admin.dashboard.data');
-});
-
-Route::middleware(['auth:karyawan'])->group(function() {
-    Route::post('/presensi/storeizin', [PresensiController::class, 'storeizin']);
-});
-
-Route::get('/presensi/{id}/lihatbukti', [PresensiController::class, 'lihatbukti']);
-Route::get('/presensi/{id}/downloadbukti', [PresensiController::class, 'downloadbukti']);
-
-// Route untuk monitoring presensi
-Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
-
-// Route untuk menghapus presensi
-Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
-
-// Route untuk menampilkan map (jika belum ada)
-Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
-
-Route::post('/map', [PresensiController::class, 'showMap'])->name('map.show');
-
-
-//NEW
-
-// Route untuk monitoring presensi
-Route::post('/getpresensi', [PresensiController::class, 'getpresensi'])->middleware('auth:user');
-
-// Route untuk show map
-Route::post('/presensi/showmap', [PresensiController::class, 'showmap'])->middleware('auth:user');
-
-// Route untuk delete presensi
-Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi'])->middleware('auth:user');
-
-// Routes untuk Monitoring Presensi (untuk Admin)
-Route::middleware(['auth:user'])->group(function () {
-    Route::get('/presensi/monitoring', [PresensiController::class, 'monitoring']);
-    Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
-    Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
-    Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
-
-
-    // Route Notifikasi
+    // Halaman Login Karyawan
+    Route::get('/', function () {
+        return view('auth.login');
+    })->name('login');
     
-Route::middleware('auth:sanctum')->get('/check-izin-updates', function () {
-    try {
-        $userId = Auth::user()->nik; // Menggunakan NIK bukan ID
-        
-        // Get last check time
-        $lastCheck = session('last_izin_check', now()->subMinutes(3));
-        
-        // Check for recent status updates
-        $recentUpdate = DB::table('pengajuan_izin')
-            ->where('nik', $userId)
-            ->where('updated_at', '>', $lastCheck)
-            ->whereIn('status_approved', [1, 2])
-            ->orderBy('updated_at', 'desc')
-            ->first();
-        
-        // Update last check time
-        session(['last_izin_check' => now()]);
-        
-        if ($recentUpdate) {
-            $status = $recentUpdate->status_approved == 1 ? 'approved' : 'rejected';
-            $message = $status == 'approved' 
-                ? 'Pengajuan izin Anda tanggal ' . date('d/m/Y', strtotime($recentUpdate->tgl_izin)) . ' disetujui!'
-                : 'Pengajuan izin ditolak. Alasan: ' . ($recentUpdate->alasan_tolak ?? 'Tidak memenuhi syarat');
+    // Halaman Register
+    Route::get('/register', [RegisterController::class, 'index'])->name('register');
+    
+    // Proses Login & Register
+    Route::post('/proseslogin', [AuthController::class, 'proseslogin']);
+    Route::post('/prosesregister', [RegisterController::class, 'prosesregister']);
+});
+
+// ==================== ROUTE UNTUK ADMIN (Guest) ====================
+Route::middleware(['guest:user'])->group(function(){
+    Route::get('/panel', function () {
+        return view('auth.login');
+    })->name('loginadmin');
+    
+    Route::post('/prosesloginadmin', [AuthController::class, 'prosesloginadmin']);
+});
+
+// ==================== ROUTE UNTUK KARYAWAN (Sudah Login) ====================
+Route::middleware(['auth:karyawan'])->group(function(){
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/logout', [AuthController::class, 'logout']);
+    
+    // Presensi
+    Route::get('/presensi/create', [PresensiController::class, 'create']);
+    Route::post('/presensi/store', [PresensiController::class, 'store']);
+    
+    // Profile
+    Route::get('/editprofile', [PresensiController::class, 'editprofile']);
+    Route::post('/presensi/{nik}/updateprofile', [PresensiController::class, 'updateprofile']);
+    
+    // Histori Presensi
+    Route::get('/presensi/histori', [PresensiController::class, 'histori']);
+    Route::post('/gethistori', [PresensiController::class, 'gethistori']);
+    
+    // Izin
+    Route::get('/presensi/izin', [PresensiController::class, 'izin']);
+    Route::get('/presensi/buatizin', [PresensiController::class, 'buatizin']);
+    Route::post('/presensi/storeizin', [PresensiController::class, 'storeizin']);
+    
+    // Notifikasi Check (API untuk cek update izin)
+    Route::get('/check-izin-updates', function () {
+        try {
+            $userId = Auth::user()->nik;
+            $lastCheck = session('last_izin_check', now()->subMinutes(3));
+            
+            $recentUpdate = DB::table('pengajuan_izin')
+                ->where('nik', $userId)
+                ->where('updated_at', '>', $lastCheck)
+                ->whereIn('status_approved', [1, 2])
+                ->orderBy('updated_at', 'desc')
+                ->first();
+            
+            session(['last_izin_check' => now()]);
+            
+            if ($recentUpdate) {
+                $status = $recentUpdate->status_approved == 1 ? 'approved' : 'rejected';
+                $message = $status == 'approved' 
+                    ? 'Pengajuan izin Anda tanggal ' . date('d/m/Y', strtotime($recentUpdate->tgl_izin)) . ' disetujui!'
+                    : 'Pengajuan izin ditolak. Alasan: ' . ($recentUpdate->alasan_tolak ?? 'Tidak memenuhi syarat');
+                
+                return response()->json([
+                    'success' => true,
+                    'has_update' => true,
+                    'notification' => [
+                        'status' => $status,
+                        'message' => $message
+                    ]
+                ]);
+            }
             
             return response()->json([
                 'success' => true,
-                'has_update' => true,
-                'notification' => [
-                    'status' => $status,
-                    'message' => $message
-                ]
+                'has_update' => false
             ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'has_update' => false
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage()
-        ], 500);
-    }
+    });
 });
 
+// ==================== ROUTE UNTUK ADMIN (Sudah Login) ====================
+Route::middleware(['auth:user'])->group(function () {
+    // Dashboard Admin
+    Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin']);
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/dashboard/data', [DashboardController::class, 'getDashboardData'])->name('admin.dashboard.data');
+    Route::get('/logoutadmin', [AuthController::class, 'logoutadmin']);
+    
+    // ===== Data Karyawan =====
+    Route::get('/karyawan', [KaryawanController::class, 'index']);
+    Route::post('/karyawan/store', [KaryawanController::class, 'store']);
+    Route::post('/karyawan/edit', [KaryawanController::class, 'edit']);
+    Route::post('/karyawan/{nik}/update', [KaryawanController::class, 'update']);
+    Route::put('/karyawan/{nik}/update', [KaryawanController::class, 'update']);
+    Route::post('/karyawan/{nik}/delete', [KaryawanController::class, 'delete']);
+    
+    // ===== Departemen =====
+    Route::get('/departemen', [DepartemenController::class, 'index']);
+    Route::post('/departemen/store', [DepartemenController::class, 'store']);
+    Route::post('/departemen/edit', [DepartemenController::class, 'edit']);
+    Route::post('/departemen/{kode_dept}/update', [DepartemenController::class, 'update']);
+    Route::post('/departemen/{kode_dept}/delete', [DepartemenController::class, 'delete']);
+    
+    // ===== Monitoring Presensi =====
+    Route::get('/presensi/monitoring', [PresensiController::class, 'monitoring']);
+    Route::post('/getpresensi', [PresensiController::class, 'getpresensi']);
+    Route::post('/presensi/showmap', [PresensiController::class, 'showmap']);
+    Route::post('/map', [PresensiController::class, 'showMap'])->name('map.show');
+    Route::delete('/presensi/delete/{id}', [PresensiController::class, 'deletePresensi']);
+    
+    // ===== Laporan =====
+    Route::get('/presensi/laporan', [PresensiController::class, 'laporan']);
+    Route::post('/presensi/cetaklaporan', [PresensiController::class, 'cetaklaporan']);
+    
+    // ===== Rekap =====
+    Route::get('/presensi/rekap', [PresensiController::class, 'rekap']);
+    Route::post('/presensi/cetakrekap', [PresensiController::class, 'cetakrekap']);
+    
+    // ===== Izin/Sakit =====
+    Route::get('/presensi/izinsakit', [PresensiController::class, 'izinsakit']);
+    Route::get('/presensi/izinsakit/filter', [PresensiController::class, 'filterIzinSakit']);
+    Route::post('/presensi/approved', [PresensiController::class, 'approved']);
+    Route::get('/presensi/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit']);
+    Route::get('/presensi/{id}/lihatbukti', [PresensiController::class, 'lihatbukti']);
+    Route::get('/presensi/{id}/downloadbukti', [PresensiController::class, 'downloadbukti']);
+    
+    // ===== Konfigurasi =====
+    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+    
+    // ===== Data Admin =====
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/store', [AdminController::class, 'store'])->name('admin.store');
+    Route::post('/admin/edit', [AdminController::class, 'edit'])->name('admin.edit');
+    Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
+    Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
 });

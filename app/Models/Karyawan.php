@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Karyawan extends Authenticatable
 {
-  use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -18,12 +18,21 @@ class Karyawan extends Authenticatable
      */
     protected $table = "karyawan";
     protected $primaryKey = "nik";
+    
+    // ⭐ PERBAIKAN: Tambahkan ini karena NIK bukan auto increment dan bertipe string
+    public $incrementing = false;
+    protected $keyType = 'string';
+    public $timestamps = false; // Karena tabel karyawan tidak punya created_at & updated_at
+    
     protected $fillable = [
         'nik',
         'nama_lengkap',
         'jabatan',
-         'no_hp',
-          'password',
+        'no_hp',
+        'foto',
+        'kode_dept',
+        'password',
+        'remember_token',
     ];
 
     protected $hidden = [
@@ -40,5 +49,3 @@ class Karyawan extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 }
-
-

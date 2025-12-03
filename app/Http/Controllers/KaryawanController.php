@@ -48,13 +48,14 @@ class KaryawanController extends Controller
 
     public function store(Request $request)
     {
-        // ✅ Validasi input
+        // ✅ Validasi input - TAMBAHKAN PASSWORD
         $request->validate([
             'nik' => 'required|unique:karyawan,nik',
             'nama_lengkap' => 'required',
             'jabatan' => 'required',
             'no_hp' => 'required',
             'kode_dept' => 'required',
+            'password' => 'required|min:6', // ⭐ PERBAIKAN: Tambah validasi password
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             // Pesan error yang lebih ramah
@@ -64,6 +65,8 @@ class KaryawanController extends Controller
             'jabatan.required' => 'Jabatan wajib diisi.',
             'no_hp.required' => 'Nomor HP wajib diisi.',
             'kode_dept.required' => 'Departemen wajib dipilih.',
+            'password.required' => 'Password wajib diisi.', // ⭐ PERBAIKAN
+            'password.min' => 'Password minimal 6 karakter.', // ⭐ PERBAIKAN
         ]);
 
         try {
@@ -72,7 +75,10 @@ class KaryawanController extends Controller
             $jabatan = $request->jabatan;
             $no_hp = $request->no_hp;
             $kode_dept = $request->kode_dept;
-            $password = Hash::make('12345'); // ✅ Password default di-hash
+            
+            // ⭐ PERBAIKAN: Ambil password dari input admin, bukan hardcode '12345'
+            $password = Hash::make($request->password);
+            
             $foto = null;
 
             // ✅ Proses upload foto jika ada
@@ -91,7 +97,7 @@ class KaryawanController extends Controller
                 'foto' => $foto,
                 'kode_dept' => $kode_dept,
                 'password' => $password,
-                'remember_token' => Str::random(60), // ✅ Token acak biar tidak NULL
+                'remember_token' => Str::random(60),
             ]);
 
             return Redirect::back()->with(['success' => 'Data karyawan berhasil disimpan!']);
