@@ -265,7 +265,6 @@
 </div>
 @endsection
 
-@push('scripts')
 <script>
     // ===== GLOBAL VARIABLES =====
     let faceVerified = false;
@@ -276,10 +275,10 @@
     let modelsLoaded = false;
     let referenceFaceDescriptor = null;
 
-    const SIMILARITY_THRESHOLD = 0.6; // Threshold untuk face matching (semakin rendah = semakin strict)
+    const SIMILARITY_THRESHOLD = 0.45;
     const userNik = '{{ Auth::guard("karyawan")->user()->nik }}';
 
-    // ===== INISIALISASI =====
+    // ===== INISIALISASI (OPTIMIZED) =====
     document.addEventListener('DOMContentLoaded', async function() {
         video = document.getElementById('webcam');
         canvas = document.getElementById('face-overlay');
@@ -287,30 +286,73 @@
         takeAbsenBtn = document.getElementById('takeabsen');
         referenceImage = document.getElementById('reference-face');
 
-        // Load Face-API Models
-        await loadFaceModels();
+        // OPTIMASI: Jalankan secara paralel
+        try {
+            await Promise.all([
+                setupWebcam(), // Prioritas pertama - langsung akses kamera
+                loadFaceModels(), // Load models sambil kamera menyala
+                setupLocation() // Load lokasi bersamaan
+            ]);
 
-        // Load Reference Face Descriptor
-        await loadReferenceFace();
+            // Load reference face setelah models loaded
+            await loadReferenceFace();
 
-        // Setup Webcam
-        await setupWebcam();
-
-        // Start Face Detection
-        startFaceDetection();
-
-        // Setup Location & Map
-        setupLocation();
+            // Start detection
+            startFaceDetection();
+        } catch (error) {
+            console.error('Initialization error:', error);
+        }
     });
 
-    // ===== LOAD FACE-API MODELS =====
-    async function loadFaceModels() {
+    // ===== SETUP WEBCAM (OPTIMIZED) =====
+    async function setupWebcam() {
         try {
             faceStatus.style.display = 'flex';
-            faceStatus.innerHTML = '<span class="spinner"></span><span>Memuat model AI...</span>';
+            faceStatus.className = 'face-loading';
+            faceStatus.innerHTML = '<span class="spinner"></span><span>Mengaktifkan kamera...</span>';
 
+            // OPTIMASI: Gunakan constraint yang lebih ringan
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640, max: 1280 }, 
+                    height: { ideal: 480, max: 720 },
+                    facingMode: 'user',
+                    frameRate: { ideal: 30, max: 30 } // Batasi frame rate
+                },
+                audio: false // Explicitly disable audio
+            });
+            
+            video.srcObject = stream;
+            
+            // OPTIMASI: Gunakan play() promise untuk faster loading
+            await video.play();
+            
+            // Set canvas size setelah video ready
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            console.log('✅ Webcam initialized');
+            faceStatus.innerHTML = '<span class="spinner"></span><span>Memuat model AI...</span>';
+        } catch (error) {
+            console.error('❌ Webcam error:', error);
+            faceStatus.className = 'face-not-verified';
+            faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Gagal mengakses kamera</span>';
+            
+            Swal.fire({
+                title: "Error!",
+                text: "Tidak dapat mengakses kamera! Pastikan izin kamera telah diberikan.",
+                icon: "error",
+            });
+            throw error;
+        }
+    }
+
+    // ===== LOAD FACE-API MODELS (OPTIMIZED) =====
+    async function loadFaceModels() {
+        try {
             const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
             
+            // OPTIMASI: Load models secara paralel
             await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -323,23 +365,24 @@
             console.error('❌ Error loading models:', error);
             faceStatus.className = 'face-not-verified';
             faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Gagal memuat model</span>';
+            throw error;
         }
     }
 
-    // ===== LOAD REFERENCE FACE (Foto saat register) =====
+    // ===== LOAD REFERENCE FACE (OPTIMIZED) =====
     async function loadReferenceFace() {
         try {
             faceStatus.innerHTML = '<span class="spinner"></span><span>Memuat foto referensi...</span>';
             
-            // Pastikan gambar loaded
-            await new Promise((resolve, reject) => {
-                if (referenceImage.complete) {
-                    resolve();
-                } else {
+            // OPTIMASI: Check if image is already loaded
+            if (!referenceImage.complete) {
+                await new Promise((resolve, reject) => {
                     referenceImage.onload = resolve;
                     referenceImage.onerror = () => reject(new Error('Gagal memuat foto referensi'));
-                }
-            });
+                    // Timeout after 5 seconds
+                    setTimeout(() => reject(new Error('Timeout loading reference image')), 5000);
+                });
+            }
 
             // Deteksi wajah dari foto referensi
             const detection = await faceapi
@@ -364,59 +407,37 @@
             });
             faceStatus.className = 'face-not-verified';
             faceStatus.innerHTML = '<ion-icon name="close-circle"></ion-icon><span>Foto wajah tidak ditemukan</span>';
+            throw error;
         }
     }
 
-    // ===== SETUP WEBCAM =====
-    async function setupWebcam() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    width: 640, 
-                    height: 480,
-                    facingMode: 'user'
-                } 
-            });
-            video.srcObject = stream;
-            
-            await new Promise(resolve => {
-                video.onloadedmetadata = () => {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    resolve();
-                };
-            });
-
-            console.log('✅ Webcam initialized');
-        } catch (error) {
-            console.error('❌ Webcam error:', error);
-            Swal.fire({
-                title: "Error!",
-                text: "Tidak dapat mengakses kamera!",
-                icon: "error",
-            });
-        }
-    }
-
-    // ===== START FACE DETECTION =====
+    // ===== START FACE DETECTION (OPTIMIZED) =====
     function startFaceDetection() {
         if (!modelsLoaded || !referenceFaceDescriptor) {
-            setTimeout(startFaceDetection, 1000);
+            console.log('Waiting for models and reference face...');
+            setTimeout(startFaceDetection, 500);
             return;
         }
 
+        // OPTIMASI: Gunakan interval yang lebih efisien (1 detik cukup)
         faceDetectionInterval = setInterval(async () => {
             await detectAndVerifyFace();
-        }, 500);
+        }, 1000); // Ubah dari 500ms ke 1000ms untuk performance
+
+        console.log('✅ Face detection started');
     }
 
-    // ===== DETECT & VERIFY FACE =====
+    // ===== DETECT & VERIFY FACE (OPTIMIZED) =====
     async function detectAndVerifyFace() {
         if (!video || video.readyState !== 4 || !referenceFaceDescriptor) return;
 
         try {
+            // OPTIMASI: Gunakan options yang lebih cepat
             const detections = await faceapi
-                .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ 
+                    minConfidence: 0.5,
+                    maxResults: 2 // Batasi hanya 2 wajah untuk performance
+                }))
                 .withFaceLandmarks()
                 .withFaceDescriptors();
 
@@ -424,7 +445,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (detections.length === 0) {
-                // Tidak ada wajah
                 faceVerified = false;
                 faceStatus.className = 'face-detecting';
                 faceStatus.innerHTML = '<ion-icon name="scan-outline"></ion-icon><span>Tidak ada wajah</span>';
@@ -432,7 +452,6 @@
                 takeAbsenBtn.disabled = true;
                 document.getElementById('button-hint').textContent = 'Posisikan wajah Anda di depan kamera';
             } else if (detections.length > 1) {
-                // Lebih dari 1 wajah
                 faceVerified = false;
                 faceStatus.className = 'face-not-verified';
                 faceStatus.innerHTML = '<ion-icon name="warning"></ion-icon><span>Terdeteksi ' + detections.length + ' wajah!</span>';
@@ -444,14 +463,12 @@
                     drawFaceBox(detection.detection.box, '#ff0000');
                 });
             } else {
-                // 1 wajah terdeteksi - bandingkan dengan foto referensi
                 const detection = detections[0];
                 const distance = faceapi.euclideanDistance(referenceFaceDescriptor, detection.descriptor);
                 
                 console.log('Face distance:', distance, '(Threshold:', SIMILARITY_THRESHOLD, ')');
 
                 if (distance < SIMILARITY_THRESHOLD) {
-                    // ✅ WAJAH COCOK
                     faceVerified = true;
                     const similarity = Math.round((1 - distance) * 100);
                     faceStatus.className = 'face-verified';
@@ -465,7 +482,6 @@
 
                     drawFaceBox(detection.detection.box, '#00ff00');
                 } else {
-                    // ❌ WAJAH TIDAK COCOK
                     faceVerified = false;
                     const similarity = Math.round((1 - distance) * 100);
                     faceStatus.className = 'face-not-verified';
@@ -521,12 +537,30 @@
         ctx.stroke();
     }
 
-    // ===== SETUP LOCATION =====
-    function setupLocation() {
-        var lokasi = document.getElementById('lokasi');
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-        }
+    // ===== SETUP LOCATION (OPTIMIZED) =====
+    async function setupLocation() {
+        return new Promise((resolve) => {
+            var lokasi = document.getElementById('lokasi');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        successCallback(position);
+                        resolve();
+                    },
+                    (error) => {
+                        errorCallback(error);
+                        resolve(); // Tetap resolve meskipun error
+                    },
+                    {
+                        enableHighAccuracy: false, // OPTIMASI: Gunakan low accuracy untuk faster response
+                        timeout: 10000,
+                        maximumAge: 30000 // Cache lokasi selama 30 detik
+                    }
+                );
+            } else {
+                resolve();
+            }
+        });
     }
 
     function successCallback(position) {
@@ -612,7 +646,8 @@
         return R * c;
     }
 
-    function errorCallback() {
+    function errorCallback(error) {
+        console.error('Geolocation error:', error);
         Swal.fire({
             title: "Error!",
             text: "Tidak bisa mendapatkan lokasi! Pastikan GPS aktif.",
@@ -690,6 +725,7 @@
         });
     });
 
+    // Cleanup
     window.addEventListener('beforeunload', () => {
         if (faceDetectionInterval) {
             clearInterval(faceDetectionInterval);
@@ -699,4 +735,3 @@
         }
     });
 </script>
-@endpush

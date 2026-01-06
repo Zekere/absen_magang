@@ -31,151 +31,151 @@ class PresensiController extends Controller
         return view('presensi.create', compact('cek', 'lok_kantor'));
     }
 
-   public function store(Request $request)
-{
-    try {
-        $user = Auth::guard('karyawan')->user();
-        if (!$user) {
-            echo "error|User tidak ditemukan|x";
-            return;
-        }
-
-        $nik = $user->nik;
-        $tgl_presensi = date('Y-m-d');
-        $jam = date('H:i:s');
-
-        // ===== VALIDASI FACE VERIFICATION =====
-        $face_verified = $request->face_verified ?? 0;
-        
-        if ($face_verified != 1) {
-            echo "error|Wajah Anda belum terverifikasi! Pastikan wajah terlihat jelas di kamera.|x";
-            return;
-        }
-
-        $cek_count = DB::table('presensi')
-            ->where('tgl_presensi', $tgl_presensi)
-            ->where('nik', $nik)
-            ->count();
-
-        if ($cek_count >= 2) {
-            echo "error|Anda sudah melakukan absen masuk dan pulang hari ini|x";
-            return;
-        }
-
-        $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-        $lok = explode(",", $lok_kantor->lokasi_kantor);
-        $latitudekantor = $lok[0];
-        $longitudekantor = $lok[1];
-
-        $lokasi = $request->lokasi;
-        if (!$lokasi) {
-            echo "error|Lokasi tidak dikirim|x";
-            return;
-        }
-
-        $lokasiuser = explode(",", $lokasi);
-        if (count($lokasiuser) < 2) {
-            echo "error|Format lokasi tidak valid|x";
-            return;
-        }
-
-        $latitudeuser = floatval(trim($lokasiuser[0]));
-        $longitudeuser = floatval(trim($lokasiuser[1]));
-        $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
-        $radius = round($jarak['meters']);
-
-        // Tentukan status lokasi
-        $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
-        
-        $cek = DB::table('presensi')
-            ->where('tgl_presensi', $tgl_presensi)
-            ->where('nik', $nik)
-            ->first();
-
-        $ket = $cek ? "out" : "in";
-        $image = $request->image;
-        if (!$image) {
-            echo "error|Foto tidak dikirim|x";
-            return;
-        }
-
-        $image_parts = explode(";base64,", $image);
-        if (count($image_parts) < 2) {
-            echo "error|Format foto tidak valid|x";
-            return;
-        }
-
-        $image_base64 = base64_decode($image_parts[1]);
-        if ($image_base64 === false) {
-            echo "error|Gagal decode gambar|x";
-            return;
-        }
-
-        $folderPath = 'public/uploads/absensi/';
-        $fileName = $nik . "-" . $tgl_presensi . "-" . $ket . '.png';
-        $file = $folderPath . $fileName;
-
-        if (!$cek) {
-            // ===== ABSEN MASUK =====
-            $data_masuk = [
-                'nik' => $nik,
-                'tgl_presensi' => $tgl_presensi,
-                'jam_in' => $jam,
-                'foto_in' => $fileName,
-                'lokasi_in' => $lokasi,
-                'status_lokasi_in' => $status_lokasi,
-                'jarak_in' => $radius
-            ];
-
-            $simpan = DB::table('presensi')->insert($data_masuk);
-
-            if ($simpan) {
-                Storage::put($file, $image_base64);
-                
-                if ($status_lokasi == 'luar_kantor') {
-                    echo "success|Absen berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|in";
-                } else {
-                    echo "success|Terima Kasih, Wajah Terverifikasi! Selamat Bekerja!|in";
-                }
-                return;
-            }
-        } else {
-            // ===== ABSEN PULANG =====
-            if (!empty($cek->jam_out)) {
-                echo "error|Anda sudah melakukan absen pulang hari ini|x";
+    public function store(Request $request)
+    {
+        try {
+            $user = Auth::guard('karyawan')->user();
+            if (!$user) {
+                echo "error|User tidak ditemukan|x";
                 return;
             }
 
-            $data_pulang = [
-                'jam_out' => $jam,
-                'foto_out' => $fileName,
-                'lokasi_out' => $lokasi,
-                'status_lokasi_out' => $status_lokasi,
-                'jarak_out' => $radius
-            ];
+            $nik = $user->nik;
+            $tgl_presensi = date('Y-m-d');
+            $jam = date('H:i:s');
 
-            $update = DB::table('presensi')
+            // ===== VALIDASI FACE VERIFICATION =====
+            $face_verified = $request->face_verified ?? 0;
+            
+            if ($face_verified != 1) {
+                echo "error|Wajah Anda belum terverifikasi! Pastikan wajah terlihat jelas di kamera.|x";
+                return;
+            }
+
+            $cek_count = DB::table('presensi')
                 ->where('tgl_presensi', $tgl_presensi)
                 ->where('nik', $nik)
-                ->update($data_pulang);
+                ->count();
 
-            if ($update) {
-                Storage::put($file, $image_base64);
-                
-                if ($status_lokasi == 'luar_kantor') {
-                    echo "success|Absen pulang berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|out";
-                } else {
-                    echo "success|Terima Kasih, Wajah Terverifikasi! Hati-hati di jalan!|out";
-                }
+            if ($cek_count >= 2) {
+                echo "error|Anda sudah melakukan absen masuk dan pulang hari ini|x";
                 return;
             }
-        }
 
-        echo "error|Gagal menyimpan presensi|x";
-    } catch (\Exception $e) {
-        echo "error|Terjadi kesalahan: " . $e->getMessage() . "|x";
+            $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+            $lok = explode(",", $lok_kantor->lokasi_kantor);
+            $latitudekantor = $lok[0];
+            $longitudekantor = $lok[1];
+
+            $lokasi = $request->lokasi;
+            if (!$lokasi) {
+                echo "error|Lokasi tidak dikirim|x";
+                return;
+            }
+
+            $lokasiuser = explode(",", $lokasi);
+            if (count($lokasiuser) < 2) {
+                echo "error|Format lokasi tidak valid|x";
+                return;
+            }
+
+            $latitudeuser = floatval(trim($lokasiuser[0]));
+            $longitudeuser = floatval(trim($lokasiuser[1]));
+            $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
+            $radius = round($jarak['meters']);
+
+            // Tentukan status lokasi
+            $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
+            
+            $cek = DB::table('presensi')
+                ->where('tgl_presensi', $tgl_presensi)
+                ->where('nik', $nik)
+                ->first();
+
+            $ket = $cek ? "out" : "in";
+            $image = $request->image;
+            if (!$image) {
+                echo "error|Foto tidak dikirim|x";
+                return;
+            }
+
+            $image_parts = explode(";base64,", $image);
+            if (count($image_parts) < 2) {
+                echo "error|Format foto tidak valid|x";
+                return;
+            }
+
+            $image_base64 = base64_decode($image_parts[1]);
+            if ($image_base64 === false) {
+                echo "error|Gagal decode gambar|x";
+                return;
+            }
+
+            $folderPath = 'public/uploads/absensi/';
+            $fileName = $nik . "-" . $tgl_presensi . "-" . $ket . '.png';
+            $file = $folderPath . $fileName;
+
+            if (!$cek) {
+                // ===== ABSEN MASUK =====
+                $data_masuk = [
+                    'nik' => $nik,
+                    'tgl_presensi' => $tgl_presensi,
+                    'jam_in' => $jam,
+                    'foto_in' => $fileName,
+                    'lokasi_in' => $lokasi,
+                    'status_lokasi_in' => $status_lokasi,
+                    'jarak_in' => $radius
+                ];
+
+                $simpan = DB::table('presensi')->insert($data_masuk);
+
+                if ($simpan) {
+                    Storage::put($file, $image_base64);
+                    
+                    if ($status_lokasi == 'luar_kantor') {
+                        echo "success|Absen berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|in";
+                    } else {
+                        echo "success|Terima Kasih, Wajah Terverifikasi! Selamat Bekerja!|in";
+                    }
+                    return;
+                }
+            } else {
+                // ===== ABSEN PULANG =====
+                if (!empty($cek->jam_out)) {
+                    echo "error|Anda sudah melakukan absen pulang hari ini|x";
+                    return;
+                }
+
+                $data_pulang = [
+                    'jam_out' => $jam,
+                    'foto_out' => $fileName,
+                    'lokasi_out' => $lokasi,
+                    'status_lokasi_out' => $status_lokasi,
+                    'jarak_out' => $radius
+                ];
+
+                $update = DB::table('presensi')
+                    ->where('tgl_presensi', $tgl_presensi)
+                    ->where('nik', $nik)
+                    ->update($data_pulang);
+
+                if ($update) {
+                    Storage::put($file, $image_base64);
+                    
+                    if ($status_lokasi == 'luar_kantor') {
+                        echo "success|Absen pulang berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|out";
+                    } else {
+                        echo "success|Terima Kasih, Wajah Terverifikasi! Hati-hati di jalan!|out";
+                    }
+                    return;
+                }
+            }
+
+            echo "error|Gagal menyimpan presensi|x";
+        } catch (\Exception $e) {
+            echo "error|Terjadi kesalahan: " . $e->getMessage() . "|x";
+        }
     }
-}
 
     private function distance($lat1, $lon1, $lat2, $lon2)
     {
@@ -278,53 +278,73 @@ class PresensiController extends Controller
     }
 
     public function storeizin(Request $request)
-{
-    $nik = Auth::guard('karyawan')->user()->nik;
-    $tgl_izin = $request->tgl_izin;
-    $status = $request->status;
-    $keterangan = $request->keterangan;
-    $bukti_surat = null;
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $tgl_izin = $request->tgl_izin;
+        $status = $request->status;
+        $keterangan = $request->keterangan;
+        $bukti_surat = null;
 
-    // 🔍 Cek apakah sudah ada izin di tanggal yang sama
-    $cekIzin = DB::table('pengajuan_izin')
-        ->where('nik', $nik)
-        ->whereDate('tgl_izin', $tgl_izin)
-        ->first();
+        // 🔍 Cek apakah sudah ada izin di tanggal yang sama
+        $cekIzin = DB::table('pengajuan_izin')
+            ->where('nik', $nik)
+            ->whereDate('tgl_izin', $tgl_izin)
+            ->first();
 
-    if ($cekIzin) {
-        return redirect('/presensi/buatizin')
-            ->with('error', 'Anda sudah mengajukan izin pada tanggal tersebut!');
+        if ($cekIzin) {
+            return redirect('/presensi/buatizin')
+                ->with('error', 'Anda sudah mengajukan izin pada tanggal tersebut!');
+        }
+
+        // 📎 Upload file jika ada
+        if ($request->hasFile('bukti_surat')) {
+            $file = $request->file('bukti_surat');
+            $ext = $file->getClientOriginalExtension();
+            $filename = $nik . '-' . date('YmdHis') . '.' . $ext;
+            $path = public_path('storage/uploads/izin');
+            
+            // Buat folder jika belum ada
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            
+            $file->move($path, $filename);
+            $bukti_surat = $filename;
+        }
+
+        // ⭐ LOGIC AUTO-APPROVE UNTUK SAKIT
+        // Status 1 = Izin (perlu approval)
+        // Status 2 = Sakit (auto-approved) 🔥
+        // Status 3 = Cuti (perlu approval)
+        
+        if ($status == '2') {
+            // 🩺 SAKIT = AUTO-APPROVED
+            $status_approved = 1; // Langsung disetujui
+            $message = 'Pengajuan sakit berhasil! Status sudah otomatis disetujui.';
+        } else {
+            // 📝 IZIN & CUTI = PERLU APPROVAL
+            $status_approved = 0; // Menunggu approval
+            $message = 'Pengajuan berhasil dikirim. Menunggu persetujuan admin.';
+        }
+
+        // 💾 Simpan data baru
+        $data = [
+            'nik' => $nik,
+            'tgl_izin' => $tgl_izin,
+            'status' => $status,
+            'keterangan' => $keterangan,
+            'bukti_surat' => $bukti_surat,
+            'status_approved' => $status_approved, // ⭐ Auto-approve jika sakit
+        ];
+
+        $simpan = DB::table('pengajuan_izin')->insert($data);
+
+        if ($simpan) {
+            return redirect('/presensi/izin')->with('success', $message);
+        } else {
+            return redirect('/presensi/izin')->with('error', 'Gagal mengirim pengajuan izin');
+        }
     }
-
-    // 📎 Upload file jika ada
-    if ($request->hasFile('bukti_surat')) {
-        $file = $request->file('bukti_surat');
-        $ext = $file->getClientOriginalExtension();
-        $filename = $nik . '-' . date('YmdHis') . '.' . $ext;
-        $path = public_path('storage/uploads/izin');
-        $file->move($path, $filename);
-        $bukti_surat = $filename;
-    }
-
-    // 💾 Simpan data baru
-    $data = [
-        'nik' => $nik,
-        'tgl_izin' => $tgl_izin,
-        'status' => $status,
-        'keterangan' => $keterangan,
-        'bukti_surat' => $bukti_surat,
-        'status_approved' => 0,
-    ];
-
-    $simpan = DB::table('pengajuan_izin')->insert($data);
-
-    if ($simpan) {
-        return redirect('/presensi/izin')->with('success', 'Pengajuan izin berhasil dikirim');
-    } else {
-        return redirect('/presensi/izin')->with('error', 'Gagal mengirim pengajuan izin');
-    }
-}
-
 
     public function lihatbukti($id)
     {
@@ -355,7 +375,6 @@ class PresensiController extends Controller
         return view('presensi.monitoring');
     }
 
-    // METHOD GETPRESENSI YANG SUDAH DIOPTIMASI
     public function getpresensi(Request $request)
     {
         $tanggal = $request->tanggal;
@@ -367,14 +386,12 @@ class PresensiController extends Controller
             ->where('tgl_presensi', $tanggal)
             ->get();
 
-        // Ambil lokasi kantor SATU KALI saja
         $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
         $lokasi_kantor = explode(',', $lok_kantor->lokasi_kantor);
         $lat_kantor = (float) trim($lokasi_kantor[0]);
         $long_kantor = (float) trim($lokasi_kantor[1]);
         $radius_kantor = $lok_kantor->radius;
 
-        // JAM KERJA DEFAULT (Sesuaikan dengan jam kerja kantor Anda)
         $jam_masuk_default = '07:30:00';
 
         $no = 0;
@@ -391,7 +408,6 @@ class PresensiController extends Controller
             foreach ($presensi as $d) {
                 $no++;
                 
-                // HITUNG LOKASI MASUK (Optimasi)
                 $lokasi_masuk_status = '-';
                 if (!empty($d->lokasi_in)) {
                     $lok_masuk = explode(',', $d->lokasi_in);
@@ -411,7 +427,6 @@ class PresensiController extends Controller
                     }
                 }
 
-                // HITUNG LOKASI PULANG (Optimasi)
                 $lokasi_pulang_status = '-';
                 if (!empty($d->lokasi_out)) {
                     $lok_pulang = explode(',', $d->lokasi_out);
@@ -431,7 +446,6 @@ class PresensiController extends Controller
                     }
                 }
 
-                // HITUNG KETERLAMBATAN
                 $keterangan = '-';
                 if (!empty($d->jam_in)) {
                     $jam_masuk_real = strtotime($d->jam_in);
@@ -452,7 +466,6 @@ class PresensiController extends Controller
                     }
                 }
 
-                // FOTO (Optimasi URL)
                 $foto_in = !empty($d->foto_in) 
                     ? '<img src="' . asset('storage/uploads/absensi/' . $d->foto_in) . '" class="img-thumbnail" style="max-width: 60px; cursor: pointer;" onclick="showImage(this.src)">' 
                     : '<span class="text-muted">-</span>';
@@ -461,7 +474,6 @@ class PresensiController extends Controller
                     ? '<img src="' . asset('storage/uploads/absensi/' . $d->foto_out) . '" class="img-thumbnail" style="max-width: 60px; cursor: pointer;" onclick="showImage(this.src)">' 
                     : '<span class="text-muted">-</span>';
 
-                // BUILD HTML (Single String Concatenation)
                 $html .= '<tr>';
                 $html .= '<td>' . $no . '</td>';
                 $html .= '<td>' . $d->nik . '</td>';
@@ -485,10 +497,9 @@ class PresensiController extends Controller
         echo $html;
     }
 
-    // FUNGSI HITUNG JARAK YANG LEBIH CEPAT
     private function hitungJarakCepat($lat1, $lon1, $lat2, $lon2)
     {
-        $R = 6371000; // Radius bumi dalam meter
+        $R = 6371000;
         
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
@@ -499,10 +510,9 @@ class PresensiController extends Controller
         
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         
-        return $R * $c; // Jarak dalam meter
+        return $R * $c;
     }
 
-    // METHOD UNTUK MENAMPILKAN MAP
     public function showmap(Request $request)
     {
         $id = $request->id;
@@ -512,14 +522,12 @@ class PresensiController extends Controller
         return view('presensi.showmap', compact('presensi', 'lok_kantor'));
     }
 
-    // METHOD UNTUK MENGHAPUS PRESENSI
     public function deletePresensi($id)
     {
         try {
             $presensi = DB::table('presensi')->where('id', $id)->first();
             
             if ($presensi) {
-                // Hapus foto jika ada
                 if (!empty($presensi->foto_in)) {
                     Storage::delete('public/uploads/absensi/' . $presensi->foto_in);
                 }
@@ -527,7 +535,6 @@ class PresensiController extends Controller
                     Storage::delete('public/uploads/absensi/' . $presensi->foto_out);
                 }
                 
-                // Hapus data presensi
                 DB::table('presensi')->where('id', $id)->delete();
                 
                 return response()->json(['status' => 'success', 'message' => 'Data berhasil dihapus']);
@@ -555,31 +562,31 @@ class PresensiController extends Controller
         return view('presensi.laporan', compact('namabulan', 'karyawan'));
     }
 
-public function cetaklaporan(Request $request)
-{
-    $nik = $request->nik;
-    $bulan = $request->bulan;
-    $tahun = $request->tahun;
-    $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    
-    $karyawan = DB::table('karyawan')->where('nik', $nik)
-        ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-        ->first();
+    public function cetaklaporan(Request $request)
+    {
+        $nik = $request->nik;
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+        $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        $karyawan = DB::table('karyawan')->where('nik', $nik)
+            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+            ->first();
 
-    $presensi = DB::table('presensi')
-        ->where('nik', $nik)
-        ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
-        ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
-        ->orderBy('tgl_presensi')
-        ->get();
+        $presensi = DB::table('presensi')
+            ->where('nik', $nik)
+            ->whereRaw('MONTH(tgl_presensi)="' . $bulan . '"')
+            ->whereRaw('YEAR(tgl_presensi)="' . $tahun . '"')
+            ->orderBy('tgl_presensi')
+            ->get();
 
-    // Export to Excel with Images
-    if (isset($_POST['exportexcel'])) {
-        return $this->exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan);
+        if (isset($_POST['exportexcel'])) {
+            return $this->exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan);
+        }
+
+        return view('presensi.cetaklaporan', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'presensi'));
     }
 
-    return view('presensi.cetaklaporan', compact('bulan', 'tahun', 'namabulan', 'karyawan', 'presensi'));
-}
     private function exportLaporanToExcel($karyawan, $presensi, $bulan, $tahun, $namabulan)
     {
         $spreadsheet = new Spreadsheet();
@@ -671,7 +678,7 @@ public function cetaklaporan(Request $request)
                     $sheet->setCellValue('F' . $row, 'Tidak Ada Foto');
                 }
             } else {
-                $sheet->setCellValue('F' . $row ,$sheet->setCellValue('F' . $row, '-'));
+                $sheet->setCellValue('F' . $row, '-');
             }
 
             $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
@@ -681,7 +688,7 @@ public function cetaklaporan(Request $request)
             $row++;
         }
 
-        $filename = 'Laporan_Presensi_' . $karyawan->nama_lengkap . '' . $namabulan[$bulan] . '' . $tahun . '.xlsx';
+        $filename = 'Laporan_Presensi_' . $karyawan->nama_lengkap . '_' . $namabulan[$bulan] . '_' . $tahun . '.xlsx';
         
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');

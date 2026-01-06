@@ -23,7 +23,7 @@
             </div>
             <h4 id="today-date" class="fw-bold mb-2 date-text"></h4>
             <h3 id="today-time" class="time-text mb-0"></h3>
-            <small class="text-muted mt-2 d-block">Waktu Real-time</small>
+            <small class="text-muted mt-2 d-block" style="color: rgba(255,255,255,0.8) !important;">Waktu Real-time</small>
         </div>
     </div>
 
@@ -115,6 +115,30 @@
     <!-- Histori Results -->
     <div id="showhistori"></div>
 
+</div>
+
+<!-- Modal Lightbox untuk Preview Foto -->
+<div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox(event)">
+    <div class="lightbox-content">
+        <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
+        <img id="lightboxImage" src="" alt="Preview Foto">
+        <div class="lightbox-info">
+            <div class="lightbox-info-header">
+                <h3 id="lightboxTitle"></h3>
+                <span id="lightboxDate" class="date-badge"></span>
+            </div>
+            <div class="lightbox-info-body">
+                <div class="info-block masuk">
+                    <div class="info-block-label">Jam Masuk</div>
+                    <div class="info-block-value" id="lightboxJamIn">-</div>
+                </div>
+                <div class="info-block pulang">
+                    <div class="info-block-label">Jam Pulang</div>
+                    <div class="info-block-value" id="lightboxJamOut">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -268,6 +292,152 @@
     height: 3rem;
 }
 
+/* Style untuk preview foto */
+.foto-preview {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.foto-preview:hover {
+    transform: scale(1.05);
+}
+
+/* Modal Lightbox */
+.lightbox-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lightbox-content {
+    position: relative;
+    margin: auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: zoomIn 0.3s;
+}
+
+@keyframes zoomIn {
+    from { transform: translateY(-50%) scale(0.5); }
+    to { transform: translateY(-50%) scale(1); }
+}
+
+.lightbox-content img {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    margin-bottom: 20px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: -15px;
+    right: 5px;
+    color: #fff;
+    font-size: 45px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10000;
+    transition: all 0.3s;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close:hover {
+    color: #ff4d4d;
+    transform: rotate(90deg);
+}
+
+.lightbox-info {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    color: #fff;
+}
+
+.lightbox-info-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.lightbox-info-header h3 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lightbox-info-header .date-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.lightbox-info-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.info-block {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.info-block:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.info-block-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-block-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.info-block.masuk {
+    border-left: 4px solid #22c55e;
+}
+
+.info-block.pulang {
+    border-left: 4px solid #ef4444;
+}
+
 /* Responsive */
 @media (max-width: 576px) {
     .time-text {
@@ -285,6 +455,20 @@
     
     .clock-icon ion-icon {
         font-size: 32px;
+    }
+
+    .lightbox-info-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-block-value {
+        font-size: 20px;
+    }
+
+    .lightbox-close {
+        top: -10px;
+        right: 10px;
+        font-size: 40px;
     }
 }
 
@@ -309,6 +493,42 @@
 
 @push('scripts')
 <script>
+// Fungsi untuk membuka preview foto dengan informasi lengkap
+function openLightbox(imageSrc, tanggal, jamIn, jamOut, type) {
+    document.getElementById('lightboxImage').src = imageSrc;
+    
+    // Set title berdasarkan type
+    let titleText = type === 'in' ? 'Foto Masuk' : type === 'out' ? 'Foto Pulang' : 'Detail Presensi';
+    document.getElementById('lightboxTitle').innerHTML = titleText;
+    
+    // Set tanggal
+    document.getElementById('lightboxDate').innerHTML = tanggal;
+    
+    // Set jam masuk dan pulang
+    document.getElementById('lightboxJamIn').innerHTML = jamIn || '<small style="font-size:14px;">Belum Absen</small>';
+    document.getElementById('lightboxJamOut').innerHTML = jamOut || '<small style="font-size:14px;">Belum Absen</small>';
+    
+    // Tampilkan modal
+    document.getElementById('lightboxModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Fungsi untuk menutup preview foto
+function closeLightbox(event) {
+    if (event.target.id === 'lightboxModal' || event.target.className === 'lightbox-close') {
+        document.getElementById('lightboxModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Tutup dengan tombol ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.getElementById('lightboxModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
+
 $(function(){
     
     // AJAX Get Histori

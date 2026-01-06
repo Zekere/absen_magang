@@ -385,7 +385,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(0, 0, 0, 0.95);
     animation: fadeIn 0.3s;
 }
 
@@ -412,36 +412,104 @@
 
 .lightbox-content img {
     width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    margin-bottom: 20px;
 }
 
 .lightbox-close {
     position: absolute;
-    top: -10px;
-    right: 10px;
+    top: -15px;
+    right: 5px;
     color: #fff;
-    font-size: 40px;
+    font-size: 45px;
     font-weight: bold;
     cursor: pointer;
     z-index: 10000;
-    transition: color 0.3s;
+    transition: all 0.3s;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .lightbox-close:hover {
     color: #ff4d4d;
+    transform: rotate(90deg);
 }
 
 .lightbox-info {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
     color: #fff;
-    text-align: center;
-    margin-top: 15px;
-    font-size: 16px;
 }
 
-.lightbox-info .badge {
+.lightbox-info-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.lightbox-info-header h3 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lightbox-info-header .date-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 6px 20px;
+    border-radius: 20px;
     font-size: 14px;
-    margin: 5px;
+    font-weight: 600;
+    margin-top: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.lightbox-info-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.info-block {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.info-block:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.info-block-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-block-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.info-block.masuk {
+    border-left: 4px solid #22c55e;
+}
+
+.info-block.pulang {
+    border-left: 4px solid #ef4444;
 }
 
 /* Leaderboard Badges Alignment */
@@ -566,6 +634,17 @@
     padding: 0;
     border: none;
 }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .lightbox-info-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-block-value {
+        font-size: 20px;
+    }
+}
 </style>
 
 <!-- Tambahkan SweetAlert2 -->
@@ -582,8 +661,20 @@
         <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
         <img id="lightboxImage" src="" alt="Preview Foto">
         <div class="lightbox-info">
-            <div id="lightboxTitle"></div>
-            <div id="lightboxTime"></div>
+            <div class="lightbox-info-header">
+                <h3 id="lightboxTitle"></h3>
+                <span id="lightboxDate" class="date-badge"></span>
+            </div>
+            <div class="lightbox-info-body">
+                <div class="info-block masuk">
+                    <div class="info-block-label">Jam Masuk</div>
+                    <div class="info-block-value" id="lightboxJamIn">-</div>
+                </div>
+                <div class="info-block pulang">
+                    <div class="info-block-label">Jam Pulang</div>
+                    <div class="info-block-value" id="lightboxJamOut">-</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -711,11 +802,22 @@
         return false;
     }
 
-    // Fungsi untuk membuka preview foto
-    function openLightbox(imageSrc, title, time) {
+    // Fungsi untuk membuka preview foto dengan informasi lengkap
+    function openLightbox(imageSrc, tanggal, jamIn, jamOut, type) {
         document.getElementById('lightboxImage').src = imageSrc;
-        document.getElementById('lightboxTitle').innerHTML = '<strong>' + title + '</strong>';
-        document.getElementById('lightboxTime').innerHTML = '<span class="badge badge-info">' + time + '</span>';
+        
+        // Set title berdasarkan type
+        let titleText = type === 'in' ? 'Foto Masuk' : type === 'out' ? 'Foto Pulang' : 'Detail Presensi';
+        document.getElementById('lightboxTitle').innerHTML = titleText;
+        
+        // Set tanggal
+        document.getElementById('lightboxDate').innerHTML = tanggal;
+        
+        // Set jam masuk dan pulang
+        document.getElementById('lightboxJamIn').innerHTML = jamIn || '<small style="font-size:14px;">Belum Absen</small>';
+        document.getElementById('lightboxJamOut').innerHTML = jamOut || '<small style="font-size:14px;">Belum Absen</small>';
+        
+        // Tampilkan modal
         document.getElementById('lightboxModal').style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
@@ -826,11 +928,13 @@
                                 @if ($presensihariini != null)
                                     @php
                                         $path = Storage::url('uploads/absensi/'.$presensihariini->foto_in);
+                                        $tanggalHariIni = date('d-m-Y', strtotime($presensihariini->tgl_presensi));
+                                        $jamOut = $presensihariini->jam_out ?? 'Belum Absen';
                                     @endphp
                                     <img src="{{ $path }}" 
                                          alt="avatar" 
                                          class="imaged w64 rounded foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', 'Foto Masuk', '{{ $presensihariini->jam_in }}')">
+                                         onclick="openLightbox('{{ $path }}', '{{ $tanggalHariIni }}', '{{ $presensihariini->jam_in }}', '{{ $jamOut }}', 'in')">
                                 @else
                                     <ion-icon name="camera"></ion-icon>
                                 @endif
@@ -850,12 +954,13 @@
                             <div class="iconpresence">
                                 @if ($presensihariini != null && $presensihariini->foto_out != null)
                                     @php
-                                        $path = Storage::url('uploads/absensi/'.$presensihariini->foto_out);
+                                        $pathOut = Storage::url('uploads/absensi/'.$presensihariini->foto_out);
+                                        $tanggalHariIni = date('d-m-Y', strtotime($presensihariini->tgl_presensi));
                                     @endphp
-                                    <img src="{{ $path }}" 
+                                    <img src="{{ $pathOut }}" 
                                          alt="avatar" 
                                          class="imaged w64 rounded foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', 'Foto Pulang', '{{ $presensihariini->jam_out }}')">
+                                         onclick="openLightbox('{{ $pathOut }}', '{{ $tanggalHariIni }}', '{{ $presensihariini->jam_in }}', '{{ $presensihariini->jam_out }}', 'out')">
                                 @else
                                     <ion-icon name="camera"></ion-icon>
                                 @endif
@@ -873,7 +978,7 @@
 
     <div id="rekappresensi" class="mt-4">
         <h5 class="text-center fw-semibold mb-4">
-            Rekap Presensi Bulan {{ $namabulan[$bulanini] }} {{ $tahunini }}
+            Rekap Presensi Bulan {{ $namabulan[(int)$bulanini] ?? 'Tidak Valid' }} {{ $tahunini }}
         </h5>
 
         <div class="rekap-container">
@@ -936,6 +1041,7 @@
                         @php 
                             $path = Storage::url('uploads/absensi/'.$d->foto_in);
                             $tanggal = date('d-m-Y', strtotime($d->tgl_presensi));
+                            $jamOut = $d->jam_out ?? 'Belum Absen';
                         @endphp
                         <li>
                             <div class="history-item">
@@ -943,7 +1049,7 @@
                                     <img src="{{ $path }}" 
                                          alt="foto absen" 
                                          class="foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', 'Absen {{ $tanggal }}', '{{ $d->jam_in }}')">
+                                         onclick="openLightbox('{{ $path }}', '{{ $tanggal }}', '{{ $d->jam_in }}', '{{ $jamOut }}', 'history')">
                                 </div>
                                 <div class="in">
                                     <div class="left-content">

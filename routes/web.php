@@ -168,3 +168,16 @@ Route::middleware(['auth:user'])->group(function () {
     Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
     Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
 });
+
+// Tambahkan di routes/web.php dalam group admin
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    // ... routes lainnya
+    
+    // Event routes
+    Route::get('/events', [DashboardController::class, 'getEvents'])->name('admin.events.index');
+    Route::post('/events', [DashboardController::class, 'storeEvent'])->name('admin.events.store');
+    Route::get('/events/{id}', [DashboardController::class, 'getEventDetail'])->name('admin.events.show');
+    Route::put('/events/{id}', [DashboardController::class, 'updateEvent'])->name('admin.events.update');
+    Route::delete('/events/{id}', [DashboardController::class, 'deleteEvent'])->name('admin.events.delete');
+});

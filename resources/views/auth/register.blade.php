@@ -34,9 +34,9 @@
       <form id="registerForm" method="POST" enctype="multipart/form-data">
         <!-- NIK -->
         <div class="mb-3">
-          <label for="nik" class="form-label">NIK <span class="required">*</span></label>
+          <label for="nik" class="form-label">ID <span class="required">*</span></label>
           <div class="input-group">
-            <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan NIK" required>
+            <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan ID" required>
             <i class="bi bi-credit-card-fill input-icon"></i>
           </div>
         </div>
