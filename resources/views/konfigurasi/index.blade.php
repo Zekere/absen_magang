@@ -173,9 +173,9 @@
   <!-- Header Section -->
   <div class="config-header">
     <h3 class="mb-1">
-      <i class="bi bi-gear-fill"></i> Konfigurasi
+      <i class="bi bi-pin-map-fill"></i> Konfigurasi Lokasi Kantor
     </h3>
-    <h5 class="mb-0">Pengaturan Lokasi Kantor & Radius Presensi</h5>
+    <h5 class="mb-0">Pengaturan Koordinat & Radius Presensi</h5>
   </div>
 
   <!-- Content Section -->
@@ -185,13 +185,36 @@
         <!-- Card Header -->
         <div class="card-header-custom">
           <h4>
-            <i class="bi bi-pin-map-fill"></i>
+            <i class="bi bi-geo-alt-fill"></i>
             Lokasi Kantor
           </h4>
         </div>
 
         <!-- Card Body -->
         <div class="card-body p-4">
+          <!-- Alert Messages -->
+          @if (Session::get('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              {{ Session::get('success') }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          @endif
+          @if (Session::get('warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              {{ Session::get('warning') }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          @endif
+          @if (Session::get('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-x-circle-fill me-2"></i>
+              {{ Session::get('error') }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          @endif
+
           <!-- Info Box -->
           <div class="info-box">
             <i class="bi bi-info-circle-fill"></i>
@@ -249,7 +272,7 @@
         </div>
       </div>
 
-      <!-- Additional Info Card (Optional) -->
+      <!-- Additional Info Card -->
       <div class="config-card mt-4">
         <div class="card-body p-4">
           <h5 class="mb-3">

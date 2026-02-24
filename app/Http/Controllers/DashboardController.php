@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\JamKerja; // ⭐ TAMBAHAN: Import Model JamKerja
 
 class DashboardController extends Controller
 {
@@ -14,6 +15,10 @@ class DashboardController extends Controller
         $bulanini  = date("m");
         $tahunini  = date("Y");
         $nik       = Auth::guard('karyawan')->user()->nik;
+
+        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        $jamKerja = JamKerja::getConfig();
+        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
 
         // Presensi hari ini
         $presensihariini = DB::table('presensi')
@@ -29,9 +34,9 @@ class DashboardController extends Controller
             ->orderBy('tgl_presensi', 'desc')
             ->get();
 
-        // Rekap presensi (hadir dan terlambat)
+        // ⭐ UPDATED: Rekap presensi dengan jam masuk dari database
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00", 1, 0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '", 1, 0)) as jmlterlambat')
             ->where('nik', $nik)
             ->whereMonth('tgl_presensi', $bulanini)
             ->whereYear('tgl_presensi', $tahunini)
@@ -63,6 +68,7 @@ class DashboardController extends Controller
             ->where('status_approved', '1')
             ->first();
 
+        // ⭐ TAMBAHAN: Pass jamKerja ke view
         return view('dashboard.dashboard', compact(
             'presensihariini',
             'histroribulanini',
@@ -71,7 +77,8 @@ class DashboardController extends Controller
             'tahunini',
             'rekappresensi',
             'leaderboard',
-            'rekapizin'
+            'rekapizin',
+            'jamKerja'  // ⭐ TAMBAH INI
         ));
     }
 
@@ -79,12 +86,16 @@ class DashboardController extends Controller
     {
         $hariini = date("Y-m-d");
 
+        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        $jamKerja = JamKerja::getConfig();
+        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
+
         // Total karyawan
         $jmlkaryawan = DB::table('karyawan')->count();
 
-        // Rekap presensi hari ini 
+        // ⭐ UPDATED: Rekap presensi hari ini dengan jam masuk dari database
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00",1,0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '",1,0)) as jmlterlambat')
             ->where('tgl_presensi', $hariini)
             ->first();
 
@@ -115,13 +126,17 @@ class DashboardController extends Controller
                 'error' => 'Invalid date format'
             ], 400);
         }
+
+        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        $jamKerja = JamKerja::getConfig();
+        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
         
         // Total karyawan (tidak berubah berdasarkan tanggal)
         $jmlkaryawan = DB::table('karyawan')->count();
         
-        // Rekap presensi berdasarkan tanggal yang dipilih
+        // ⭐ UPDATED: Rekap presensi dengan jam masuk dari database
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "07:30:00", 1, 0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '", 1, 0)) as jmlterlambat')
             ->where('tgl_presensi', $date)
             ->first();
         

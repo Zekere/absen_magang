@@ -3,44 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
-use App\Models\JamKerja; // ⭐ TAMBAHAN: Import Model JamKerja
+use App\Models\JamKerja;
 
-class KonfigurasiController extends Controller
+class JamKerjaController extends Controller
 {
+    /**
+     * Tampilkan halaman konfigurasi jam kerja
+     */
     public function index()
     {
-        $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-        
-        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
         $jamKerja = JamKerja::getConfig();
-        
-        // ⭐ TAMBAHAN: Pass kedua variable ke view
-        return view('konfigurasi.index', compact('lok_kantor', 'jamKerja'));
+        return view('jamkerja.index', compact('jamKerja'));
     }
 
-    public function updatelokasikantor(Request $request)
-    {
-        $lokasi_kantor = $request->lokasi_kantor;
-        $radius = $request->radius;
-
-        $update = DB::table('konfigurasi_lokasi')
-            ->where('id', 1)
-            ->update([
-                'lokasi_kantor' => $lokasi_kantor,
-                'radius' => $radius
-            ]);
-
-        if ($update) {
-            return Redirect::back()->with(['success' => 'Data Berhasil Diupdate']);
-        } else {
-            return Redirect::back()->with(['warning' => 'Data Gagal Diupdate']);
-        }
-    }
-
-    // ⭐ TAMBAHAN: Method baru untuk update jam kerja
-    public function updatejamkerja(Request $request)
+    /**
+     * Update konfigurasi jam kerja
+     */
+    public function update(Request $request)
     {
         // Validasi input
         $request->validate([

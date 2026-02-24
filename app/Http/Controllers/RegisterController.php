@@ -87,7 +87,7 @@ class RegisterController extends Controller
                 // Simpan file
                 file_put_contents($folderPath . '/' . $faceFileName, $imageData);
             }
-
+            
             // ===== 2. Simpan Foto Profil (jika ada) =====
             $fotoProfileName = null;
             if ($request->hasFile('foto_profile')) {

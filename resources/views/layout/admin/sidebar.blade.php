@@ -83,19 +83,25 @@
             <span class="caret"></span>
           </a>
           <div class="collapse" id="konfigurasiMenu" data-bs-parent=".sidebar-content">
-            <ul class="nav nav-collapse">
-              <li><a href="/konfigurasi"><span class="sub-item">Lokasi Kantor</span></a></li>
-              <li>
-                <a href="/presensi/izinsakit">
-                  <span class="sub-item">Data Izin & Sakit</span>
-                  <span class="sub-notification-badge" id="subNotificationBadge" style="display: {{ $pendingCount > 0 ? 'inline-flex' : 'none' }};">
-                    {{ $pendingCount }}
-                  </span>
-                  <span class="notification-dot" id="notificationDot" style="display: {{ $pendingCount > 0 ? 'block' : 'none' }};"></span>
-                </a>
-              </li>
-            </ul>
-          </div>
+              <ul class="nav nav-collapse">
+                <!-- Menu 1: Lokasi Kantor -->
+                <li><a href="/konfigurasi"><span class="sub-item">Lokasi Kantor</span></a></li>
+                
+                <!-- ⭐ Menu 2: Jam Kerja (TAMBAHAN BARU) ⭐ -->
+                <li><a href="/jamkerja"><span class="sub-item">Jam Kerja</span></a></li>
+                
+                <!-- Menu 3: Data Izin & Sakit -->
+                <li>
+                  <a href="/presensi/izinsakit">
+                    <span class="sub-item">Data Izin & Sakit</span>
+                    <span class="sub-notification-badge" id="subNotificationBadge" style="display: {{ $pendingCount > 0 ? 'inline-flex' : 'none' }};">
+                      {{ $pendingCount }}
+                    </span>
+                    <span class="notification-dot" id="notificationDot" style="display: {{ $pendingCount > 0 ? 'block' : 'none' }};"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
         </li>
 
         <!-- Laporan -->

@@ -13,24 +13,28 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use App\Models\JamKerja;
 
 class PresensiController extends Controller
 {
     public function create()
-    {
-        $hariini = date('Y-m-d');
-        $nik = Auth::guard('karyawan')->user()->nik;
+{
+    $hariini = date('Y-m-d');
+    $nik = Auth::guard('karyawan')->user()->nik;
 
-        $cek = DB::table('presensi')
-            ->where('tgl_presensi', $hariini)
-            ->where('nik', $nik)
-            ->count();
-        
-        $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+    $cek = DB::table('presensi')
+        ->where('tgl_presensi', $hariini)
+        ->where('nik', $nik)
+        ->count();
+    
+    $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+    
+    // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+    $jamKerja = JamKerja::getConfig();
 
-        return view('presensi.create', compact('cek', 'lok_kantor'));
-    }
-
+    // ⭐ TAMBAHAN: Pass variable jamKerja ke view
+    return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja'));
+}
     public function store(Request $request)
     {
         try {
@@ -43,6 +47,14 @@ class PresensiController extends Controller
             $nik = $user->nik;
             $tgl_presensi = date('Y-m-d');
             $jam = date('H:i:s');
+
+            // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+            $jamKerja = JamKerja::getConfig();
+
+            if (!$jamKerja) {
+                echo "error|Konfigurasi jam kerja belum diatur. Hubungi admin!|x";
+                return;
+            }
 
             // ===== VALIDASI FACE VERIFICATION =====
             $face_verified = $request->face_verified ?? 0;
@@ -85,6 +97,7 @@ class PresensiController extends Controller
             $radius = round($jarak['meters']);
 
             // Tentukan status lokasi
+            
             $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
             
             $cek = DB::table('presensi')
@@ -93,6 +106,44 @@ class PresensiController extends Controller
                 ->first();
 
             $ket = $cek ? "out" : "in";
+            // ⭐ VALIDASI WAKTU
+            if (!$cek) {
+                // ===== VALIDASI ABSEN MASUK =====
+                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
+                
+                // Cek apakah terlalu pagi
+                if ($waktuSekarangMenit < $jamKerja->batas_absen_masuk_awal) {
+                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenMasuk();
+                    echo "error|Maaf, Anda belum bisa absen masuk. Absen masuk dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
+                    return;
+                }
+                
+                // Cek apakah sudah terlalu sore
+                if ($waktuSekarangMenit > $jamKerja->batas_absen_masuk_akhir) {
+                    $batasMaksimal = $jamKerja->getWaktuAkhirAbsenMasuk();
+                    echo "error|Maaf, waktu absen masuk sudah berakhir. Batas maksimal absen masuk pukul " . $batasMaksimal . "|waktu";
+                    return;
+                }
+            }
+
+            else {
+                // ===== VALIDASI ABSEN PULANG =====
+                if (!empty($cek->jam_out)) {
+                    echo "error|Anda sudah melakukan absen pulang hari ini|x";
+                    return;
+                }
+                
+                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
+                $jamPulangMenit = (int)date('H', strtotime($jamKerja->jam_pulang)) * 60 + (int)date('i', strtotime($jamKerja->jam_pulang));
+                $batasAbsenPulang = $jamPulangMenit - $jamKerja->batas_absen_pulang_sebelum;
+                
+                // Cek apakah terlalu awal untuk absen pulang
+                if ($waktuSekarangMenit < $batasAbsenPulang) {
+                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenPulang();
+                    echo "error|Maaf, Anda belum bisa absen pulang. Absen pulang dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
+                    return;
+                }
+            }
             $image = $request->image;
             if (!$image) {
                 echo "error|Foto tidak dikirim|x";
@@ -392,7 +443,9 @@ class PresensiController extends Controller
         $long_kantor = (float) trim($lokasi_kantor[1]);
         $radius_kantor = $lok_kantor->radius;
 
-        $jam_masuk_default = '07:30:00';
+        // ⭐ AMBIL JAM DARI DATABASE
+        $jamKerja = JamKerja::getConfig();
+        $jam_masuk_default = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
 
         $no = 0;
         $html = '';

@@ -12,6 +12,7 @@ use App\Http\Controllers\IzinController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\JamKerjaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -180,4 +181,27 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/events/{id}', [DashboardController::class, 'getEventDetail'])->name('admin.events.show');
     Route::put('/events/{id}', [DashboardController::class, 'updateEvent'])->name('admin.events.update');
     Route::delete('/events/{id}', [DashboardController::class, 'deleteEvent'])->name('admin.events.delete');
+});
+
+Route::middleware(['auth:user'])->group(function () {
+    
+    // Jam Kerja
+    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
+    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
+    
+    // Konfigurasi Lokasi Kantor (tetap ada)
+    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+    
+});
+Route::prefix('panel')->middleware(['auth:user'])->group(function () {
+    
+    // Jam Kerja
+    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
+    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
+    
+    // Konfigurasi Lokasi Kantor
+    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+    
 });
