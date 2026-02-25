@@ -169,6 +169,14 @@
       font-size: 0.85rem;
     }
   }
+
+  .keterangan-cell {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
 </style>
 
 <div class="container-fluid mt-4 px-3 px-md-4">
@@ -259,7 +267,12 @@
                       <span class="badge bg-secondary">Tidak Diketahui</span>
                     @endif
                   </td>
-                  <td>{{ $d->keterangan }}</td>
+                  <td class="keterangan-cell" 
+                      data-bs-toggle="tooltip" 
+                      data-bs-placement="top" 
+                      title="{{ $d->keterangan }}">
+                    {{ Str::limit($d->keterangan, 40, '...') }}
+                  </td>
                   <td class="text-center">
                     @if($d->bukti_surat)
                       <a href="/presensi/{{ $d->id }}/lihatbukti" class="btn btn-sm btn-info" title="Lihat Bukti">
@@ -557,6 +570,11 @@ $(function(){
 
     // Initialize on page load
     init();
+    // Init tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(function(el) {
+        new bootstrap.Tooltip(el);
+      });
 });
 </script>
 @endpush
