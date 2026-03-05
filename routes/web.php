@@ -13,6 +13,7 @@ use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\JamKerjaController;
+use App\Http\Controllers\LemburController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,17 @@ Route::middleware(['auth:karyawan'])->group(function(){
             ], 500);
         }
     });
+
+    // ===== Lembur Karyawan =====
+    // PENTING: Route yang lebih spesifik harus di ATAS yang umum!
+    Route::get('/lembur/create', [LemburController::class, 'create'])->name('lembur.create');
+    Route::get('/lembur/{id}/edit', [LemburController::class, 'edit'])->name('lembur.edit');
+    Route::get('/lembur/{id}/bukti', [LemburController::class, 'lihatBukti'])->name('lembur.bukti');
+    Route::get('/lembur', [LemburController::class, 'index'])->name('lembur.index');
+    Route::post('/lembur/store', [LemburController::class, 'store'])->name('lembur.store');
+    Route::put('/lembur/{id}/update', [LemburController::class, 'update'])->name('lembur.update');
+    Route::delete('/lembur/{id}/delete', [LemburController::class, 'destroy'])->name('lembur.destroy');
+    Route::get('/lembur/{id}', [LemburController::class, 'show'])->name('lembur.show');
 });
 
 // ==================== ROUTE UNTUK ADMIN (Sudah Login) ====================
@@ -168,40 +180,42 @@ Route::middleware(['auth:user'])->group(function () {
     Route::post('/admin/edit', [AdminController::class, 'edit'])->name('admin.edit');
     Route::post('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
     Route::post('/admin/{id}/delete', [AdminController::class, 'delete'])->name('admin.delete');
+
+    // ===== Jam Kerja =====
+    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
+    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
+
+    // ===== Lembur Admin =====
+    Route::get('/admin/lembur/data', [LemburController::class, 'dataLembur'])->name('admin.lembur.data');
+    Route::get('/admin/lembur/laporan', [LemburController::class, 'laporan'])->name('admin.lembur.laporan');
+    Route::post('/admin/lembur/cetaklaporan', [LemburController::class, 'cetakLaporan'])->name('admin.lembur.cetak');
+    Route::post('/admin/lembur/exportexcel', [LemburController::class, 'exportExcel'])->name('admin.lembur.export');
 });
 
-// Tambahkan di routes/web.php dalam group admin
+// ==================== ROUTE PREFIX PANEL (Admin) ====================
+Route::prefix('panel')->middleware(['auth:user'])->group(function () {
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-    // ... routes lainnya
-    
-    // Event routes
+    // ===== Jam Kerja =====
+    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
+    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
+
+    // ===== Konfigurasi =====
+    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+
+    // ===== Lembur Admin (via /panel) =====
+    // PERBAIKAN: GET method agar bisa dipanggil dari window.open() dan window.location.href
+    Route::get('/lembur/laporan', [LemburController::class, 'laporan'])->name('panel.lembur.laporan');
+    Route::get('/lembur/cetaklaporan', [LemburController::class, 'cetakLaporan'])->name('panel.lembur.cetak');
+    Route::get('/lembur/exportexcel', [LemburController::class, 'exportExcel'])->name('panel.lembur.export');
+    Route::get('/lembur/data', [LemburController::class, 'dataLembur'])->name('panel.lembur.data');
+});
+
+// ==================== ROUTE EVENT (Admin) ====================
+Route::prefix('admin')->middleware(['auth:user'])->group(function () {
     Route::get('/events', [DashboardController::class, 'getEvents'])->name('admin.events.index');
     Route::post('/events', [DashboardController::class, 'storeEvent'])->name('admin.events.store');
     Route::get('/events/{id}', [DashboardController::class, 'getEventDetail'])->name('admin.events.show');
     Route::put('/events/{id}', [DashboardController::class, 'updateEvent'])->name('admin.events.update');
     Route::delete('/events/{id}', [DashboardController::class, 'deleteEvent'])->name('admin.events.delete');
-});
-
-Route::middleware(['auth:user'])->group(function () {
-    
-    // Jam Kerja
-    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
-    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
-    
-    // Konfigurasi Lokasi Kantor (tetap ada)
-    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
-    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
-    
-});
-Route::prefix('panel')->middleware(['auth:user'])->group(function () {
-    
-    // Jam Kerja
-    Route::get('/jamkerja', [JamKerjaController::class, 'index']);
-    Route::post('/jamkerja/update', [JamKerjaController::class, 'update']);
-    
-    // Konfigurasi Lokasi Kantor
-    Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
-    Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
-    
 });

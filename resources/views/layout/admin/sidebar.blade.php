@@ -104,6 +104,21 @@
             </div>
         </li>
 
+        <!------- Lembur ------->
+        <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#lemburMenu">
+                <i class="fas fa-business-time"></i>
+                <p>Lembur</p>
+                <span class="caret"></span>
+            </a>
+            <div class="collapse" id="lemburMenu">
+                <ul class="nav nav-collapse">
+                    <li><a href="/admin/lembur/data"><span class="sub-item">Data Lembur</span></a></li>
+                    <li><a href="/admin/lembur/laporan"><span class="sub-item">Laporan Lembur</span></a></li>
+                </ul>
+            </div>
+        </li>
+
         <!-- Laporan -->
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#laporanMenu" role="button" aria-expanded="false" aria-controls="laporanMenu">

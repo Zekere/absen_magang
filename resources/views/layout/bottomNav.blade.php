@@ -55,6 +55,7 @@
         </div>
     </a>
 
+    
     @php
         $currentHour = date('H');
         $currentMinute = date('i');

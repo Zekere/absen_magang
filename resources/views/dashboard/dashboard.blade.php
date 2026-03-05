@@ -645,6 +645,10 @@
         font-size: 20px;
     }
 }
+
+.purple {
+    color: #5a4fcf;
+}
 </style>
 
 <!-- Tambahkan SweetAlert2 -->
@@ -902,6 +906,16 @@
                         Kamera
                     </div>
                 </div>
+             <div class="item-menu text-center">
+                <div class="menu-icon">
+                    <a href="/lembur" class="purple" style="font-size: 40px;">
+                        <ion-icon name="time-outline"></ion-icon>
+                    </a>
+                </div>
+                <div class="menu-name">
+                    <span class="text-center">Lembur</span>
+                </div>
+            </div>
                 <div class="item-menu text-center">
                     <div class="menu-icon">
                         <a href="/logout" class="danger" style="font-size: 40px;" onclick="return confirmLogout(event)">
