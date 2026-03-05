@@ -219,3 +219,19 @@ Route::prefix('admin')->middleware(['auth:user'])->group(function () {
     Route::put('/events/{id}', [DashboardController::class, 'updateEvent'])->name('admin.events.update');
     Route::delete('/events/{id}', [DashboardController::class, 'deleteEvent'])->name('admin.events.delete');
 });
+
+// ===== Konfigurasi Lokasi Kantor (Multi-Lokasi) =====
+Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
+Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
+Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
+
+{{ 
+
+}}
+Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
+Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
+Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
