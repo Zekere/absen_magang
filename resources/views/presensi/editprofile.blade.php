@@ -120,6 +120,15 @@
                 </button>
             </div>
 
+            <!-- NIK (readonly) -->
+            <div class="form-group boxed">
+                <div class="input-wrapper">
+                    <label class="label">NIK / ID Karyawan</label>
+                    <input type="text" class="form-control" value="{{ $karyawan->nik }}" disabled 
+                        style="background:#f1f5f9;color:#64748b;font-weight:600;letter-spacing:1px;">
+                </div>
+            </div>
+
             <!-- Input Nama -->
             <div class="form-group boxed">
                 <div class="input-wrapper">

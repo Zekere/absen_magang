@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Karyawan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -8,7 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
 
 class KaryawanController extends Controller
 {
@@ -18,85 +18,104 @@ class KaryawanController extends Controller
         $query->select('karyawan.*', 'nama_dept');
         $query->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
         $query->orderBy('nama_lengkap');
-        
-        // Filter by nama karyawan
+
         if (!empty($request->nama_karyawan)) {
             $query->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
         }
-        
-        // Filter by departemen
+
         if (!empty($request->kode_dept)) {
             $query->where('karyawan.kode_dept', $request->kode_dept);
         }
-        
-        // Handle pagination with per_page parameter
+
         $perPage = $request->get('per_page', 10);
-        
+
         if ($perPage === 'all') {
-            // Get total count and paginate with that number
             $totalCount = $query->count();
             $karyawan = $query->paginate($totalCount > 0 ? $totalCount : 1);
         } else {
-            // Normal pagination
             $karyawan = $query->paginate((int)$perPage);
         }
-        
+
         $departemen = DB::table('departemen')->get();
-        
+
         return view('karyawan.index', compact('karyawan', 'departemen'));
     }
 
     public function store(Request $request)
     {
-        // ✅ Validasi input - TAMBAHKAN PASSWORD
         $request->validate([
-            'nik' => 'required|unique:karyawan,nik',
+            'nik'          => 'required|unique:karyawan,nik',
             'nama_lengkap' => 'required',
-            'jabatan' => 'required',
-            'no_hp' => 'required',
-            'kode_dept' => 'required',
-            'password' => 'required|min:6', // ⭐ PERBAIKAN: Tambah validasi password
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'jabatan'      => 'required',
+            'no_hp'        => 'required',
+            'kode_dept'    => 'required',
+            'password'     => 'required|min:6',
+            'foto'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'face_data'    => 'required', // wajib scan wajah
         ], [
-            // Pesan error yang lebih ramah
-            'nik.required' => 'NIK wajib diisi.',
-            'nik.unique' => 'NIK sudah terdaftar.',
+            'nik.required'          => 'NIK wajib diisi.',
+            'nik.unique'            => 'NIK sudah terdaftar.',
             'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
-            'jabatan.required' => 'Jabatan wajib diisi.',
-            'no_hp.required' => 'Nomor HP wajib diisi.',
-            'kode_dept.required' => 'Departemen wajib dipilih.',
-            'password.required' => 'Password wajib diisi.', // ⭐ PERBAIKAN
-            'password.min' => 'Password minimal 6 karakter.', // ⭐ PERBAIKAN
+            'jabatan.required'      => 'Jabatan wajib diisi.',
+            'no_hp.required'        => 'Nomor HP wajib diisi.',
+            'kode_dept.required'    => 'Departemen wajib dipilih.',
+            'password.required'     => 'Password wajib diisi.',
+            'password.min'          => 'Password minimal 6 karakter.',
+            'face_data.required'    => 'Scan wajah karyawan wajib dilakukan.',
         ]);
 
         try {
-            $nik = $request->nik;
+            $nik          = $request->nik;
             $nama_lengkap = $request->nama_lengkap;
-            $jabatan = $request->jabatan;
-            $no_hp = $request->no_hp;
-            $kode_dept = $request->kode_dept;
-            
-            // ⭐ PERBAIKAN: Ambil password dari input admin, bukan hardcode '12345'
-            $password = Hash::make($request->password);
-            
-            $foto = null;
+            $jabatan      = $request->jabatan;
+            $no_hp        = $request->no_hp;
+            $kode_dept    = $request->kode_dept;
+            $password     = Hash::make($request->password);
 
-            // ✅ Proses upload foto jika ada
-            if ($request->hasFile('foto')) {
-                $foto = $nik . '.' . $request->file('foto')->getClientOriginalExtension();
-                $folderPath = 'public/uploads/karyawan';
-                $request->file('foto')->storeAs($folderPath, $foto);
+            // ===== 1. Simpan Foto Wajah (Face Recognition) =====
+            $faceFileName = null;
+            if ($request->face_data) {
+                $image     = str_replace('data:image/jpeg;base64,', '', $request->face_data);
+                $image     = str_replace(' ', '+', $image);
+                $imageData = base64_decode($image);
+
+                $faceFileName = $nik . '_face.jpg';
+                $folderPath   = storage_path('app/public/uploads/faces');
+
+                if (!file_exists($folderPath)) {
+                    mkdir($folderPath, 0755, true);
+                }
+
+                file_put_contents($folderPath . '/' . $faceFileName, $imageData);
             }
 
-            // ✅ Simpan data ke database
+            // ===== 2. Simpan Foto Profil =====
+            $foto = null;
+            if ($request->hasFile('foto')) {
+                $foto = $nik . '.' . $request->file('foto')->getClientOriginalExtension();
+                $request->file('foto')->storeAs('public/uploads/karyawan', $foto);
+            } else {
+                // Gunakan foto wajah sebagai foto profil jika tidak upload foto profil
+                $foto = $faceFileName;
+                // Copy dari faces ke karyawan folder
+                if ($faceFileName) {
+                    $src = storage_path('app/public/uploads/faces/' . $faceFileName);
+                    $dst = storage_path('app/public/uploads/karyawan/' . $faceFileName);
+                    if (file_exists($src) && !file_exists($dst)) {
+                        copy($src, $dst);
+                    }
+                }
+            }
+
+            // ===== 3. Simpan ke Database =====
             DB::table('karyawan')->insert([
-                'nik' => $nik,
-                'nama_lengkap' => $nama_lengkap,
-                'jabatan' => $jabatan,
-                'no_hp' => $no_hp,
-                'foto' => $foto,
-                'kode_dept' => $kode_dept,
-                'password' => $password,
+                'nik'            => $nik,
+                'nama_lengkap'   => $nama_lengkap,
+                'jabatan'        => $jabatan,
+                'no_hp'          => $no_hp,
+                'foto'           => $foto,
+                'kode_dept'      => $kode_dept,
+                'password'       => $password,
                 'remember_token' => Str::random(60),
             ]);
 
@@ -108,9 +127,9 @@ class KaryawanController extends Controller
 
     public function edit(Request $request)
     {
-        $nik = $request->nik;
+        $nik        = $request->nik;
         $departemen = DB::table('departemen')->get();
-        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+        $karyawan   = DB::table('karyawan')->where('nik', $nik)->first();
         return view('karyawan.edit', compact('departemen', 'karyawan'));
     }
 
@@ -118,79 +137,66 @@ class KaryawanController extends Controller
     {
         $nikLama = $nik;
 
-        // Validasi input
         $request->validate([
-            'nik' => 'required|unique:karyawan,nik,' . $nikLama . ',nik',
+            'nik'          => 'required|unique:karyawan,nik,' . $nikLama . ',nik',
             'nama_lengkap' => 'required',
-            'jabatan' => 'required',
-            'no_hp' => 'required',
-            'kode_dept' => 'required',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'password' => 'nullable|min:6',
+            'jabatan'      => 'required',
+            'no_hp'        => 'required',
+            'kode_dept'    => 'required',
+            'foto'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password'     => 'nullable|min:6',
         ]);
 
         try {
-            // Ambil data lama
             $karyawan = DB::table('karyawan')->where('nik', $nikLama)->first();
             if (!$karyawan) {
                 return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan.']);
             }
 
-            $newNik = $request->nik;
-            $fotoName = $karyawan->foto; // default foto lama
+            $newNik   = $request->nik;
+            $fotoName = $karyawan->foto;
 
-            // === Upload / Rename Foto ===
             if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
                 if (!empty($karyawan->foto)) {
                     $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
-                    if (Storage::exists($oldPath)) {
-                        Storage::delete($oldPath);
-                    }
+                    if (Storage::exists($oldPath)) Storage::delete($oldPath);
                 }
-                
-                // Upload foto baru
                 $extension = $request->file('foto')->getClientOriginalExtension();
-                $fotoName = $newNik . '.' . $extension;
+                $fotoName  = $newNik . '.' . $extension;
                 $request->file('foto')->storeAs('public/uploads/karyawan', $fotoName);
             } elseif (!empty($karyawan->foto) && $newNik != $karyawan->nik) {
-                // Rename foto lama jika NIK berubah
                 $oldPath = 'public/uploads/karyawan/' . $karyawan->foto;
                 if (Storage::exists($oldPath)) {
-                    $oldExt = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
+                    $oldExt      = pathinfo($karyawan->foto, PATHINFO_EXTENSION);
                     $newFotoName = $newNik . '.' . $oldExt;
-                    $newPath = 'public/uploads/karyawan/' . $newFotoName;
-                    Storage::move($oldPath, $newPath);
+                    Storage::move($oldPath, 'public/uploads/karyawan/' . $newFotoName);
                     $fotoName = $newFotoName;
                 }
             }
 
-            // === Data baru ===
+            // Jika NIK berubah, rename juga foto wajah
+            if ($newNik != $nikLama) {
+                $oldFacePath = storage_path('app/public/uploads/faces/' . $nikLama . '_face.jpg');
+                $newFacePath = storage_path('app/public/uploads/faces/' . $newNik . '_face.jpg');
+                if (file_exists($oldFacePath)) {
+                    rename($oldFacePath, $newFacePath);
+                }
+            }
+
             $updateData = [
-                'nik' => $newNik,
+                'nik'          => $newNik,
                 'nama_lengkap' => $request->nama_lengkap,
-                'jabatan' => $request->jabatan,
-                'no_hp' => $request->no_hp,
-                'kode_dept' => $request->kode_dept,
-                'foto' => $fotoName,
+                'jabatan'      => $request->jabatan,
+                'no_hp'        => $request->no_hp,
+                'kode_dept'    => $request->kode_dept,
+                'foto'         => $fotoName,
             ];
 
-            // Kalau password diisi
             if ($request->filled('password')) {
                 $updateData['password'] = Hash::make($request->password);
             }
 
-            // === Jalankan update ===
-            $updated = DB::table('karyawan')
-                ->where('nik', $nikLama)
-                ->update($updateData);
-
-            // === Jika NIK berubah, update relasi lain (opsional)
-            if ($updated && $newNik != $nikLama) {
-                // Update di tabel terkait jika diperlukan
-                // DB::table('presensi')->where('nik', $nikLama)->update(['nik' => $newNik]);
-                // DB::table('pengajuan_izin')->where('nik', $nikLama)->update(['nik' => $newNik]);
-            }
+            DB::table('karyawan')->where('nik', $nikLama)->update($updateData);
 
             return Redirect::to('/karyawan')->with(['success' => 'Data karyawan berhasil diperbarui!']);
         } catch (\Exception $e) {
@@ -201,21 +207,21 @@ class KaryawanController extends Controller
     public function delete($nik)
     {
         try {
-            // Ambil data karyawan untuk hapus foto
             $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
-            
+
             if ($karyawan) {
-                // Hapus foto jika ada
+                // Hapus foto profil
                 if (!empty($karyawan->foto)) {
                     $fotoPath = 'public/uploads/karyawan/' . $karyawan->foto;
-                    if (Storage::exists($fotoPath)) {
-                        Storage::delete($fotoPath);
-                    }
+                    if (Storage::exists($fotoPath)) Storage::delete($fotoPath);
                 }
-                
-                // Hapus data karyawan
+
+                // Hapus foto wajah
+                $facePath = storage_path('app/public/uploads/faces/' . $nik . '_face.jpg');
+                if (file_exists($facePath)) unlink($facePath);
+
                 $delete = DB::table('karyawan')->where('nik', $nik)->delete();
-                
+
                 if ($delete) {
                     return Redirect::back()->with(['success' => 'Data karyawan berhasil dihapus!']);
                 } else {

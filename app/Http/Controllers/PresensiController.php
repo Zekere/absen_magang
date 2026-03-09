@@ -34,6 +34,9 @@ class PresensiController extends Controller
 
     // ⭐ TAMBAHAN: Pass variable jamKerja ke view
     return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja'));
+
+    $semua_lokasi = DB::table('konfigurasi_lokasi')->orderBy('id')->get();
+return view('presensi.create', compact('cek', 'lok_kantor', 'semua_lokasi', 'jamKerja', 'hasFaceData'));
 }
     public function store(Request $request)
     {

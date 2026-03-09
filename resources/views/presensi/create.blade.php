@@ -723,56 +723,98 @@
         });
     }
 
-    function successCallback(position) {
+     function successCallback(position) {
         userLatitude  = position.coords.latitude;
         userLongitude = position.coords.longitude;
         lokasiInput.value = userLatitude + ',' + userLongitude;
 
-        var lok_kantor = "{{$lok_kantor->lokasi_kantor}}".split(',');
-        var lat_kantor = parseFloat(lok_kantor[0]);
-        var lng_kantor = parseFloat(lok_kantor[1]);
-        var radius     = parseFloat("{{$lok_kantor->radius}}");
-        var jarak      = hitungJarak(userLatitude, userLongitude, lat_kantor, lng_kantor);
-        isInRadius     = jarak <= radius;
+        // ⭐ Semua lokasi kantor dari controller
+        var semuaLokasi = @json(DB::table('konfigurasi_lokasi')->orderBy('id')->get());
 
+        // ⭐ Cari lokasi terdekat untuk status badge
+        var jarakTerdekat   = Infinity;
+        var radiusTerdekat  = 0;
+        var namaLokTerdekat = '';
+
+        semuaLokasi.forEach(function(lok) {
+            var coords = lok.lokasi_kantor.split(',');
+            var lat    = parseFloat(coords[0]);
+            var lng    = parseFloat(coords[1]);
+            var jarak  = hitungJarak(userLatitude, userLongitude, lat, lng);
+            if (jarak < jarakTerdekat) {
+                jarakTerdekat   = jarak;
+                radiusTerdekat  = parseFloat(lok.radius);
+                namaLokTerdekat = lok.nama_kantor;
+            }
+        });
+
+        isInRadius = jarakTerdekat <= radiusTerdekat;
+
+        // Status badge lokasi
         var statusDiv = document.getElementById('location-status');
         statusDiv.style.display = 'flex';
         if (isInRadius) {
             statusDiv.className = 'status-dalam-kantor';
-            statusDiv.innerHTML = '<ion-icon name="checkmark-circle-outline"></ion-icon> Anda di Lingkungan Kantor';
+            statusDiv.innerHTML = '<ion-icon name="checkmark-circle-outline"></ion-icon> Anda di ' + namaLokTerdekat;
         } else {
             statusDiv.className = 'status-luar-kantor';
-            statusDiv.innerHTML = '<ion-icon name="warning-outline"></ion-icon> Di Luar Kantor — Jarak: ' + Math.round(jarak) + ' m';
+            statusDiv.innerHTML = '<ion-icon name="warning-outline"></ion-icon> Di Luar Kantor — Jarak: ' + Math.round(jarakTerdekat) + ' m dari ' + namaLokTerdekat;
         }
 
+        // Inisialisasi map
         var map = L.map('map').setView([userLatitude, userLongitude], 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap © CartoDB'
+            maxZoom: 19, attribution: '© OpenStreetMap © CartoDB'
         }).addTo(map);
 
         var blueIcon = L.icon({
-            iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
         });
         var redIcon = L.icon({
-            iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
         });
 
-        var userMarker   = L.marker([userLatitude, userLongitude], {icon:blueIcon}).addTo(map);
-        var kantorMarker = L.marker([lat_kantor, lng_kantor], {icon:redIcon}).addTo(map);
-        var circle = L.circle([lat_kantor, lng_kantor], {
-            color: isInRadius ? '#22c55e' : '#ef4444',
-            fillColor: isInRadius ? '#22c55e' : '#ef4444',
-            fillOpacity: 0.12, radius
-        }).addTo(map);
+        // Marker user (biru)
+        var userMarker = L.marker([userLatitude, userLongitude], {icon: blueIcon}).addTo(map);
+        userMarker.bindPopup('<b>📍 Lokasi Anda</b><br>Jarak ke kantor terdekat: ' + Math.round(jarakTerdekat) + ' m').openPopup();
 
-        userMarker.bindPopup('<b>Lokasi Anda</b><br>Jarak: ' + Math.round(jarak) + ' m').openPopup();
-        kantorMarker.bindPopup('<b>Kantor</b>');
-        map.fitBounds(L.featureGroup([userMarker, kantorMarker, circle]).getBounds().pad(0.15));
+        // ⭐ Loop semua lokasi kantor — render marker + circle masing-masing
+        var allLayers = [userMarker];
+
+        semuaLokasi.forEach(function(lok) {
+            var coords    = lok.lokasi_kantor.split(',');
+            var latKantor = parseFloat(coords[0]);
+            var lngKantor = parseFloat(coords[1]);
+            var radius    = parseFloat(lok.radius);
+            var jarak     = hitungJarak(userLatitude, userLongitude, latKantor, lngKantor);
+            var dalamRadius = jarak <= radius;
+
+            // Warna circle: hijau jika dalam radius, merah jika tidak
+            var warna = dalamRadius ? '#22c55e' : '#ef4444';
+
+            var kantorMarker = L.marker([latKantor, lngKantor], {icon: redIcon}).addTo(map);
+            kantorMarker.bindPopup(
+                '<b>🏢 ' + lok.nama_kantor + '</b>' +
+                (lok.id == 1 ? ' ⭐' : '') +
+                '<br>Radius: ' + radius + ' m' +
+                '<br>Jarak Anda: ' + Math.round(jarak) + ' m' +
+                '<br>Status: ' + (dalamRadius ? '✅ Dalam radius' : '❌ Luar radius')
+            );
+
+            var circle = L.circle([latKantor, lngKantor], {
+                color: warna, fillColor: warna, fillOpacity: 0.12, radius: radius
+            }).addTo(map);
+
+            allLayers.push(kantorMarker);
+            allLayers.push(circle);
+        });
+
+        // Fit bounds semua marker + circle
+        map.fitBounds(L.featureGroup(allLayers).getBounds().pad(0.15));
     }
 
     function hitungJarak(lat1, lon1, lat2, lon2) {
