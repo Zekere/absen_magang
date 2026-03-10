@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\JamKerjaController;
 use App\Http\Controllers\LemburController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -235,3 +236,5 @@ Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'u
 Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
 Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
 Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
+
+Route::post('/presensi/setupwajah', [PresensiController::class, 'setupwajah']);

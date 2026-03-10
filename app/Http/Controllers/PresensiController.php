@@ -26,17 +26,15 @@ class PresensiController extends Controller
         ->where('tgl_presensi', $hariini)
         ->where('nik', $nik)
         ->count();
-    
+
     $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-    
-    // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
-    $jamKerja = JamKerja::getConfig();
+    $jamKerja   = JamKerja::getConfig();
 
-    // ⭐ TAMBAHAN: Pass variable jamKerja ke view
-    return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja'));
+    // ⭐ Cek apakah file wajah sudah ada
+    $facePath    = storage_path('app/public/uploads/faces/' . $nik . '_face.jpg');
+    $hasFaceData = file_exists($facePath);
 
-    $semua_lokasi = DB::table('konfigurasi_lokasi')->orderBy('id')->get();
-return view('presensi.create', compact('cek', 'lok_kantor', 'semua_lokasi', 'jamKerja', 'hasFaceData'));
+    return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja', 'hasFaceData'));
 }
     public function store(Request $request)
     {
@@ -900,4 +898,52 @@ return view('presensi.create', compact('cek', 'lok_kantor', 'semua_lokasi', 'jam
             return Redirect::back()->with(['warning' => 'Data gagal di update']);
         }
     }
+
+    public function setupwajah(Request $request)
+{
+    try {
+        $nik       = Auth::guard('karyawan')->user()->nik;
+        $face_data = $request->face_data;
+
+        if (!$face_data) {
+            return response()->json(['success' => false, 'message' => 'Data wajah tidak ditemukan.']);
+        }
+
+        // Decode dan simpan — sama persis dengan RegisterController
+        $image     = str_replace('data:image/jpeg;base64,', '', $face_data);
+        $image     = str_replace(' ', '+', $image);
+        $imageData = base64_decode($image);
+
+        if ($imageData === false) {
+            return response()->json(['success' => false, 'message' => 'Format data wajah tidak valid.']);
+        }
+
+        $folderPath   = storage_path('app/public/uploads/faces');
+        $faceFileName = $nik . '_face.jpg';
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0755, true);
+        }
+
+        file_put_contents($folderPath . '/' . $faceFileName, $imageData);
+
+        // Jika karyawan belum punya foto profil, gunakan foto wajah sebagai foto profil
+        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+        if (empty($karyawan->foto)) {
+            // Copy ke folder karyawan sebagai foto profil
+            $profileFolder = storage_path('app/public/uploads/karyawan');
+            if (!file_exists($profileFolder)) {
+                mkdir($profileFolder, 0755, true);
+            }
+            copy($folderPath . '/' . $faceFileName, $profileFolder . '/' . $faceFileName);
+
+            DB::table('karyawan')->where('nik', $nik)->update(['foto' => $faceFileName]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Data wajah berhasil disimpan!']);
+
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Gagal menyimpan: ' . $e->getMessage()]);
+    }
+}
 }
