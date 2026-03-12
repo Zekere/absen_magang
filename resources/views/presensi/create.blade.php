@@ -59,6 +59,19 @@
         gap: 0;
     }
 
+        /* Hide Leaflet zoom controls - COMPLETELY */
+    .leaflet-control-zoom {
+        display: none !important;
+    }
+
+    .leaflet-control-attribution {
+        display: none !important;
+    }
+
+    .leaflet-control {
+        display: none !important;
+    }
+
     .setup-alert {
         width: 100%;
         background: #fffbeb;

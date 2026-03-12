@@ -34,11 +34,14 @@
 
     // Inisialisasi map dengan preferScrollWheelZoom false agar tidak zoom saat scroll
     var map = L.map('map', {
-        center: lok_kantor,
-        zoom: 17,
-        zoomControl: true,
-        scrollWheelZoom: true
-    });
+    zoomControl: false,        // ❌ Disable zoom buttons
+    attributionControl: false, // ❌ Disable attribution
+    touchZoom: false,          // ❌ Disable touch zoom
+    scrollWheelZoom: false,    // ❌ Disable scroll zoom
+    doubleClickZoom: false,    // ❌ Disable double click zoom
+    boxZoom: false,            // ❌ Disable box zoom
+    keyboard: false            // ❌ Disable keyboard zoom
+});
 
     // Tambahkan tile layer (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
