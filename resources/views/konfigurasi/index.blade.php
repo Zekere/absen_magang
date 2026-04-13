@@ -530,6 +530,7 @@
         </div>
         <form id="formDelete" method="POST">
             @csrf
+            {{-- HAPUS @method('DELETE') karena route pakai POST --}}
             <div style="display:flex;gap:12px;justify-content:center;">
                 <button type="button" class="btn-cancel" onclick="closeModal('modalDelete')">Batal</button>
                 <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;padding:12px 28px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,.3);">

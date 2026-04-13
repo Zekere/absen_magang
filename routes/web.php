@@ -222,19 +222,20 @@ Route::prefix('admin')->middleware(['auth:user'])->group(function () {
 });
 
 // ===== Konfigurasi Lokasi Kantor (Multi-Lokasi) =====
+// Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
+// Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
+// Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
+// Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
+// Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
+
+// {{ 
+
+// }}
+// ===== Konfigurasi Lokasi Kantor (Multi-Lokasi) =====
 Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
 Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
 Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
 Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
-Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
-
-{{ 
-
-}}
-Route::get('/konfigurasi', [KonfigurasiController::class, 'index']);
-Route::post('/konfigurasi/updatelokasikantor', [KonfigurasiController::class, 'updatelokasikantor']);
-Route::post('/konfigurasi/storelokasi', [KonfigurasiController::class, 'storelokasi']);
-Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'updatelokasi']);
-Route::get('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']);
+Route::post('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']); // ← ubah GET ke POST
 
 Route::post('/presensi/setupwajah', [PresensiController::class, 'setupwajah']);

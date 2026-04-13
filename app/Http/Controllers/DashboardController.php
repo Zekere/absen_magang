@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Models\JamKerja; // ⭐ TAMBAHAN: Import Model JamKerja
+use App\Models\JamKerja;
 
 class DashboardController extends Controller
 {
@@ -16,9 +16,11 @@ class DashboardController extends Controller
         $tahunini  = date("Y");
         $nik       = Auth::guard('karyawan')->user()->nik;
 
-        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        // ========================================================
+        // PERBAIKAN: Pakai jam_toleransi (bukan jam_masuk)
+        // ========================================================
         $jamKerja = JamKerja::getConfig();
-        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
+        $jam_toleransi = $jamKerja ? $jamKerja->jam_toleransi : '07:45:00'; // ✅ GANTI INI
 
         // Presensi hari ini
         $presensihariini = DB::table('presensi')
@@ -34,9 +36,9 @@ class DashboardController extends Controller
             ->orderBy('tgl_presensi', 'desc')
             ->get();
 
-        // ⭐ UPDATED: Rekap presensi dengan jam masuk dari database
+        // ✅ BENAR: Bandingkan dengan jam_toleransi
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '", 1, 0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_toleransi . '", 1, 0)) as jmlterlambat')
             ->where('nik', $nik)
             ->whereMonth('tgl_presensi', $bulanini)
             ->whereYear('tgl_presensi', $tahunini)
@@ -68,7 +70,6 @@ class DashboardController extends Controller
             ->where('status_approved', '1')
             ->first();
 
-        // ⭐ TAMBAHAN: Pass jamKerja ke view
         return view('dashboard.dashboard', compact(
             'presensihariini',
             'histroribulanini',
@@ -78,7 +79,7 @@ class DashboardController extends Controller
             'rekappresensi',
             'leaderboard',
             'rekapizin',
-            'jamKerja'  // ⭐ TAMBAH INI
+            'jamKerja'
         ));
     }
 
@@ -86,16 +87,18 @@ class DashboardController extends Controller
     {
         $hariini = date("Y-m-d");
 
-        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        // ========================================================
+        // PERBAIKAN: Pakai jam_toleransi (bukan jam_masuk)
+        // ========================================================
         $jamKerja = JamKerja::getConfig();
-        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
+        $jam_toleransi = $jamKerja ? $jamKerja->jam_toleransi : '07:45:00'; // ✅ GANTI INI
 
         // Total karyawan
         $jmlkaryawan = DB::table('karyawan')->count();
 
-        // ⭐ UPDATED: Rekap presensi hari ini dengan jam masuk dari database
+        // ✅ BENAR: Bandingkan dengan jam_toleransi
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '",1,0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_toleransi . '",1,0)) as jmlterlambat')
             ->where('tgl_presensi', $hariini)
             ->first();
 
@@ -127,16 +130,18 @@ class DashboardController extends Controller
             ], 400);
         }
 
-        // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+        // ========================================================
+        // PERBAIKAN: Pakai jam_toleransi (bukan jam_masuk)
+        // ========================================================
         $jamKerja = JamKerja::getConfig();
-        $jam_masuk = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
+        $jam_toleransi = $jamKerja ? $jamKerja->jam_toleransi : '07:45:00'; // ✅ GANTI INI
         
         // Total karyawan (tidak berubah berdasarkan tanggal)
         $jmlkaryawan = DB::table('karyawan')->count();
         
-        // ⭐ UPDATED: Rekap presensi dengan jam masuk dari database
+        // ✅ BENAR: Bandingkan dengan jam_toleransi
         $rekappresensi = DB::table('presensi')
-            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_masuk . '", 1, 0)) as jmlterlambat')
+            ->selectRaw('COUNT(nik) as jmlhadir, SUM(IF(jam_in > "' . $jam_toleransi . '", 1, 0)) as jmlterlambat')
             ->where('tgl_presensi', $date)
             ->first();
         

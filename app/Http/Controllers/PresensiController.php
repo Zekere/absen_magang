@@ -18,24 +18,25 @@ use App\Models\JamKerja;
 class PresensiController extends Controller
 {
     public function create()
-{
-    $hariini = date('Y-m-d');
-    $nik = Auth::guard('karyawan')->user()->nik;
+    {
+        $hariini = date('Y-m-d');
+        $nik = Auth::guard('karyawan')->user()->nik;
 
-    $cek = DB::table('presensi')
-        ->where('tgl_presensi', $hariini)
-        ->where('nik', $nik)
-        ->count();
+        $cek = DB::table('presensi')
+            ->where('tgl_presensi', $hariini)
+            ->where('nik', $nik)
+            ->count();
 
-    $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-    $jamKerja   = JamKerja::getConfig();
+        $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+        $jamKerja   = JamKerja::getConfig();
 
-    // ⭐ Cek apakah file wajah sudah ada
-    $facePath    = storage_path('app/public/uploads/faces/' . $nik . '_face.jpg');
-    $hasFaceData = file_exists($facePath);
+        // Cek apakah file wajah sudah ada
+        $facePath    = storage_path('app/public/uploads/faces/' . $nik . '_face.jpg');
+        $hasFaceData = file_exists($facePath);
 
-    return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja', 'hasFaceData'));
-}
+        return view('presensi.create', compact('cek', 'lok_kantor', 'jamKerja', 'hasFaceData'));
+    }
+    
     public function store(Request $request)
     {
         try {
@@ -49,7 +50,7 @@ class PresensiController extends Controller
             $tgl_presensi = date('Y-m-d');
             $jam = date('H:i:s');
 
-            // ⭐ TAMBAHAN: Ambil konfigurasi jam kerja
+            // Ambil konfigurasi jam kerja
             $jamKerja = JamKerja::getConfig();
 
             if (!$jamKerja) {
@@ -75,6 +76,7 @@ class PresensiController extends Controller
                 return;
             }
 
+            // Validasi lokasi
             $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
             $lok = explode(",", $lok_kantor->lokasi_kantor);
             $latitudekantor = $lok[0];
@@ -97,54 +99,12 @@ class PresensiController extends Controller
             $jarak = $this->distance($latitudekantor, $longitudekantor, $latitudeuser, $longitudeuser);
             $radius = round($jarak['meters']);
 
-            // Tentukan status lokasi
-            
+            // Status lokasi
             $status_lokasi = ($radius <= $lok_kantor->radius) ? 'dalam_kantor' : 'luar_kantor';
             
-            $cek = DB::table('presensi')
-                ->where('tgl_presensi', $tgl_presensi)
-                ->where('nik', $nik)
-                ->first();
-
-            $ket = $cek ? "out" : "in";
-            // ⭐ VALIDASI WAKTU
-            if (!$cek) {
-                // ===== VALIDASI ABSEN MASUK =====
-                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
-                
-                // Cek apakah terlalu pagi
-                if ($waktuSekarangMenit < $jamKerja->batas_absen_masuk_awal) {
-                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenMasuk();
-                    echo "error|Maaf, Anda belum bisa absen masuk. Absen masuk dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
-                    return;
-                }
-                
-                // Cek apakah sudah terlalu sore
-                if ($waktuSekarangMenit > $jamKerja->batas_absen_masuk_akhir) {
-                    $batasMaksimal = $jamKerja->getWaktuAkhirAbsenMasuk();
-                    echo "error|Maaf, waktu absen masuk sudah berakhir. Batas maksimal absen masuk pukul " . $batasMaksimal . "|waktu";
-                    return;
-                }
-            }
-
-            else {
-                // ===== VALIDASI ABSEN PULANG =====
-                if (!empty($cek->jam_out)) {
-                    echo "error|Anda sudah melakukan absen pulang hari ini|x";
-                    return;
-                }
-                
-                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
-                $jamPulangMenit = (int)date('H', strtotime($jamKerja->jam_pulang)) * 60 + (int)date('i', strtotime($jamKerja->jam_pulang));
-                $batasAbsenPulang = $jamPulangMenit - $jamKerja->batas_absen_pulang_sebelum;
-                
-                // Cek apakah terlalu awal untuk absen pulang
-                if ($waktuSekarangMenit < $batasAbsenPulang) {
-                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenPulang();
-                    echo "error|Maaf, Anda belum bisa absen pulang. Absen pulang dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
-                    return;
-                }
-            }
+            // ========================================================
+            // PROSES FOTO - DEFINISIKAN VARIABLE DI SINI
+            // ========================================================
             $image = $request->image;
             if (!$image) {
                 echo "error|Foto tidak dikirim|x";
@@ -163,12 +123,58 @@ class PresensiController extends Controller
                 return;
             }
 
+            // Cek presensi
+            $cek = DB::table('presensi')
+                ->where('tgl_presensi', $tgl_presensi)
+                ->where('nik', $nik)
+                ->first();
+
+            // Tentukan nama file
+            $ket = $cek ? "out" : "in";
             $folderPath = 'public/uploads/absensi/';
             $fileName = $nik . "-" . $tgl_presensi . "-" . $ket . '.png';
             $file = $folderPath . $fileName;
-
+            // ========================================================
+            
             if (!$cek) {
                 // ===== ABSEN MASUK =====
+                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
+                
+                // Cek apakah terlalu pagi
+                if ($waktuSekarangMenit < $jamKerja->batas_absen_masuk_awal) {
+                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenMasuk();
+                    echo "error|Maaf, Anda belum bisa absen masuk. Absen masuk dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
+                    return;
+                }
+                
+                // Cek apakah sudah terlalu sore
+                if ($waktuSekarangMenit > $jamKerja->batas_absen_masuk_akhir) {
+                    $batasMaksimal = $jamKerja->getWaktuAkhirAbsenMasuk();
+                    echo "error|Maaf, waktu absen masuk sudah berakhir. Batas maksimal absen masuk pukul " . $batasMaksimal . "|waktu";
+                    return;
+                }
+                
+                // ========================================================
+                // PERHITUNGAN STATUS KETERLAMBATAN DENGAN TOLERANSI
+                // ========================================================
+                $jam_masuk_real = strtotime($jam);
+                $jam_kerja_mulai = strtotime($jamKerja->jam_masuk);
+                $jam_toleransi = strtotime($jamKerja->jam_toleransi);
+                
+                $status_presensi = 'Hadir Tepat Waktu';
+                
+                if ($jam_masuk_real > $jam_toleransi) {
+                    // Lewat dari jam toleransi = TERLAMBAT
+                    $status_presensi = 'Terlambat';
+                } elseif ($jam_masuk_real > $jam_kerja_mulai) {
+                    // Lewat dari jam masuk TAPI masih dalam toleransi = TEPAT WAKTU
+                    $status_presensi = 'Hadir Tepat Waktu';
+                } else {
+                    // Sebelum jam masuk = TEPAT WAKTU
+                    $status_presensi = 'Hadir Tepat Waktu';
+                }
+                // ========================================================
+                
                 $data_masuk = [
                     'nik' => $nik,
                     'tgl_presensi' => $tgl_presensi,
@@ -176,7 +182,8 @@ class PresensiController extends Controller
                     'foto_in' => $fileName,
                     'lokasi_in' => $lokasi,
                     'status_lokasi_in' => $status_lokasi,
-                    'jarak_in' => $radius
+                    'jarak_in' => $radius,
+                    'status' => $status_presensi
                 ];
 
                 $simpan = DB::table('presensi')->insert($data_masuk);
@@ -184,17 +191,38 @@ class PresensiController extends Controller
                 if ($simpan) {
                     Storage::put($file, $image_base64);
                     
-                    if ($status_lokasi == 'luar_kantor') {
-                        echo "success|Absen berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|in";
+                    // Pesan berbeda untuk terlambat
+                    if ($status_presensi == 'Terlambat') {
+                        if ($status_lokasi == 'luar_kantor') {
+                            echo "success|Absen berhasil! Wajah terverifikasi. Anda TERLAMBAT dan berada di luar kantor (Jarak: {$radius}m)|in";
+                        } else {
+                            echo "success|Terima Kasih, Wajah Terverifikasi! Anda TERLAMBAT. Selamat Bekerja!|in";
+                        }
                     } else {
-                        echo "success|Terima Kasih, Wajah Terverifikasi! Selamat Bekerja!|in";
+                        if ($status_lokasi == 'luar_kantor') {
+                            echo "success|Absen berhasil! Wajah terverifikasi. Anda berada di luar kantor (Jarak: {$radius}m)|in";
+                        } else {
+                            echo "success|Terima Kasih, Wajah Terverifikasi! Selamat Bekerja!|in";
+                        }
                     }
                     return;
                 }
+                
             } else {
                 // ===== ABSEN PULANG =====
                 if (!empty($cek->jam_out)) {
                     echo "error|Anda sudah melakukan absen pulang hari ini|x";
+                    return;
+                }
+                
+                $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
+                $jamPulangMenit = (int)date('H', strtotime($jamKerja->jam_pulang)) * 60 + (int)date('i', strtotime($jamKerja->jam_pulang));
+                $batasAbsenPulang = $jamPulangMenit - $jamKerja->batas_absen_pulang_sebelum;
+                
+                // Cek apakah terlalu awal untuk absen pulang
+                if ($waktuSekarangMenit < $batasAbsenPulang) {
+                    $waktuBolehAbsen = $jamKerja->getWaktuMulaiAbsenPulang();
+                    echo "error|Maaf, Anda belum bisa absen pulang. Absen pulang dapat dilakukan mulai pukul " . $waktuBolehAbsen . "|waktu";
                     return;
                 }
 
@@ -224,6 +252,7 @@ class PresensiController extends Controller
             }
 
             echo "error|Gagal menyimpan presensi|x";
+            
         } catch (\Exception $e) {
             echo "error|Terjadi kesalahan: " . $e->getMessage() . "|x";
         }
@@ -337,7 +366,7 @@ class PresensiController extends Controller
         $keterangan = $request->keterangan;
         $bukti_surat = null;
 
-        // 🔍 Cek apakah sudah ada izin di tanggal yang sama
+        // Cek apakah sudah ada izin di tanggal yang sama
         $cekIzin = DB::table('pengajuan_izin')
             ->where('nik', $nik)
             ->whereDate('tgl_izin', $tgl_izin)
@@ -348,14 +377,13 @@ class PresensiController extends Controller
                 ->with('error', 'Anda sudah mengajukan izin pada tanggal tersebut!');
         }
 
-        // 📎 Upload file jika ada
+        // Upload file jika ada
         if ($request->hasFile('bukti_surat')) {
             $file = $request->file('bukti_surat');
             $ext = $file->getClientOriginalExtension();
             $filename = $nik . '-' . date('YmdHis') . '.' . $ext;
             $path = public_path('storage/uploads/izin');
             
-            // Buat folder jika belum ada
             if (!file_exists($path)) {
                 mkdir($path, 0755, true);
             }
@@ -364,29 +392,22 @@ class PresensiController extends Controller
             $bukti_surat = $filename;
         }
 
-        // ⭐ LOGIC AUTO-APPROVE UNTUK SAKIT
-        // Status 1 = Izin (perlu approval)
-        // Status 2 = Sakit (auto-approved) 🔥
-        // Status 3 = Cuti (perlu approval)
-        
+        // Auto-approve untuk sakit
         if ($status == '2') {
-            // 🩺 SAKIT = AUTO-APPROVED
-            $status_approved = 1; // Langsung disetujui
+            $status_approved = 1;
             $message = 'Pengajuan sakit berhasil! Status sudah otomatis disetujui.';
         } else {
-            // 📝 IZIN & CUTI = PERLU APPROVAL
-            $status_approved = 0; // Menunggu approval
+            $status_approved = 0;
             $message = 'Pengajuan berhasil dikirim. Menunggu persetujuan admin.';
         }
 
-        // 💾 Simpan data baru
         $data = [
             'nik' => $nik,
             'tgl_izin' => $tgl_izin,
             'status' => $status,
             'keterangan' => $keterangan,
             'bukti_surat' => $bukti_surat,
-            'status_approved' => $status_approved, // ⭐ Auto-approve jika sakit
+            'status_approved' => $status_approved,
         ];
 
         $simpan = DB::table('pengajuan_izin')->insert($data);
@@ -444,9 +465,11 @@ class PresensiController extends Controller
         $long_kantor = (float) trim($lokasi_kantor[1]);
         $radius_kantor = $lok_kantor->radius;
 
-        // ⭐ AMBIL JAM DARI DATABASE
+        // ========================================================
+        // PERBAIKAN: Ambil jam toleransi dari database
+        // ========================================================
         $jamKerja = JamKerja::getConfig();
-        $jam_masuk_default = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
+        $jam_toleransi = $jamKerja ? $jamKerja->jam_toleransi : '07:45:00';
 
         $no = 0;
         $html = '';
@@ -500,13 +523,16 @@ class PresensiController extends Controller
                     }
                 }
 
+                // ========================================================
+                // PERBAIKAN: Bandingkan dengan jam toleransi
+                // ========================================================
                 $keterangan = '-';
                 if (!empty($d->jam_in)) {
                     $jam_masuk_real = strtotime($d->jam_in);
-                    $jam_masuk_seharusnya = strtotime($jam_masuk_default);
+                    $jam_toleransi_time = strtotime($jam_toleransi);
                     
-                    if ($jam_masuk_real > $jam_masuk_seharusnya) {
-                        $selisih_detik = $jam_masuk_real - $jam_masuk_seharusnya;
+                    if ($jam_masuk_real > $jam_toleransi_time) {
+                        $selisih_detik = $jam_masuk_real - $jam_toleransi_time;
                         $jam_terlambat = floor($selisih_detik / 3600);
                         $menit_terlambat = floor(($selisih_detik % 3600) / 60);
                         
@@ -900,50 +926,47 @@ class PresensiController extends Controller
     }
 
     public function setupwajah(Request $request)
-{
-    try {
-        $nik       = Auth::guard('karyawan')->user()->nik;
-        $face_data = $request->face_data;
+    {
+        try {
+            $nik = Auth::guard('karyawan')->user()->nik;
+            $face_data = $request->face_data;
 
-        if (!$face_data) {
-            return response()->json(['success' => false, 'message' => 'Data wajah tidak ditemukan.']);
-        }
-
-        // Decode dan simpan — sama persis dengan RegisterController
-        $image     = str_replace('data:image/jpeg;base64,', '', $face_data);
-        $image     = str_replace(' ', '+', $image);
-        $imageData = base64_decode($image);
-
-        if ($imageData === false) {
-            return response()->json(['success' => false, 'message' => 'Format data wajah tidak valid.']);
-        }
-
-        $folderPath   = storage_path('app/public/uploads/faces');
-        $faceFileName = $nik . '_face.jpg';
-
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0755, true);
-        }
-
-        file_put_contents($folderPath . '/' . $faceFileName, $imageData);
-
-        // Jika karyawan belum punya foto profil, gunakan foto wajah sebagai foto profil
-        $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
-        if (empty($karyawan->foto)) {
-            // Copy ke folder karyawan sebagai foto profil
-            $profileFolder = storage_path('app/public/uploads/karyawan');
-            if (!file_exists($profileFolder)) {
-                mkdir($profileFolder, 0755, true);
+            if (!$face_data) {
+                return response()->json(['success' => false, 'message' => 'Data wajah tidak ditemukan.']);
             }
-            copy($folderPath . '/' . $faceFileName, $profileFolder . '/' . $faceFileName);
 
-            DB::table('karyawan')->where('nik', $nik)->update(['foto' => $faceFileName]);
+            $image = str_replace('data:image/jpeg;base64,', '', $face_data);
+            $image = str_replace(' ', '+', $image);
+            $imageData = base64_decode($image);
+
+            if ($imageData === false) {
+                return response()->json(['success' => false, 'message' => 'Format data wajah tidak valid.']);
+            }
+
+            $folderPath = storage_path('app/public/uploads/faces');
+            $faceFileName = $nik . '_face.jpg';
+
+            if (!file_exists($folderPath)) {
+                mkdir($folderPath, 0755, true);
+            }
+
+            file_put_contents($folderPath . '/' . $faceFileName, $imageData);
+
+            $karyawan = DB::table('karyawan')->where('nik', $nik)->first();
+            if (empty($karyawan->foto)) {
+                $profileFolder = storage_path('app/public/uploads/karyawan');
+                if (!file_exists($profileFolder)) {
+                    mkdir($profileFolder, 0755, true);
+                }
+                copy($folderPath . '/' . $faceFileName, $profileFolder . '/' . $faceFileName);
+
+                DB::table('karyawan')->where('nik', $nik)->update(['foto' => $faceFileName]);
+            }
+
+            return response()->json(['success' => true, 'message' => 'Data wajah berhasil disimpan!']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan: ' . $e->getMessage()]);
         }
-
-        return response()->json(['success' => true, 'message' => 'Data wajah berhasil disimpan!']);
-
-    } catch (\Exception $e) {
-        return response()->json(['success' => false, 'message' => 'Gagal menyimpan: ' . $e->getMessage()]);
     }
-}
 }

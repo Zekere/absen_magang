@@ -279,7 +279,7 @@
       <p>Semarang, {{ date('d F Y') }}</p>
       <p><strong>Mengetahui,</strong></p>
       <br><br><br>
-      <p><u><strong>Deka Abdullah</strong></u><br><i>Kepala Keuangan</i></p>
+      <p><u><strong>_____________</strong></u><br><i>_____________</i></p>
     </div>
   </div>
 </body>

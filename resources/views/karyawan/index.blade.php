@@ -349,7 +349,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form method="POST" enctype="multipart/form-data" id="frmkaryawan">
+      <form method="POST" action="/karyawan/store" enctype="multipart/form-data" id="frmkaryawan">
         @csrf
         <div class="modal-body">
           <div class="row g-3">
@@ -566,59 +566,66 @@ document.addEventListener('DOMContentLoaded', function() {
   // Submit tambah karyawan dengan Fetch + FormData
   const frmKaryawan = document.getElementById('frmkaryawan');
   if (frmKaryawan) {
-    frmKaryawan.addEventListener('submit', function(e) {
-      e.preventDefault();
+      frmKaryawan.addEventListener('submit', function(e) {
+          e.preventDefault(); // ← HARUS baris pertama, sebelum apapun
+          e.stopPropagation();
 
-      // Validasi sederhana
-      const checks = [
-        ['nik', 'NIK wajib diisi.'],
-        ['nama_lengkap', 'Nama Lengkap wajib diisi.'],
-        ['jabatan', 'Jabatan wajib diisi.'],
-        ['no_hp', 'Nomor HP wajib diisi.'],
-        ['password', 'Password wajib diisi.'],
-        ['kode_dept', 'Silakan pilih Departemen.']
-      ];
+          // Validasi sederhana
+          const checks = [
+              ['nik', 'NIK wajib diisi.'],
+              ['nama_lengkap', 'Nama Lengkap wajib diisi.'],
+              ['jabatan', 'Jabatan wajib diisi.'],
+              ['no_hp', 'Nomor HP wajib diisi.'],
+              ['password', 'Password wajib diisi.'],
+              ['kode_dept', 'Silakan pilih Departemen.']
+          ];
 
-      for (let [name, msg] of checks) {
-        const field = frmKaryawan.querySelector('[name="'+name+'"]');
-        if (!field) continue;
-        if (!field.value || !field.value.toString().trim()) {
-          field.classList.add('is-invalid');
-          Swal.fire({ icon:'warning', title:'Form Belum Lengkap', text: msg }).then(() => field.focus());
-          return;
-        } else {
-          field.classList.remove('is-invalid');
-        }
-      }
+          for (let [name, msg] of checks) {
+              const field = frmKaryawan.querySelector('[name="'+name+'"]');
+              if (!field) continue;
+              if (!field.value || !field.value.toString().trim()) {
+                  field.classList.add('is-invalid');
+                  Swal.fire({ icon:'warning', title:'Form Belum Lengkap', text: msg })
+                      .then(() => field.focus());
+                  return;
+              } else {
+                  field.classList.remove('is-invalid');
+              }
+          }
 
-      const formData = new FormData(frmKaryawan);
+          const formData = new FormData(frmKaryawan);
 
-      fetch('/karyawan/store', {
-        method: 'POST',
-        body: formData
-      })
-      .then(resp => {
-        if (!resp.ok) throw new Error('Network response not ok');
-        return resp.json().catch(() => ({ ok: true }));
-      })
-      .then(data => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: 'Data karyawan berhasil disimpan!',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        bsModalTambah.hide();
-        frmKaryawan.reset();
-        document.getElementById('Foto').src = defaultPreview;
-        setTimeout(() => location.reload(), 1200);
-      })
-      .catch(err => {
-        console.error(err);
-        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menyimpan data!' });
+          fetch('/karyawan/store', {
+              method: 'POST',
+              body: formData
+          })
+          .then(resp => resp.json())
+          .then(data => {
+              if (data.success) {
+                  Swal.fire({
+                      icon: 'success',
+                      title: 'Berhasil',
+                      text: data.message,
+                      timer: 2000,
+                      showConfirmButton: false
+                  });
+                  bsModalTambah.hide();
+                  frmKaryawan.reset();
+                  document.getElementById('Foto').src = defaultPreview;
+                  setTimeout(() => location.reload(), 1200);
+              } else {
+                  Swal.fire({
+                      icon: 'warning',
+                      title: 'Gagal',
+                      text: data.message
+                  });
+              }
+          })
+          .catch(err => {
+              console.error(err);
+              Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menyimpan data!' });
+          });
       });
-    });
   }
 
   // Menangani notifikasi dari session (jika ada)
