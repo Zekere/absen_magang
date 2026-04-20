@@ -11,19 +11,12 @@ class Karyawan extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $table = "karyawan";
+    protected $table      = "karyawan";
     protected $primaryKey = "nik";
-    
-    // ⭐ PERBAIKAN: Tambahkan ini karena NIK bukan auto increment dan bertipe string
-    public $incrementing = false;
-    protected $keyType = 'string';
-    public $timestamps = false; // Karena tabel karyawan tidak punya created_at & updated_at
-    
+    public    $incrementing = false;
+    protected $keyType    = 'string';
+    public    $timestamps = false;
+
     protected $fillable = [
         'nik',
         'nama_lengkap',
@@ -40,12 +33,13 @@ class Karyawan extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // ⭐ Tambahkan ini
+    public function departemen()
+    {
+        return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
+    }
 }

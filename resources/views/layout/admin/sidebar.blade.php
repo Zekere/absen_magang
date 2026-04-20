@@ -31,22 +31,21 @@
           </a>
         </li>
 
-        <!-- Section Title -->
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
         </li>
 
         <!-- Data Master -->
-        <li class="nav-item">
-          <a data-bs-toggle="collapse" href="#dataMasterMenu" role="button" aria-expanded="false" aria-controls="dataMasterMenu">
+        <li class="nav-item sdb-item">
+          <a href="javascript:void(0)" class="sdb-trigger">
             <i class="fas fa-database"></i>
             <p>Data Master</p>
             <span class="caret"></span>
           </a>
-          <div class="collapse" id="dataMasterMenu" data-bs-parent=".sidebar-content">
+          <div class="sdb-sub">
             <ul class="nav nav-collapse">
-              <li><a href="/admin"><span class="sub-item">Data Admin</span></a>
+              <li><a href="/admin"><span class="sub-item">Data Admin</span></a></li>
               <li><a href="/karyawan"><span class="sub-item">Data Karyawan</span></a></li>
               <li><a href="/departemen"><span class="sub-item">Departemen</span></a></li>
             </ul>
@@ -54,79 +53,75 @@
         </li>
 
         <!-- Monitoring -->
-        <li class="nav-item">
-          <a data-bs-toggle="collapse" href="#monitoringMenu" role="button" aria-expanded="false" aria-controls="monitoringMenu">
+        <li class="nav-item sdb-item">
+          <a href="javascript:void(0)" class="sdb-trigger">
             <i class="fas fa-eye"></i>
             <p>Monitoring</p>
-            <span class="caret"></span>
-          </a>
-          <div class="collapse" id="monitoringMenu" data-bs-parent=".sidebar-content">
-            <ul class="nav nav-collapse">
-              <li><a href="/presensi/monitoring"><span class="sub-item">Monitoring Presensi</span></a></li>
-            </ul>
-          </div>
-        </li>
-
-        <!-- Konfigurasi dengan Notifikasi -->
-        <li class="nav-item">
-          <a data-bs-toggle="collapse" href="#konfigurasiMenu" role="button" aria-expanded="false" aria-controls="konfigurasiMenu">
-            <i class="fas fa-cogs"></i>
-            <p>Konfigurasi</p>
             @php
               $pendingCount = DB::table('pengajuan_izin')
                   ->where('status_approved', '0')
                   ->count();
             @endphp
-            <span class="notification-badge pulse" id="mainNotificationBadge" style="display: {{ $pendingCount > 0 ? 'flex' : 'none' }};">
-              {{ $pendingCount }}
-            </span>
+            <span class="sdb-badge" id="mainNotificationBadge"
+                  style="{{ $pendingCount > 0 ? '' : 'display:none;' }}">{{ $pendingCount }}</span>
             <span class="caret"></span>
           </a>
-          <div class="collapse" id="konfigurasiMenu" data-bs-parent=".sidebar-content">
-              <ul class="nav nav-collapse">
-                <!-- Menu 1: Lokasi Kantor -->
-                <li><a href="/konfigurasi"><span class="sub-item">Lokasi Kantor</span></a></li>
-                
-                <!-- ⭐ Menu 2: Jam Kerja (TAMBAHAN BARU) ⭐ -->
-                <li><a href="/jamkerja"><span class="sub-item">Jam Kerja</span></a></li>
-                
-                <!-- Menu 3: Data Izin & Sakit -->
-                <li>
-                  <a href="/presensi/izinsakit">
-                    <span class="sub-item">Data Izin & Sakit</span>
-                    <span class="sub-notification-badge" id="subNotificationBadge" style="display: {{ $pendingCount > 0 ? 'inline-flex' : 'none' }};">
-                      {{ $pendingCount }}
-                    </span>
-                    <span class="notification-dot" id="notificationDot" style="display: {{ $pendingCount > 0 ? 'block' : 'none' }};"></span>
-                  </a>
-                </li>
-              </ul>
-            </div>
+          <div class="sdb-sub">
+            <ul class="nav nav-collapse">
+              <li>
+                <a href="/presensi/monitoring">
+                  <span class="sub-item">Monitoring Presensi</span>
+                </a>
+              </li>
+              <li>
+                <a href="/presensi/izinsakit">
+                  <span class="sub-item">Data Izin &amp; Sakit</span>
+                  <span class="sdb-sub-badge" id="subNotificationBadge"
+                        style="{{ $pendingCount > 0 ? '' : 'display:none;' }}">{{ $pendingCount }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </li>
 
-        <!------- Lembur ------->
-        <li class="nav-item">
-            <a data-bs-toggle="collapse" href="#lemburMenu">
-                <i class="fas fa-business-time"></i>
-                <p>Lembur</p>
-                <span class="caret"></span>
-            </a>
-            <div class="collapse" id="lemburMenu">
-                <ul class="nav nav-collapse">
-                    <li><a href="/admin/lembur/data"><span class="sub-item">Data Lembur</span></a></li>
-                    <li><a href="/admin/lembur/laporan"><span class="sub-item">Laporan Lembur</span></a></li>
-                </ul>
-            </div>
+        <!-- Konfigurasi -->
+        <li class="nav-item sdb-item">
+          <a href="javascript:void(0)" class="sdb-trigger">
+            <i class="fas fa-cogs"></i>
+            <p>Konfigurasi</p>
+            <span class="caret"></span>
+          </a>
+          <div class="sdb-sub">
+            <ul class="nav nav-collapse">
+              <li><a href="/konfigurasi"><span class="sub-item">Lokasi Kantor</span></a></li>
+              <li><a href="/jamkerja"><span class="sub-item">Jam Kerja</span></a></li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Lembur -->
+        <li class="nav-item sdb-item">
+          <a href="javascript:void(0)" class="sdb-trigger">
+            <i class="fas fa-business-time"></i>
+            <p>Lembur</p>
+            <span class="caret"></span>
+          </a>
+          <div class="sdb-sub">
+            <ul class="nav nav-collapse">
+              <li><a href="/admin/lembur/data"><span class="sub-item">Data Lembur</span></a></li>
+              <li><a href="/admin/lembur/laporan"><span class="sub-item">Laporan Lembur</span></a></li>
+            </ul>
+          </div>
         </li>
 
         <!-- Laporan -->
-        <li class="nav-item">
-          <a data-bs-toggle="collapse" href="#laporanMenu" role="button" aria-expanded="false" aria-controls="laporanMenu">
+        <li class="nav-item sdb-item">
+          <a href="javascript:void(0)" class="sdb-trigger">
             <i class="fas fa-file-alt"></i>
             <p>Laporan</p>
             <span class="caret"></span>
           </a>
-          <div class="collapse" id="laporanMenu" data-bs-parent=".sidebar-content">
+          <div class="sdb-sub">
             <ul class="nav nav-collapse">
               <li><a href="/presensi/laporan"><span class="sub-item">Laporan Presensi</span></a></li>
               <li><a href="/presensi/rekap"><span class="sub-item">Rekap Presensi</span></a></li>
@@ -140,16 +135,33 @@
 </div>
 
 <style>
-/* ===== Notification Badge Styles ===== */
+/* Semua scoped ke .sidebar agar tidak merembet ke template */
 
-/* Badge pada menu utama (Konfigurasi) */
-.notification-badge {
+.sidebar .sdb-sub {
+  display: none;
+  overflow: hidden;
+}
+
+.sidebar .sdb-item.sdb-open > .sdb-sub {
+  display: block;
+}
+
+.sidebar .sdb-trigger .caret {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.sidebar .sdb-item.sdb-open > .sdb-trigger .caret {
+  transform: rotate(180deg);
+}
+
+/* Badge utama */
+.sidebar .sdb-badge {
   position: absolute;
   right: 45px;
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   min-width: 20px;
@@ -159,29 +171,18 @@
   align-items: center;
   justify-content: center;
   padding: 0 6px;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
   z-index: 10;
-  transition: all 0.3s ease;
+  animation: sdbPulse 2s ease-in-out infinite;
+}
+@keyframes sdbPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+  50%      { box-shadow: 0 0 0 7px rgba(239,68,68,0); }
 }
 
-/* Pulse animation untuk badge */
-.notification-badge.pulse {
-  animation: badgePulseAnimation 2s ease-in-out infinite;
-}
-
-@keyframes badgePulseAnimation {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-  }
-}
-
-/* Badge pada submenu (Data Izin & Sakit) */
-.sub-notification-badge {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
+/* Sub-badge */
+.sidebar .sdb-sub-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
   font-size: 10px;
   font-weight: 700;
   min-width: 18px;
@@ -192,212 +193,113 @@
   justify-content: center;
   padding: 0 5px;
   margin-left: 8px;
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
-  animation: subBadgePulse 2s ease-in-out infinite;
-  transition: all 0.3s ease;
+  animation: sdbSubPulse 2s ease-in-out infinite;
+}
+@keyframes sdbSubPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.12); }
 }
 
-@keyframes subBadgePulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-/* Dot indicator untuk submenu */
-.notification-dot {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  animation: dotBlink 1.5s ease-in-out infinite;
-}
-
-@keyframes dotBlink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-/* Animation untuk update badge */
-@keyframes badgeUpdate {
-  0% {
-    transform: translateY(-50%) scale(1);
-  }
-  50% {
-    transform: translateY(-50%) scale(1.3);
-  }
-  100% {
-    transform: translateY(-50%) scale(1);
-  }
-}
-
-@keyframes subBadgeUpdate {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.badge-updating {
-  animation: badgeUpdate 0.5s ease;
-}
-
-.sub-badge-updating {
-  animation: subBadgeUpdate 0.5s ease;
-}
-
-/* Submenu styling */
-.nav-collapse li a {
+.sidebar .nav-collapse li a {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
+.sidebar .nav-collapse li a .sub-item { flex: 1; }
 
-.nav-collapse li a .sub-item {
-  flex: 1;
-}
-
-/* ===== Existing Hover Effects ===== */
-.sidebar .nav-item a {
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.sidebar .nav-item a:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  padding-left: 20px;
-  transform: translateX(5px);
-}
-
-.sidebar .nav-item a:hover i {
-  color: #1572e8;
-  transform: scale(1.1);
-}
-
-.sidebar .nav-collapse li a:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  padding-left: 25px;
-}
-
-.sidebar .nav-collapse li a:hover .sub-item {
-  color: #1572e8;
-  font-weight: 500;
-}
-
-/* Active state */
-.sidebar .nav-item.active > a {
-  background-color: rgba(21, 114, 232, 0.2);
-  border-left: 3px solid #1572e8;
-}
-
-/* Caret animation */
-.nav-item a .caret {
-  transition: transform 0.3s ease;
-}
-.nav-item a[aria-expanded="true"] .caret {
-  transform: rotate(180deg);
-}
-
-/* Hover effect untuk notification badge */
-.nav-item:hover .notification-badge {
-  transform: translateY(-50%) scale(1.1);
-}
-
-.nav-collapse li a:hover .sub-notification-badge {
-  transform: scale(1.15);
-}
-
-/* Responsive adjustment */
 @media (max-width: 991px) {
-  .notification-badge {
-    right: 35px;
-  }
+  .sidebar .sdb-badge { right: 35px; }
 }
 </style>
 
 <script>
-// Auto update notification count
-(function() {
-  let lastCount = {{ $pendingCount }};
-  
-  function updateNotificationBadge() {
-    fetch('/api/pending-izin-count', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        const count = data.count;
-        const mainBadge = document.getElementById('mainNotificationBadge');
-        const subBadge = document.getElementById('subNotificationBadge');
-        const notifDot = document.getElementById('notificationDot');
-        
-        // Update badge values dan visibility
-        if (count > 0) {
-          // Tambahkan animasi jika ada perubahan
-          if (count !== lastCount) {
-            mainBadge.classList.add('badge-updating');
-            subBadge.classList.add('sub-badge-updating');
-            
-            setTimeout(() => {
-              mainBadge.classList.remove('badge-updating');
-              subBadge.classList.remove('sub-badge-updating');
-            }, 500);
-          }
-          
-          mainBadge.textContent = count;
-          subBadge.textContent = count;
-          mainBadge.style.display = 'flex';
-          subBadge.style.display = 'inline-flex';
-          notifDot.style.display = 'block';
+(function () {
+  'use strict';
+
+  function initSidebar() {
+
+    /* ── Toggle murni JS — tidak pakai Bootstrap collapse ── */
+    document.querySelectorAll('.sidebar .sdb-trigger').forEach(function (trigger) {
+      /* Klon trigger untuk buang semua event listener lama dari template */
+      var fresh = trigger.cloneNode(true);
+      trigger.parentNode.replaceChild(fresh, trigger);
+
+      fresh.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        var li = this.closest('.sdb-item');
+        if (!li) return;
+
+        var isOpen = li.classList.contains('sdb-open');
+        var sub    = li.querySelector('.sdb-sub');
+
+        if (isOpen) {
+          li.classList.remove('sdb-open');
+          sub.style.display = 'none';
         } else {
-          mainBadge.style.display = 'none';
-          subBadge.style.display = 'none';
-          notifDot.style.display = 'none';
+          li.classList.add('sdb-open');
+          sub.style.display = 'block';
         }
-        
-        lastCount = count;
-      }
-    })
-    .catch(error => {
-      console.error('Error updating notification:', error);
+      });
     });
-  }
-  
-  // Update setiap 30 detik
-  setInterval(updateNotificationBadge, 30000);
-  
-  // Update saat tab menjadi aktif kembali
-  document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-      updateNotificationBadge();
+
+    /* ── Auto-buka submenu halaman aktif ── */
+    var path = window.location.pathname;
+    document.querySelectorAll('.sidebar .sdb-sub a').forEach(function (link) {
+      if (link.getAttribute('href') === path) {
+        var li  = link.closest('.sdb-item');
+        var sub = link.closest('.sdb-sub');
+        if (li && sub) {
+          li.classList.add('sdb-open');
+          sub.style.display = 'block';
+        }
+      }
+    });
+
+    /* ── Polling notifikasi ── */
+    var lastCount = parseInt(document.getElementById('mainNotificationBadge')
+                    ? document.getElementById('mainNotificationBadge').textContent : '0') || 0;
+
+    function updateBadge() {
+      fetch('/api/pending-izin-count', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) return;
+        var count = parseInt(data.count) || 0;
+        var main  = document.getElementById('mainNotificationBadge');
+        var sub   = document.getElementById('subNotificationBadge');
+        if (!main || !sub) return;
+
+        if (count > 0) {
+          main.textContent   = count;
+          sub.textContent    = count;
+          main.style.display = 'flex';
+          sub.style.display  = 'inline-flex';
+        } else {
+          main.style.display = 'none';
+          sub.style.display  = 'none';
+        }
+        lastCount = count;
+      })
+      .catch(function () {});
     }
-  });
-  
-  // Update saat halaman di-load
-  document.addEventListener('DOMContentLoaded', function() {
-    // Delay sedikit untuk memastikan DOM sudah siap
-    setTimeout(updateNotificationBadge, 1000);
-  });
+
+    setInterval(updateBadge, 30000);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) updateBadge();
+    });
+    setTimeout(updateBadge, 1000);
+  }
+
+  /* Jalankan setelah DOM siap */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebar);
+  } else {
+    initSidebar();
+  }
+
 })();
 </script>

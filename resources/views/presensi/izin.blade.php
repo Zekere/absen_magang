@@ -7,247 +7,249 @@
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle fw-semibold">Data Izin / Sakit</div>
+    <div class="pageTitle fw-semibold">Izin &amp; Cuti</div>
 </div>
 @endsection
 
 @section('content')
-<div class="container-fluid" style="margin-top: 70px; margin-bottom: 100px;">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- 🔔 Notifikasi --}}
-    @if(Session::get('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-3">
-        <ion-icon name="checkmark-circle" class="me-2" style="font-size: 22px;"></ion-icon>
-        {{ Session::get('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+{{-- ─── NOTIFIKASI SESSION ─── --}}
+@if(Session::get('success'))
+<div class="isc-toast isc-toast-success" id="iscToast">
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+    <span>{{ Session::get('success') }}</span>
+    <button onclick="document.getElementById('iscToast').remove()">
+        <ion-icon name="close-outline"></ion-icon>
+    </button>
+</div>
+@endif
 
-    @if(Session::get('error'))
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-3">
-        <ion-icon name="close-circle" class="me-2" style="font-size: 22px;"></ion-icon>
-        {{ Session::get('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+@if(Session::get('error'))
+<div class="isc-toast isc-toast-error" id="iscToast">
+    <ion-icon name="close-circle-outline"></ion-icon>
+    <span>{{ Session::get('error') }}</span>
+    <button onclick="document.getElementById('iscToast').remove()">
+        <ion-icon name="close-outline"></ion-icon>
+    </button>
+</div>
+@endif
 
-    {{-- 📅 Filter Bulan & Tahun --}}
-    <div class="month-filter-container mb-3">
-        <div class="d-flex align-items-center gap-2">
-            <div class="month-label">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span>Periode:</span>
-            </div>
-            
-            {{-- Filter Bulan --}}
-            <select id="monthFilter" class="form-select month-select flex-grow-1">
-                <option value="">Semua Bulan</option>
-                <option value="01">Januari</option>
-                <option value="02">Februari</option>
-                <option value="03">Maret</option>
-                <option value="04">April</option>
-                <option value="05">Mei</option>
-                <option value="06">Juni</option>
-                <option value="07">Juli</option>
-                <option value="08">Agustus</option>
-                <option value="09">September</option>
-                <option value="10">Oktober</option>
-                <option value="11">November</option>
-                <option value="12">Desember</option>
-            </select>
-            
-            {{-- Filter Tahun --}}
-            <select id="yearFilter" class="form-select year-select">
-                @php
-                    $currentYear = date('Y');
-                    $startYear = $currentYear - 3; // 3 tahun ke belakang
-                @endphp
-                <option value="">Semua</option>
-                @for($year = $currentYear; $year >= $startYear; $year--)
-                    <option value="{{ $year }}" {{ $year == $currentYear ? 'selected' : '' }}>
-                        {{ $year }}
-                    </option>
-                @endfor
-            </select>
-        </div>
-    </div>
+<div class="isc-wrap">
 
-    {{-- 🔍 Filter Tabs --}}
-    <div class="filter-tabs mb-3 text-center">
-        <div class="d-flex justify-content-between gap-2 overflow-auto pb-2">
-            <button class="filter-btn active" data-filter="all">
-                <ion-icon name="apps-outline"></ion-icon>
-                <span>Semua</span>
-            </button>
-            <button class="filter-btn" data-filter="1">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span>Izin</span>
-            </button>
-            <button class="filter-btn" data-filter="2">
-                <ion-icon name="medkit-outline"></ion-icon>
-                <span>Sakit</span>
-            </button>
-            <button class="filter-btn" data-filter="3">
-                <ion-icon name="airplane-outline"></ion-icon>
-                <span>Cuti</span>
-            </button>
-        </div>
-    </div>
-
-    {{-- 📊 Info Counter --}}
-    <div class="info-counter mb-3">
-        <div class="counter-item">
-            <span class="counter-label">Total Data:</span>
-            <span class="counter-value" id="totalCounter">0</span>
-        </div>
-        <div class="counter-item">
-            <span class="counter-label">Ditampilkan:</span>
-            <span class="counter-value" id="visibleCounter">0</span>
-        </div>
-    </div>
-
-    {{-- 📄 List Data --}}
-    <div class="row g-3" id="dataList">
+    {{-- ─── STAT CARDS ─── --}}
+    <div class="isc-stats">
         @php
-            // Sorting: Pending (0) dulu, baru Approved (1) & Declined (2)
-            $sortedData = $dataizin->sortBy(function($item) {
-                return $item->status_approved == 0 ? 0 : 1;
-            });
+            $total    = count($dataizin);
+            $pending  = $dataizin->where('status_approved', 0)->count();
+            $approved = $dataizin->where('status_approved', 1)->count();
+            $rejected = $dataizin->where('status_approved', 2)->count();
+        @endphp
+        <div class="isc-stat">
+            <div class="isc-stat-num">{{ $total }}</div>
+            <div class="isc-stat-label">Total</div>
+        </div>
+        <div class="isc-stat">
+            <div class="isc-stat-num isc-num-pending">{{ $pending }}</div>
+            <div class="isc-stat-label">Pending</div>
+        </div>
+        <div class="isc-stat">
+            <div class="isc-stat-num isc-num-approved">{{ $approved }}</div>
+            <div class="isc-stat-label">Disetujui</div>
+        </div>
+        <div class="isc-stat">
+            <div class="isc-stat-num isc-num-rejected">{{ $rejected }}</div>
+            <div class="isc-stat-label">Ditolak</div>
+        </div>
+    </div>
+
+    {{-- ─── FILTER PERIODE ─── --}}
+    <div class="isc-period-bar">
+        <div class="isc-period-icon">
+            <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <select id="monthFilter" class="isc-select">
+            <option value="">Semua Bulan</option>
+            <option value="01">Januari</option>
+            <option value="02">Februari</option>
+            <option value="03">Maret</option>
+            <option value="04">April</option>
+            <option value="05">Mei</option>
+            <option value="06">Juni</option>
+            <option value="07">Juli</option>
+            <option value="08">Agustus</option>
+            <option value="09">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+        </select>
+        <select id="yearFilter" class="isc-select isc-select-year">
+            <option value="">Semua Tahun</option>
+            @php $cy = date('Y'); @endphp
+            @for($y = $cy; $y >= $cy - 3; $y--)
+                <option value="{{ $y }}" {{ $y == $cy ? 'selected' : '' }}>{{ $y }}</option>
+            @endfor
+        </select>
+    </div>
+
+    {{-- ─── TAB KATEGORI ─── --}}
+    <div class="isc-tabs">
+        <button class="isc-tab active" data-filter="all">
+            <ion-icon name="apps-outline"></ion-icon>
+            Semua
+        </button>
+        <button class="isc-tab" data-filter="1">
+            <ion-icon name="calendar-outline"></ion-icon>
+            Izin
+        </button>
+        <button class="isc-tab" data-filter="2">
+            <ion-icon name="medkit-outline"></ion-icon>
+            Sakit
+        </button>
+        <button class="isc-tab" data-filter="3">
+            <ion-icon name="airplane-outline"></ion-icon>
+            Cuti
+        </button>
+    </div>
+
+    {{-- ─── INFO ROW ─── --}}
+    <div class="isc-info-row">
+        <span class="isc-info-label" id="sectionLabel">Semua pengajuan</span>
+        <span class="isc-info-count" id="visibleCount">0 data</span>
+    </div>
+
+    {{-- ─── CARD LIST ─── --}}
+    <div class="isc-list" id="iscList">
+
+        @php
+            $sorted = $dataizin->sortBy(fn($i) => $i->status_approved == 0 ? 0 : 1);
         @endphp
 
-        @forelse ($sortedData as $d)
-        <div class="col-12 izin-card" 
-             data-status="{{ $d->status }}" 
+        @forelse ($sorted as $d)
+        @php
+            $palettes = ['pal-blue','pal-teal','pal-amber','pal-coral'];
+            $pal = $palettes[$loop->index % 4];
+            $initials = collect(explode(' ', $d->nama_lengkap ?? auth()->user()->nama_lengkap ?? 'U'))
+                ->take(2)->map(fn($w) => strtoupper(substr($w,0,1)))->join('');
+        @endphp
+
+        <div class="isc-card {{ $d->status_approved == 0 ? 'isc-card-pending' : '' }}"
+             data-status="{{ $d->status }}"
              data-approved="{{ $d->status_approved }}"
              data-month="{{ date('m', strtotime($d->tgl_izin)) }}"
              data-year="{{ date('Y', strtotime($d->tgl_izin)) }}">
-            <div class="card border-0 shadow-sm hover-card rounded-4 {{ $d->status_approved == 0 ? 'pending-highlight' : '' }}">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-start gap-3">
 
-                        {{-- 🧩 Icon --}}
-                        <div class="icon-wrapper {{ $d->status_approved == 0 ? 'icon-pulse' : '' }}">
-                            @if($d->status == 1)
-                                <ion-icon name="calendar-outline" class="icon-izin"></ion-icon>
-                            @elseif($d->status == 2)
-                                <ion-icon name="medkit-outline" class="icon-sakit"></ion-icon>
-                            @elseif($d->status == 3)
-                                <ion-icon name="airplane-outline" class="icon-cuti"></ion-icon>
-                            @else
-                                <ion-icon name="help-circle-outline" class="icon-default"></ion-icon>
-                            @endif
-                        </div>
-
-                        {{-- 📄 Isi --}}
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <div>
-                                    <h6 class="fw-bold mb-1 text-dark">
-                                        {{ date('d F Y', strtotime($d->tgl_izin)) }}
-                                    </h6>
-                                    <span class="badge-type 
-                                        @if($d->status == 1) badge-type-izin
-                                        @elseif($d->status == 2) badge-type-sakit
-                                        @elseif($d->status == 3) badge-type-cuti
-                                        @else badge-type-default
-                                        @endif">
-                                        {{ $d->status == 1 ? 'Izin' : ($d->status == 2 ? 'Sakit' : ($d->status == 3 ? 'Cuti' : 'Lainnya')) }}
-                                    </span>
-                                </div>
-
-                                {{-- 🟢 Status Persetujuan --}}
-                                @if($d->status_approved == 0)
-                                    <span class="badge-status badge-pending">
-                                        <ion-icon name="time-outline"></ion-icon> Pending
-                                    </span>
-                                @elseif($d->status_approved == 1)
-                                    <span class="badge-status badge-approved">
-                                        <ion-icon name="checkmark-circle"></ion-icon> Approved
-                                    </span>
-                                @elseif($d->status_approved == 2)
-                                    <span class="badge-status badge-declined">
-                                        <ion-icon name="close-circle"></ion-icon> Declined
-                                    </span>
-                                @endif
-                            </div>
-
-                            <p class="text-muted small mb-2">
-                                <ion-icon name="document-text-outline" class="me-1"></ion-icon>
-                                {{ $d->keterangan }}
-                            </p>
-
-                            {{-- 📎 Bukti Surat --}}
-                            @if(!empty($d->bukti_surat))
-                            <div class="attachment-container">
-                                <button class="attachment-btn" onclick="viewAttachment('{{ asset('storage/uploads/izin/' . $d->bukti_surat) }}', '{{ $d->bukti_surat }}')">
-                                    <ion-icon name="attach-outline"></ion-icon>
-                                    <span>Lihat Bukti Surat</span>
-                                    <ion-icon name="eye-outline" class="view-icon"></ion-icon>
-                                </button>
-                            </div>
-                            @endif
-                        </div>
-
+            {{-- TOP ROW --}}
+            <div class="isc-card-top">
+                <div class="isc-left">
+                    <div class="isc-avatar {{ $pal }}">{{ $initials }}</div>
+                    <div class="isc-card-meta">
+                        <div class="isc-card-date">{{ date('d F Y', strtotime($d->tgl_izin)) }}</div>
+                        @if($d->status == 1)
+                            <span class="isc-type-badge type-izin">
+                                <ion-icon name="calendar-outline"></ion-icon> Izin
+                            </span>
+                        @elseif($d->status == 2)
+                            <span class="isc-type-badge type-sakit">
+                                <ion-icon name="medkit-outline"></ion-icon> Sakit
+                            </span>
+                        @elseif($d->status == 3)
+                            <span class="isc-type-badge type-cuti">
+                                <ion-icon name="airplane-outline"></ion-icon> Cuti
+                            </span>
+                        @endif
                     </div>
                 </div>
+
+                {{-- APPROVAL BADGE --}}
+                @if($d->status_approved == 0)
+                    <span class="isc-appr appr-pending">
+                        <span class="isc-dot dot-pending"></span>Pending
+                    </span>
+                @elseif($d->status_approved == 1)
+                    <span class="isc-appr appr-approved">
+                        <span class="isc-dot dot-approved"></span>Disetujui
+                    </span>
+                @else
+                    <span class="isc-appr appr-rejected">
+                        <span class="isc-dot dot-rejected"></span>Ditolak
+                    </span>
+                @endif
             </div>
+
+            {{-- KETERANGAN --}}
+            <div class="isc-card-desc">
+                <ion-icon name="document-text-outline"></ion-icon>
+                {{ $d->keterangan }}
+            </div>
+
+            {{-- BUKTI SURAT --}}
+            @if(!empty($d->bukti_surat))
+            <div class="isc-card-footer">
+                <button class="isc-bukti-btn"
+                    onclick="iscViewAttachment(
+                        '{{ asset('storage/uploads/izin/' . $d->bukti_surat) }}',
+                        '{{ $d->bukti_surat }}'
+                    )">
+                    <ion-icon name="attach-outline"></ion-icon>
+                    Lihat Bukti Surat
+                    <ion-icon name="eye-outline" class="isc-eye"></ion-icon>
+                </button>
+            </div>
+            @endif
+
         </div>
         @empty
-        {{-- 🚫 Empty State --}}
-        <div class="col-12" id="emptyState">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <ion-icon name="document-text-outline"></ion-icon>
-                </div>
-                <h5 class="fw-bold mb-2">Belum Ada Data</h5>
-                <p class="text-muted">Anda belum pernah mengajukan izin, sakit, atau cuti.</p>
-                <a href="/presensi/buatizin" class="btn btn-primary btn-sm px-4">
-                    <ion-icon name="add-circle-outline" class="me-1"></ion-icon>
-                    Buat Izin Baru
-                </a>
+
+        {{-- EMPTY STATE DATA KOSONG --}}
+        <div class="isc-empty" id="emptyData">
+            <div class="isc-empty-icon">
+                <ion-icon name="document-text-outline"></ion-icon>
             </div>
+            <div class="isc-empty-title">Belum Ada Pengajuan</div>
+            <div class="isc-empty-sub">Kamu belum pernah mengajukan izin, sakit, atau cuti</div>
+            <a href="/presensi/buatizin" class="isc-empty-btn">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                Buat Pengajuan
+            </a>
         </div>
+
         @endforelse
     </div>
 
-    {{-- Empty State untuk Filter --}}
-    <div class="row g-3" id="emptyFilterState" style="display: none;">
-        <div class="col-12">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <ion-icon name="search-outline"></ion-icon>
-                </div>
-                <h5 class="fw-bold mb-2">Tidak Ada Data</h5>
-                <p class="text-muted">Tidak ada data untuk periode yang dipilih.</p>
-            </div>
+    {{-- EMPTY STATE FILTER --}}
+    <div class="isc-empty" id="emptyFilter" style="display:none;">
+        <div class="isc-empty-icon" style="background:#f0f4ff;">
+            <ion-icon name="search-outline" style="color:#185FA5;"></ion-icon>
         </div>
+        <div class="isc-empty-title">Tidak Ada Data</div>
+        <div class="isc-empty-sub">Tidak ada pengajuan di periode yang dipilih</div>
     </div>
+
 </div>
 
-{{-- ➕ Tombol Tambah --}}
-<div class="fab-button animate-fab">
-    <a href="/presensi/buatizin" class="fab shadow-lg">
-        <ion-icon name="add-outline"></ion-icon>
-    </a>
-</div>
+{{-- ─── FAB ─── --}}
+<a href="/presensi/buatizin" class="isc-fab" title="Buat pengajuan baru">
+    <ion-icon name="add-outline"></ion-icon>
+</a>
 
-{{-- 📎 Modal Attachment Viewer --}}
-<div id="attachmentModal" class="attachment-modal" onclick="closeAttachment(event)">
-    <div class="attachment-modal-content">
-        <div class="attachment-modal-header">
-            <h5 id="attachmentTitle">Bukti Surat</h5>
-            <button class="attachment-close" onclick="closeAttachment(event)">
+{{-- ─── MODAL VIEWER BUKTI SURAT ─── --}}
+<div class="isc-modal-bg" id="iscModalBg" onclick="iscCloseModal(event)">
+    <div class="isc-modal">
+        <div class="isc-modal-head">
+            <span class="isc-modal-title" id="iscModalTitle">Bukti Surat</span>
+            <button class="isc-modal-close" onclick="iscCloseModalDirect()">
                 <ion-icon name="close-outline"></ion-icon>
             </button>
         </div>
-        <div class="attachment-modal-body" id="attachmentBody">
-            <img id="attachmentImage" src="" alt="Bukti Surat" style="display: none;">
-            <iframe id="attachmentPDF" src="" style="display: none;"></iframe>
-            <div id="attachmentDoc" style="display: none;">
-                <div class="doc-placeholder">
+        <div class="isc-modal-body" id="iscModalBody">
+            <img id="iscModalImg" src="" alt="Bukti" style="display:none;">
+            <iframe id="iscModalPdf" src="" style="display:none;"></iframe>
+            <div id="iscModalDoc" style="display:none;">
+                <div class="isc-doc-placeholder">
                     <ion-icon name="document-text-outline"></ion-icon>
-                    <p>File dokumen tidak dapat ditampilkan di browser</p>
-                    <a id="downloadLink" href="" download class="btn-download">
+                    <p>File tidak dapat ditampilkan di browser</p>
+                    <a id="iscDownloadLink" href="" download class="isc-dl-btn">
                         <ion-icon name="download-outline"></ion-icon>
                         Download File
                     </a>
@@ -257,960 +259,606 @@
     </div>
 </div>
 
-{{-- 💫 Script Filter Dinamis dengan Sorting dan Filter Bulan/Tahun --}}
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const buttons = document.querySelectorAll(".filter-btn");
-    const dataList = document.getElementById("dataList");
-    const cards = Array.from(document.querySelectorAll(".izin-card"));
-    const monthFilter = document.getElementById("monthFilter");
-    const yearFilter = document.getElementById("yearFilter");
-    const emptyState = document.getElementById("emptyState");
-    const emptyFilterState = document.getElementById("emptyFilterState");
-    const totalCounter = document.getElementById("totalCounter");
-    const visibleCounter = document.getElementById("visibleCounter");
-
-    let currentStatusFilter = "all";
-    let currentMonthFilter = "";
-    let currentYearFilter = yearFilter ? yearFilter.value : "";
-
-    // Set bulan saat ini sebagai default
-    if (monthFilter) {
-        const currentMonth = new Date().getMonth() + 1;
-        monthFilter.value = currentMonth.toString().padStart(2, '0');
-        currentMonthFilter = monthFilter.value;
-    }
-
-    // Update counter
-    function updateCounter() {
-        const visibleCards = cards.filter(card => card.style.display !== "none").length;
-        if (totalCounter) totalCounter.textContent = cards.length;
-        if (visibleCounter) visibleCounter.textContent = visibleCards;
-    }
-
-    // Fungsi untuk sorting cards: pending dulu
-    function sortCards(cardsToSort) {
-        return cardsToSort.sort((a, b) => {
-            const statusA = parseInt(a.dataset.approved);
-            const statusB = parseInt(b.dataset.approved);
-            
-            if (statusA === 0 && statusB !== 0) return -1;
-            if (statusA !== 0 && statusB === 0) return 1;
-            return 0;
-        });
-    }
-
-    // Fungsi filter gabungan (status + bulan + tahun)
-    function applyFilters() {
-        let visibleCards = cards.filter(card => {
-            // Filter berdasarkan status
-            const statusMatch = currentStatusFilter === "all" || card.dataset.status === currentStatusFilter;
-            
-            // Filter berdasarkan bulan (jika dipilih)
-            const monthMatch = !currentMonthFilter || card.dataset.month === currentMonthFilter;
-            
-            // Filter berdasarkan tahun (jika dipilih)
-            const yearMatch = !currentYearFilter || card.dataset.year === currentYearFilter;
-            
-            return statusMatch && monthMatch && yearMatch;
-        });
-
-        // Sort cards yang visible
-        visibleCards = sortCards(visibleCards);
-
-        // Hide semua cards dulu
-        cards.forEach(card => {
-            card.style.display = "none";
-            card.classList.remove("fadeIn");
-        });
-
-        // Show/hide empty state
-        if (emptyState) emptyState.style.display = "none";
-        if (emptyFilterState) {
-            emptyFilterState.style.display = visibleCards.length === 0 ? "block" : "none";
-        }
-
-        // Append cards yang sudah disort ke container
-        visibleCards.forEach(card => {
-            card.style.display = "block";
-            card.classList.add("fadeIn");
-            dataList.appendChild(card);
-        });
-
-        updateCounter();
-    }
-
-    // Event listener untuk filter status
-    buttons.forEach(btn => {
-        btn.addEventListener("click", function() {
-            buttons.forEach(b => b.classList.remove("active"));
-            this.classList.add("active");
-            currentStatusFilter = this.getAttribute("data-filter");
-            applyFilters();
-        });
-    });
-
-    // Event listener untuk filter bulan
-    if (monthFilter) {
-        monthFilter.addEventListener("change", function() {
-            currentMonthFilter = this.value;
-            applyFilters();
-        });
-    }
-
-    // Event listener untuk filter tahun
-    if (yearFilter) {
-        yearFilter.addEventListener("change", function() {
-            currentYearFilter = this.value;
-            applyFilters();
-        });
-    }
-
-    // Initial load
-    applyFilters();
-});
-
-// Fungsi untuk melihat attachment
-function viewAttachment(filePath, fileName) {
-    const modal = document.getElementById('attachmentModal');
-    const imageViewer = document.getElementById('attachmentImage');
-    const pdfViewer = document.getElementById('attachmentPDF');
-    const docViewer = document.getElementById('attachmentDoc');
-    const downloadLink = document.getElementById('downloadLink');
-    const title = document.getElementById('attachmentTitle');
-    
-    imageViewer.style.display = 'none';
-    pdfViewer.style.display = 'none';
-    docViewer.style.display = 'none';
-    
-    title.textContent = fileName;
-    
-    const extension = fileName.split('.').pop().toLowerCase();
-    
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
-        imageViewer.src = filePath;
-        imageViewer.style.display = 'block';
-    } else if (extension === 'pdf') {
-        pdfViewer.src = filePath;
-        pdfViewer.style.display = 'block';
-    } else {
-        downloadLink.href = filePath;
-        downloadLink.download = fileName;
-        docViewer.style.display = 'flex';
-    }
-    
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeAttachment(event) {
-    if (event.target.id === 'attachmentModal' || event.target.closest('.attachment-close')) {
-        const modal = document.getElementById('attachmentModal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        
-        document.getElementById('attachmentImage').src = '';
-        document.getElementById('attachmentPDF').src = '';
-    }
-}
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('attachmentModal');
-        if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            document.getElementById('attachmentImage').src = '';
-            document.getElementById('attachmentPDF').src = '';
-        }
-    }
-});
-</script>
-
-{{-- 🎨 CSS Modern --}}
+{{-- ═══ STYLES ══════════════════════════════════ --}}
 <style>
-/* ===== Month Filter ===== */
-.month-filter-container {
-    background: white;
-    border-radius: 12px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+/* ─── BASE ─── */
+.isc-wrap {
+    padding: 70px 14px 100px;
+    max-width: 500px;
+    margin: 0 auto;
+    font-family: -apple-system, 'Segoe UI', sans-serif;
 }
 
-.month-label {
+/* ─── TOAST ─── */
+.isc-toast {
+    position: fixed;
+    top: 70px;
+    left: 14px;
+    right: 14px;
+    z-index: 9999;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 600;
-    color: #374151;
+    gap: 10px;
+    padding: 13px 14px;
+    border-radius: 14px;
     font-size: 14px;
-    white-space: nowrap;
+    font-weight: 500;
+    color: #fff;
+    animation: iscSlideDown 0.35s ease;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
 }
 
-.month-label ion-icon {
-    font-size: 20px;
-    color: #3b82f6;
+.isc-toast ion-icon { font-size: 22px; flex-shrink: 0; }
+.isc-toast span { flex: 1; }
+.isc-toast button { background: rgba(255,255,255,0.2); border: none; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
+.isc-toast button ion-icon { font-size: 18px; }
+.isc-toast-success { background: linear-gradient(135deg, #16a34a, #15803d); }
+.isc-toast-error   { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+
+@keyframes iscSlideDown {
+    from { opacity: 0; transform: translateY(-14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.month-select {
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1f2937;
-    padding: 8px 12px;
-    transition: all 0.3s ease;
-    background: white;
-    max-width: 180px;
+/* ─── STATS ─── */
+.isc-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
 }
 
-.year-select {
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1f2937;
-    padding: 8px 12px;
-    transition: all 0.3s ease;
-    background: white;
-    width: 100px;
+.isc-stat {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid rgba(0,0,0,0.07);
+    padding: 12px 8px;
+    text-align: center;
 }
 
-.month-select:focus,
-.year-select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
+.isc-stat-num   { font-size: 22px; font-weight: 700; color: #111; line-height: 1.1; }
+.isc-stat-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
 
-/* ===== Info Counter ===== */
-.info-counter {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-}
+.isc-num-pending  { color: #854F0B; }
+.isc-num-approved { color: #3B6D11; }
+.isc-num-rejected { color: #A32D2D; }
 
-.counter-item {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    padding: 8px 16px;
-    border-radius: 10px;
+/* ─── PERIOD BAR ─── */
+.isc-period-bar {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-}
-
-.counter-label {
-    color: #6b7280;
-    font-weight: 500;
-}
-
-.counter-value {
-    color: #1f2937;
-    font-weight: 700;
-    font-size: 15px;
-}
-
-/* ===== Filter Buttons ===== */
-.filter-btn {
-    border: none;
-    background: #f3f4f6;
-    color: #4b5563;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.25s ease;
-}
-
-.filter-btn.active {
-    background: #3b82f6;
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(59,130,246,0.3);
-    transform: scale(1.05);
-}
-
-/* ===== Highlight Pending Card ===== */
-.pending-highlight {
-    border: 2px solid #fbbf24 !important;
-    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
-}
-
-/* ===== Icon Wrapper ===== */
-.icon-wrapper {
-    width: 52px;
-    height: 52px;
+    background: #fff;
     border-radius: 14px;
+    border: 0.5px solid rgba(0,0,0,0.07);
+    padding: 11px 14px;
+    margin-bottom: 12px;
+}
+
+.isc-period-icon {
+    width: 34px;
+    height: 34px;
+    background: #E6F1FB;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    transition: 0.3s;
+    flex-shrink: 0;
 }
+.isc-period-icon ion-icon { font-size: 18px; color: #185FA5; }
 
-.icon-pulse {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.icon-izin { color: #3b82f6; background: #dbeafe; }
-.icon-sakit { color: #ef4444; background: #fee2e2; }
-.icon-cuti { color: #8b5cf6; background: #ede9fe; }
-.icon-default { color: #6b7280; background: #f3f4f6; }
-
-/* ===== Badge ===== */
-.badge-type {
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 6px;
+.isc-select {
+    flex: 1;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
     font-weight: 600;
+    color: #111;
+    background: #f8f9fa;
+    outline: none;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 0;
 }
-.badge-type-izin { background: #dbeafe; color: #1e40af; }
-.badge-type-sakit { background: #fee2e2; color: #991b1b; }
-.badge-type-cuti { background: #ede9fe; color: #5b21b6; }
 
-.badge-status {
-    font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-weight: 600;
+.isc-select-year { flex: 0 0 90px; max-width: 90px; }
+
+/* ─── TABS ─── */
+.isc-tabs {
     display: flex;
+    gap: 7px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.isc-tabs::-webkit-scrollbar { display: none; }
+
+.isc-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 16px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+    flex-shrink: 0;
+}
+
+.isc-tab ion-icon { font-size: 15px; }
+
+.isc-tab.active {
+    background: #185FA5;
+    color: #fff;
+    border-color: #185FA5;
+    transform: scale(1.04);
+    box-shadow: 0 3px 12px rgba(24,95,165,0.28);
+}
+
+/* ─── INFO ROW ─── */
+.isc-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+    margin-bottom: 10px;
+}
+
+.isc-info-label { font-size: 13px; font-weight: 600; color: #555; }
+.isc-info-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: #185FA5;
+    background: #E6F1FB;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* ─── CARD ─── */
+.isc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.isc-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 0.5px solid rgba(0,0,0,0.07);
+    padding: 14px 14px 12px;
+    transition: transform 0.15s;
+    animation: iscFadeUp 0.3s ease both;
+}
+
+.isc-card:active { transform: scale(0.985); }
+
+.isc-card-pending {
+    border-color: #EF9F27;
+    border-width: 1.5px;
+    background: linear-gradient(135deg, #fffbf2 0%, #fff 100%);
+}
+
+@keyframes iscFadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── CARD TOP ─── */
+.isc-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.isc-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.isc-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.pal-blue   { background: #E6F1FB; color: #0C447C; }
+.pal-teal   { background: #E1F5EE; color: #085041; }
+.pal-amber  { background: #FAEEDA; color: #633806; }
+.pal-coral  { background: #FAECE7; color: #712B13; }
+
+.isc-card-date { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 4px; }
+
+.isc-type-badge {
+    display: inline-flex;
     align-items: center;
     gap: 4px;
-}
-.badge-pending { 
-    background: #fef3c7; 
-    color: #92400e;
-    animation: badgePulse 2s ease-in-out infinite;
-}
-
-@keyframes badgePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
-}
-
-.badge-approved { background: #d1fae5; color: #065f46; }
-.badge-declined { background: #fee2e2; color: #991b1b; }
-
-/* ===== Hover Card ===== */
-.hover-card {
-    transition: all 0.25s ease;
-}
-.hover-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-}
-
-/* ===== Floating Button ===== */
-.fab-button {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    z-index: 999;
-}
-.fab {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 50%;
-    color: #fff;
-    font-size: 26px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.3s;
-}
-.fab:hover { transform: scale(1.1) rotate(90deg); }
-
-/* ===== Empty State ===== */
-.empty-state {
-    background: #f9fafb;
+    padding: 3px 10px;
     border-radius: 20px;
-    padding: 2.5rem 2rem;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    font-size: 11px;
+    font-weight: 700;
 }
-.empty-state-icon {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: #e0f2fe;
-    display: flex;
-    justify-content: center;
+.isc-type-badge ion-icon { font-size: 12px; }
+
+.type-izin  { background: #E6F1FB; color: #0C447C; }
+.type-sakit { background: #FAEEDA; color: #633806; }
+.type-cuti  { background: #EAF3DE; color: #27500A; }
+
+/* ─── APPROVAL BADGE ─── */
+.isc-appr {
+    display: inline-flex;
     align-items: center;
-    margin: auto;
-}
-.empty-state-icon ion-icon { font-size: 45px; color: #3b82f6; }
-
-/* ===== Animation ===== */
-.fadeIn {
-    animation: fadeIn 0.4s ease;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
-/* ===== Attachment Button ===== */
-.attachment-container {
-    margin-top: 8px;
+.appr-pending  { background: #FAEEDA; color: #854F0B; }
+.appr-approved { background: #EAF3DE; color: #3B6D11; }
+.appr-rejected { background: #FCEBEB; color: #A32D2D; }
+
+.isc-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dot-pending  { background: #EF9F27; animation: iscPulse 1.8s ease-in-out infinite; }
+.dot-approved { background: #639922; }
+.dot-rejected { background: #E24B4A; }
+
+@keyframes iscPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.55; transform: scale(1.3); }
 }
 
-.attachment-btn {
+/* ─── CARD DESC ─── */
+.isc-card-desc {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.55;
+    padding-bottom: 2px;
+}
+.isc-card-desc ion-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; color: #aaa; }
+
+/* ─── CARD FOOTER ─── */
+.isc-card-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid rgba(0,0,0,0.06);
+}
+
+.isc-bukti-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 8px 14px;
+    background: #f5f6f8;
+    border: 0.5px solid rgba(0,0,0,0.09);
+    border-radius: 10px;
     font-size: 12px;
     font-weight: 600;
-    color: #374151;
+    color: #333;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.isc-bukti-btn:active { background: #ececec; }
+.isc-bukti-btn ion-icon { font-size: 15px; }
+.isc-bukti-btn .isc-eye { color: #185FA5; }
+
+/* ─── EMPTY STATE ─── */
+.isc-empty {
+    text-align: center;
+    padding: 44px 20px;
 }
 
-.attachment-btn:hover {
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-    border-color: #9ca3af;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.isc-empty-icon {
+    width: 64px;
+    height: 64px;
+    background: #f0f4ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
 }
+.isc-empty-icon ion-icon { font-size: 30px; color: #185FA5; }
 
-.attachment-btn ion-icon {
-    font-size: 16px;
+.isc-empty-title { font-size: 15px; font-weight: 700; color: #222; margin-bottom: 6px; }
+.isc-empty-sub   { font-size: 13px; color: #999; line-height: 1.5; margin-bottom: 20px; }
+
+.isc-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 24px;
+    background: #185FA5;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
 }
+.isc-empty-btn:active { opacity: 0.85; }
+.isc-empty-btn ion-icon { font-size: 18px; }
 
-.attachment-btn .view-icon {
-    color: #3b82f6;
+/* ─── FAB ─── */
+.isc-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: #185FA5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    box-shadow: 0 4px 16px rgba(24,95,165,0.38);
+    z-index: 100;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.15s;
 }
+.isc-fab:hover  { background: #1450a0; transform: rotate(90deg); }
+.isc-fab:active { transform: scale(0.9); }
+.isc-fab ion-icon { pointer-events: none; }
 
-/* ===== Attachment Modal ===== */
-.attachment-modal {
+/* ─── MODAL BUKTI SURAT ─── */
+.isc-modal-bg {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 10000;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    z-index: 9999;
     align-items: center;
     justify-content: center;
-    animation: modalFadeIn 0.3s ease;
+    padding: 16px;
+    animation: iscFade 0.25s ease;
 }
+.isc-modal-bg.open { display: flex; }
 
-@keyframes modalFadeIn {
+@keyframes iscFade {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
 }
 
-.attachment-modal-content {
-    background: white;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
+.isc-modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 88vh;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: modalSlideUp 0.3s ease;
-}
-
-@keyframes modalSlideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.attachment-modal-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    animation: iscSlideUp 0.28s ease;
+}
+
+@keyframes iscSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.isc-modal-head {
+    display: flex;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+    flex-shrink: 0;
 }
 
-.attachment-modal-header h5 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
-}
+.isc-modal-title { font-size: 15px; font-weight: 700; color: #111; }
 
-.attachment-close {
-    width: 36px;
-    height: 36px;
-    border: none;
+.isc-modal-close {
+    width: 34px;
+    height: 34px;
     background: #fee2e2;
-    border-radius: 8px;
+    border: none;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    color: #dc2626;
 }
+.isc-modal-close ion-icon { font-size: 20px; }
 
-.attachment-close:hover {
-    background: #fecaca;
-    transform: scale(1.1);
-}
-
-.attachment-close ion-icon {
-    font-size: 24px;
-    color: #ef4444;
-}
-
-.attachment-modal-body {
-    padding: 0;
-    max-height: calc(90vh - 70px);
+.isc-modal-body {
     overflow: auto;
+    flex: 1;
     background: #f3f4f6;
 }
 
-.attachment-modal-body img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
+.isc-modal-body img  { width: 100%; height: auto; display: block; }
+.isc-modal-body iframe { width: 100%; height: 75vh; border: none; }
 
-.attachment-modal-body iframe {
-    width: 100%;
-    height: 80vh;
-    border: none;
-}
-
-.doc-placeholder {
+.isc-doc-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 50px 20px;
     text-align: center;
 }
+.isc-doc-placeholder ion-icon { font-size: 64px; color: #bbb; margin-bottom: 14px; }
+.isc-doc-placeholder p { font-size: 13px; color: #888; margin-bottom: 18px; }
 
-.doc-placeholder ion-icon {
-    font-size: 80px;
-    color: #9ca3af;
-    margin-bottom: 16px;
-}
-
-.doc-placeholder p {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 20px;
-}
-
-.btn-download {
+.isc-dl-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
+    background: #185FA5;
+    color: #fff;
+    border-radius: 12px;
     font-size: 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    font-weight: 700;
+    text-decoration: none;
 }
+.isc-dl-btn ion-icon { font-size: 18px; }
 
-.btn-download:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-}
-
-.btn-download ion-icon {
-    font-size: 20px;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 576px) {
-    .month-filter-container {
-        padding: 10px 12px;
-    }
-    
-    .month-filter-container .d-flex {
-        flex-wrap: wrap;
-    }
-    
-    .month-label {
-        font-size: 13px;
-        width: 100%;
-        margin-bottom: 8px;
-    }
-    
-    .month-select {
-        font-size: 13px;
-        padding: 6px 10px;
-        max-width: none;
-    }
-    
-    .year-select {
-        font-size: 13px;
-        padding: 6px 10px;
-        width: 90px;
-    }
-    
-    .info-counter {
-        gap: 8px;
-    }
-    
-    .counter-item {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-    
-    .counter-value {
-        font-size: 14px;
-    }
-    
-    .attachment-modal-content {
-        width: 95%;
-        max-height: 95vh;
-    }
-    
-    .attachment-modal-header {
-        padding: 12px 16px;
-    }
-    
-    .attachment-modal-header h5 {
-        font-size: 14px;
-    }
-    
-    .attachment-modal-body iframe {
-        height: 70vh;
-    }
+/* ─── RESPONSIVE ─── */
+@media (max-width: 380px) {
+    .isc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .isc-tab   { padding: 8px 13px; font-size: 12px; }
 }
 </style>
 
-{{-- 🔔 PUSH NOTIFICATION SYSTEM FOR IZIN --}}
+{{-- ═══ SCRIPT ══════════════════════════════════ --}}
 <script>
-// ============================================
-// 📌 KONFIGURASI
-// ============================================
-const NOTIF_CONFIG = {
-    icon: '/images/logo.png',  // Ganti dengan path logo Anda
-    badge: '/images/badge.png'
-};
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs        = document.querySelectorAll('.isc-tab');
+    const cards       = Array.from(document.querySelectorAll('.isc-card'));
+    const monthSel    = document.getElementById('monthFilter');
+    const yearSel     = document.getElementById('yearFilter');
+    const sectionLbl  = document.getElementById('sectionLabel');
+    const countLbl    = document.getElementById('visibleCount');
+    const listEl      = document.getElementById('iscList');
+    const emptyFilter = document.getElementById('emptyFilter');
 
-// ============================================
-// 📌 CEK DUKUNGAN BROWSER
-// ============================================
-function isNotificationSupported() {
-    return 'Notification' in window;
-}
+    let activeTab   = 'all';
+    let activeMonth = '';
+    let activeYear  = yearSel ? yearSel.value : '';
 
-// ============================================
-// 📌 REQUEST PERMISSION (Auto on page load)
-// ============================================
-async function requestNotificationPermission() {
-    if (!isNotificationSupported()) {
-        console.log('Browser tidak support notifikasi');
-        return false;
+    /* Set bulan saat ini sebagai default */
+    if (monthSel) {
+        const cm = (new Date().getMonth() + 1).toString().padStart(2, '0');
+        monthSel.value = cm;
+        activeMonth = cm;
     }
 
-    if (Notification.permission === 'granted') {
-        return true;
-    }
+    const tabLabels = { all:'Semua pengajuan', '1':'Izin', '2':'Sakit', '3':'Cuti' };
 
-    if (Notification.permission === 'default') {
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                console.log('✅ Notifikasi diaktifkan');
-                showWelcomeNotification();
-                return true;
-            }
-        } catch (error) {
-            console.error('Error:', error);
+    function applyFilters() {
+        let visible = cards.filter(c => {
+            const matchTab   = activeTab === 'all' || c.dataset.status === activeTab;
+            const matchMonth = !activeMonth || c.dataset.month === activeMonth;
+            const matchYear  = !activeYear  || c.dataset.year  === activeYear;
+            return matchTab && matchMonth && matchYear;
+        });
+
+        /* Sort: pending duluan */
+        visible.sort((a, b) => {
+            const pa = parseInt(a.dataset.approved), pb = parseInt(b.dataset.approved);
+            if (pa === 0 && pb !== 0) return -1;
+            if (pa !== 0 && pb === 0) return 1;
+            return 0;
+        });
+
+        /* Hide semua */
+        cards.forEach(c => { c.style.display = 'none'; c.style.animationDelay = ''; });
+
+        if (visible.length === 0) {
+            if (emptyFilter) emptyFilter.style.display = 'block';
+        } else {
+            if (emptyFilter) emptyFilter.style.display = 'none';
+            visible.forEach((c, i) => {
+                c.style.animationDelay = (i * 40) + 'ms';
+                c.style.display = '';
+                listEl.appendChild(c);
+            });
         }
+
+        sectionLbl.textContent = tabLabels[activeTab] || 'Semua';
+        countLbl.textContent   = visible.length + ' data';
     }
 
-    return false;
-}
-
-// ============================================
-// 📌 WELCOME NOTIFICATION (Test)
-// ============================================
-function showWelcomeNotification() {
-    new Notification('🔔 Notifikasi Aktif!', {
-        body: 'Anda akan mendapat notifikasi saat izin disetujui/ditolak',
-        icon: NOTIF_CONFIG.icon,
-        tag: 'welcome',
-        requireInteraction: false
-    });
-}
-
-// ============================================
-// 📌 SHOW APPROVAL/REJECTION NOTIFICATION
-// ============================================
-function showIzinNotification(status, message) {
-    if (Notification.permission !== 'granted') {
-        console.log('Notifikasi tidak diizinkan');
-        return;
-    }
-
-    let title, body, icon;
-
-    if (status === 'approved') {
-        title = '✅ Izin Disetujui!';
-        body = message || 'Pengajuan izin Anda telah disetujui oleh atasan';
-        icon = NOTIF_CONFIG.icon;
-    } else if (status === 'rejected') {
-        title = '❌ Izin Ditolak';
-        body = message || 'Pengajuan izin Anda ditolak. Hubungi atasan untuk info lebih lanjut';
-        icon = NOTIF_CONFIG.icon;
-    }
-
-    const notification = new Notification(title, {
-        body: body,
-        icon: icon,
-        badge: NOTIF_CONFIG.badge,
-        tag: 'izin-status',
-        requireInteraction: true,
-        vibrate: [200, 100, 200]
+    tabs.forEach(btn => {
+        btn.addEventListener('click', function () {
+            tabs.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            activeTab = this.dataset.filter;
+            applyFilters();
+        });
     });
 
-    // Auto close after 10 seconds
-    setTimeout(() => notification.close(), 10000);
+    if (monthSel) monthSel.addEventListener('change', function () { activeMonth = this.value; applyFilters(); });
+    if (yearSel)  yearSel.addEventListener('change',  function () { activeYear  = this.value; applyFilters(); });
 
-    // Handle click - reload page
-    notification.onclick = function() {
-        window.focus();
-        location.reload();
-        notification.close();
-    };
-}
+    applyFilters();
 
-// ============================================
-// 📌 IN-PAGE TOAST NOTIFICATION
-// ============================================
-function showToastNotification(status, message) {
-    // Remove existing toast
-    const existing = document.querySelector('.izin-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = `izin-toast toast-${status}`;
-    
-    const icon = status === 'approved' ? 'checkmark-circle' : 'close-circle';
-    const title = status === 'approved' ? '✅ Disetujui!' : '❌ Ditolak';
-    const bgColor = status === 'approved' ? '#10b981' : '#ef4444';
-    
-    toast.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 48px; height: 48px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: ${bgColor};">
-                <ion-icon name="${icon}"></ion-icon>
-            </div>
-            <div style="flex: 1;">
-                <strong style="display: block; font-size: 16px; margin-bottom: 4px;">${title}</strong>
-                <p style="margin: 0; font-size: 14px; opacity: 0.95;">${message}</p>
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                <ion-icon name="close-outline" style="font-size: 20px;"></ion-icon>
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // Auto hide after 8 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 8000);
-}
-
-// ============================================
-// 📌 CHECK FOR NOTIFICATION FROM BACKEND
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Request permission on page load (once)
-    if (isNotificationSupported() && Notification.permission === 'default') {
-        // Show permission request after 2 seconds
-        setTimeout(() => {
-            if (confirm('Aktifkan notifikasi untuk mendapat update status izin Anda?')) {
-                requestNotificationPermission();
-            }
-        }, 2000);
-    }
-
-    // Check if there's notification trigger from backend
-    @if(Session::has('trigger_notification'))
-        const notifData = @json(Session::get('trigger_notification'));
-        const currentUserId = '{{ Auth::id() }}';
-        
-        // Only show if it's for current user
-        if (notifData.user_id == currentUserId) {
-            // Show push notification
-            showIzinNotification(notifData.status, notifData.message);
-            
-            // Also show toast
-            showToastNotification(notifData.status, notifData.message);
-        }
-    @endif
-
-    // Periodic check for updates (every 2 minutes)
-    setInterval(checkForUpdates, 120000);
+    /* Auto-dismiss toast */
+    const toast = document.getElementById('iscToast');
+    if (toast) setTimeout(() => toast.remove(), 5000);
 });
 
-// ============================================
-// 📌 PERIODIC CHECK FOR NEW STATUS
-// ============================================
-async function checkForUpdates() {
-    try {
-        const response = await fetch('/api/check-izin-updates', {
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.has_update && data.notification) {
-            showIzinNotification(data.notification.status, data.notification.message);
-            showToastNotification(data.notification.status, data.notification.message);
-            
-            // Reload page to show updated status
-            setTimeout(() => location.reload(), 3000);
-        }
-    } catch (error) {
-        console.error('Error checking updates:', error);
+/* ─── MODAL BUKTI SURAT ─── */
+function iscViewAttachment(filePath, fileName) {
+    const bg  = document.getElementById('iscModalBg');
+    const img = document.getElementById('iscModalImg');
+    const pdf = document.getElementById('iscModalPdf');
+    const doc = document.getElementById('iscModalDoc');
+    const ttl = document.getElementById('iscModalTitle');
+    const dl  = document.getElementById('iscDownloadLink');
+
+    img.style.display = pdf.style.display = doc.style.display = 'none';
+    img.src = ''; pdf.src = '';
+    ttl.textContent = fileName;
+
+    const ext = fileName.split('.').pop().toLowerCase();
+
+    if (['jpg','jpeg','png','gif','bmp','webp'].includes(ext)) {
+        img.src = filePath;
+        img.style.display = 'block';
+    } else if (ext === 'pdf') {
+        pdf.src = filePath;
+        pdf.style.display = 'block';
+    } else {
+        dl.href = filePath;
+        dl.download = fileName;
+        doc.style.display = 'flex';
     }
+
+    bg.classList.add('open');
+    document.body.style.overflow = 'hidden';
 }
 
-// ============================================
-// 📌 MANUAL TEST FUNCTION (untuk testing)
-// ============================================
-window.testNotification = function() {
-    showIzinNotification('approved', 'Testing notifikasi izin disetujui!');
-    showToastNotification('approved', 'Testing notifikasi izin disetujui!');
-};
-</script>
-
-{{-- 🎨 TOAST NOTIFICATION STYLES --}}
-<style>
-/* ===== Toast Notification ===== */
-.izin-toast {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    min-width: 350px;
-    max-width: 450px;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    color: white;
-    z-index: 10000;
-    transform: translateX(500px);
-    transition: transform 0.3s ease;
+function iscCloseModal(e) {
+    if (e && e.target !== document.getElementById('iscModalBg')) return;
+    iscCloseModalDirect();
 }
 
-.izin-toast.show {
-    transform: translateX(0);
+function iscCloseModalDirect() {
+    const bg = document.getElementById('iscModalBg');
+    bg.classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('iscModalImg').src = '';
+    document.getElementById('iscModalPdf').src = '';
 }
 
-.toast-approved {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.toast-rejected {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-    .izin-toast {
-        top: 70px;
-        right: 10px;
-        left: 10px;
-        min-width: auto;
-        max-width: none;
-    }
-}
-
-/* Animation */
-@keyframes slideIn {
-    from {
-        transform: translateX(500px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-</style>
-
-{{-- 📌 PERMISSION BANNER (Optional - lebih friendly) --}}
-<div id="permissionBanner" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 9999; animation: slideUp 0.3s ease;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="font-size: 32px;">
-            <ion-icon name="notifications-outline"></ion-icon>
-        </div>
-        <div style="flex: 1;">
-            <strong style="display: block; font-size: 15px; margin-bottom: 4px;">Aktifkan Notifikasi</strong>
-            <p style="margin: 0; font-size: 13px; opacity: 0.95;">Dapatkan update langsung saat izin Anda disetujui/ditolak</p>
-        </div>
-        <button onclick="handleAllowNotification()" style="background: white; color: #3b82f6; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-            Izinkan
-        </button>
-        <button onclick="closeBanner()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-            <ion-icon name="close-outline" style="font-size: 20px;"></ion-icon>
-        </button>
-    </div>
-</div>
-
-<script>
-@keyframes slideUp {
-    from {
-        transform: translateY(100px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-// Show banner if permission not granted
-setTimeout(() => {
-    if (isNotificationSupported() && Notification.permission === 'default') {
-        const banner = document.getElementById('permissionBanner');
-        if (banner) banner.style.display = 'block';
-    }
-}, 3000);
-
-function handleAllowNotification() {
-    requestNotificationPermission();
-    closeBanner();
-}
-
-function closeBanner() {
-    const banner = document.getElementById('permissionBanner');
-    if (banner) {
-        banner.style.animation = 'slideDown 0.3s ease';
-        setTimeout(() => banner.style.display = 'none', 300);
-    }
-}
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') iscCloseModalDirect();
+});
 </script>
 
 @endsection

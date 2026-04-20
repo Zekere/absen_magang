@@ -7,704 +7,596 @@
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle fw-semibold">Buat Pengajuan Izin</div>
+    <div class="pageTitle fw-semibold">Buat Pengajuan</div>
     <div class="right">
-        <ion-icon name="document-text-outline" style="font-size: 24px;"></ion-icon>
+        <ion-icon name="document-text-outline" style="font-size: 22px;"></ion-icon>
     </div>
 </div>
 @endsection
 
 @section('content')
-<div class="container-fluid" style="margin-top: 80px; margin-bottom: 100px; padding: 0 16px;">
-    
-    {{-- Info Card --}}
-    <div class="info-card mb-3">
-        <div class="info-icon">
-            <ion-icon name="information-circle"></ion-icon>
+
+<div class="buat-wrap">
+
+    {{-- ─── INFO BANNER ─── --}}
+    <div class="buat-banner">
+        <div class="buat-banner-icon">
+            <ion-icon name="information-circle-outline"></ion-icon>
         </div>
-        <div class="info-content">
-            <h6 class="mb-1 fw-bold">Informasi Pengajuan</h6>
-            <p class="mb-0 small">Pastikan mengisi semua data dengan benar. Pengajuan akan diproses maksimal 1x24 jam.</p>
+        <div class="buat-banner-text">
+            <div class="buat-banner-title">Informasi Pengajuan</div>
+            <div class="buat-banner-sub">Isi semua data dengan benar. Pengajuan diproses maksimal 1×24 jam.</div>
         </div>
     </div>
 
-    {{-- Form Card --}}
-    <div class="form-card">
+    {{-- ─── FORM ─── --}}
+    <div class="buat-card">
         <form method="POST" action="{{ url('/presensi/storeizin') }}" id="frmIzin" enctype="multipart/form-data">
             @csrf
-            
-            {{-- Tanggal Izin --}}
-            <div class="form-group-modern">
-                <label class="form-label">
+
+            {{-- ── TANGGAL ── --}}
+            <div class="buat-field">
+                <div class="buat-label">
                     <ion-icon name="calendar-outline"></ion-icon>
                     Tanggal Izin
-                </label>
-                <div class="input-wrapper">
-                    <input type="date" 
-                           id="tgl_izin" 
-                           name="tgl_izin" 
-                           class="form-control-modern" 
-                           required
-                           min="{{ date('Y-m-d') }}">
                 </div>
+                <input type="date"
+                       id="tgl_izin"
+                       name="tgl_izin"
+                       class="buat-input"
+                       min="{{ date('Y-m-d') }}"
+                       required>
             </div>
 
-            {{-- Status --}}
-            <div class="form-group-modern">
-                <label class="form-label">
+            {{-- ── JENIS PENGAJUAN ── --}}
+            <div class="buat-field">
+                <div class="buat-label">
                     <ion-icon name="layers-outline"></ion-icon>
                     Jenis Pengajuan
-                </label>
-                <div class="radio-group">
-                    <label class="radio-card">
+                </div>
+                <div class="buat-radio-group">
+
+                    <label class="buat-radio-card" id="rc-izin">
                         <input type="radio" name="status" value="1" required>
-                        <div class="radio-content">
-                            <div class="radio-icon izin">
+                        <div class="buat-radio-inner">
+                            <div class="buat-radio-icon ri-izin">
                                 <ion-icon name="calendar-outline"></ion-icon>
                             </div>
-                            <div class="radio-text">
-                                <div class="radio-title">Izin</div>
-                                <div class="radio-desc">Tidak dapat hadir</div>
+                            <div class="buat-radio-meta">
+                                <div class="buat-radio-title">Izin</div>
+                                <div class="buat-radio-sub">Tidak dapat hadir</div>
                             </div>
-                            <div class="radio-check">
+                            <div class="buat-radio-check">
                                 <ion-icon name="checkmark-circle"></ion-icon>
                             </div>
                         </div>
                     </label>
 
-                    <label class="radio-card">
-                        <input type="radio" name="status" value="2" required>
-                        <div class="radio-content">
-                            <div class="radio-icon sakit">
+                    <label class="buat-radio-card" id="rc-sakit">
+                        <input type="radio" name="status" value="2">
+                        <div class="buat-radio-inner">
+                            <div class="buat-radio-icon ri-sakit">
                                 <ion-icon name="medkit-outline"></ion-icon>
                             </div>
-                            <div class="radio-text">
-                                <div class="radio-title">Sakit</div>
-                                <div class="radio-desc">Kondisi tidak sehat</div>
+                            <div class="buat-radio-meta">
+                                <div class="buat-radio-title">Sakit</div>
+                                <div class="buat-radio-sub">Kondisi tidak sehat</div>
                             </div>
-                            <div class="radio-check">
+                            <div class="buat-radio-check">
                                 <ion-icon name="checkmark-circle"></ion-icon>
                             </div>
                         </div>
                     </label>
 
-                    <label class="radio-card">
-                        <input type="radio" name="status" value="3" required>
-                        <div class="radio-content">
-                            <div class="radio-icon cuti">
+                    <label class="buat-radio-card" id="rc-cuti">
+                        <input type="radio" name="status" value="3">
+                        <div class="buat-radio-inner">
+                            <div class="buat-radio-icon ri-cuti">
                                 <ion-icon name="airplane-outline"></ion-icon>
                             </div>
-                            <div class="radio-text">
-                                <div class="radio-title">Cuti</div>
-                                <div class="radio-desc">Libur terencana</div>
+                            <div class="buat-radio-meta">
+                                <div class="buat-radio-title">Cuti</div>
+                                <div class="buat-radio-sub">Libur terencana</div>
                             </div>
-                            <div class="radio-check">
+                            <div class="buat-radio-check">
                                 <ion-icon name="checkmark-circle"></ion-icon>
                             </div>
                         </div>
                     </label>
+
                 </div>
             </div>
 
-            {{-- Keterangan --}}
-            <div class="form-group-modern">
-                <label class="form-label">
+            {{-- ── KETERANGAN ── --}}
+            <div class="buat-field">
+                <div class="buat-label">
                     <ion-icon name="create-outline"></ion-icon>
                     Keterangan
-                </label>
-                <div class="input-wrapper">
-                    <textarea name="keterangan" 
-                              id="keterangan" 
-                              class="form-control-modern textarea" 
-                              rows="4" 
-                              placeholder="Jelaskan alasan pengajuan Anda..."
-                              required></textarea>
-                    <div class="char-counter">
-                        <span id="charCount">0</span>/200 karakter
-                    </div>
+                </div>
+                <textarea name="keterangan"
+                          id="keterangan"
+                          class="buat-input buat-textarea"
+                          rows="4"
+                          placeholder="Jelaskan alasan pengajuan Anda..."
+                          required
+                          maxlength="200"></textarea>
+                <div class="buat-char">
+                    <span id="charCount">0</span>/200 karakter
                 </div>
             </div>
 
-            {{-- Upload Bukti --}}
-            <div class="form-group-modern">
-                <label class="form-label">
+            {{-- ── UPLOAD BUKTI ── --}}
+            <div class="buat-field">
+                <div class="buat-label">
                     <ion-icon name="attach-outline"></ion-icon>
-                    Lampiran Bukti <span class="optional">(opsional)</span>
-                </label>
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" 
-                           name="bukti_surat" 
-                           id="bukti_surat" 
-                           accept="image/*,.pdf,.doc,.docx"
-                           hidden>
-                    <div class="upload-content" id="uploadContent">
-                        <div class="upload-icon">
-                            <ion-icon name="cloud-upload-outline"></ion-icon>
-                        </div>
-                        <div class="upload-text">
-                            <div class="upload-title">Klik untuk upload file</div>
-                            <div class="upload-desc">PNG, JPG, PDF, DOC (Max. 5MB)</div>
-                        </div>
-                    </div>
+                    Lampiran Bukti
+                    <span class="buat-optional">opsional</span>
                 </div>
 
-                {{-- File Preview --}}
-                <div class="file-preview-card" id="filePreviewCard" style="display: none;">
-                    <div class="file-preview-image" id="imagePreviewContainer" style="display: none;">
+                {{-- Area upload --}}
+                <div class="buat-upload" id="uploadArea">
+                    <input type="file"
+                           name="bukti_surat"
+                           id="bukti_surat"
+                           accept="image/*,.pdf,.doc,.docx"
+                           hidden>
+                    <div class="buat-upload-icon">
+                        <ion-icon name="cloud-upload-outline"></ion-icon>
+                    </div>
+                    <div class="buat-upload-title">Ketuk untuk upload</div>
+                    <div class="buat-upload-sub">PNG, JPG, PDF, DOC · Maks. 5MB</div>
+                </div>
+
+                {{-- Preview file --}}
+                <div class="buat-preview" id="filePreview" style="display:none;">
+                    <div class="buat-preview-img" id="previewImgWrap" style="display:none;">
                         <img id="previewImg" src="" alt="Preview">
                     </div>
-                    <div class="file-info-modern">
-                        <div class="file-icon" id="fileIcon">
+                    <div class="buat-preview-info">
+                        <div class="buat-preview-file-icon" id="fileIcon">
                             <ion-icon name="document-outline"></ion-icon>
                         </div>
-                        <div class="file-details">
-                            <div class="file-name" id="fileName"></div>
-                            <div class="file-meta">
-                                <span id="fileSize"></span> • <span id="fileType"></span>
-                            </div>
+                        <div class="buat-preview-meta">
+                            <div class="buat-preview-name" id="fileName"></div>
+                            <div class="buat-preview-size"><span id="fileSize"></span> · <span id="fileType"></span></div>
                         </div>
-                        <button type="button" class="file-remove" id="removeFile">
+                        <button type="button" class="buat-preview-remove" id="removeFile">
                             <ion-icon name="close-circle"></ion-icon>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {{-- Submit Button --}}
-            <div class="form-group-modern">
-                <button type="submit" class="btn-submit">
-                    <ion-icon name="send-outline"></ion-icon>
-                    Kirim Pengajuan
-                </button>
-            </div>
+            {{-- ── SUBMIT ── --}}
+            <button type="submit" class="buat-submit" id="submitBtn">
+                <ion-icon name="send-outline"></ion-icon>
+                Kirim Pengajuan
+            </button>
+
         </form>
     </div>
 </div>
 
+{{-- ═══ STYLES ═══════════════════════════════════════ --}}
 <style>
-/* ===== Info Card ===== */
-.info-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
-    padding: 16px;
-    display: flex;
-    gap: 12px;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+.buat-wrap {
+    padding: 76px 14px 100px;
+    max-width: 500px;
+    margin: 0 auto;
+    font-family: -apple-system, 'Segoe UI', sans-serif;
 }
 
-.info-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+/* ─── BANNER ─── */
+.buat-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #185FA5;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+
+.buat-banner-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255,255,255,0.18);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
+.buat-banner-icon ion-icon { font-size: 22px; color: #fff; }
 
-.info-icon ion-icon {
-    font-size: 24px;
-    color: white;
+.buat-banner-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+}
+.buat-banner-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.45;
 }
 
-.info-content {
-    flex: 1;
+/* ─── FORM CARD ─── */
+.buat-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 0.5px solid rgba(0,0,0,0.07);
+    padding: 20px 18px;
 }
 
-.info-content h6 {
-    color: white;
-    font-size: 15px;
-    margin: 0;
-}
+/* ─── FIELD ─── */
+.buat-field { margin-bottom: 22px; }
 
-.info-content p {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-/* ===== Form Card ===== */
-.form-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* ===== Form Group ===== */
-.form-group-modern {
-    margin-bottom: 24px;
-}
-
-.form-label {
+.buat-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
     margin-bottom: 10px;
 }
+.buat-label ion-icon { font-size: 17px; color: #185FA5; }
 
-.form-label ion-icon {
-    font-size: 18px;
-    color: #3b82f6;
+.buat-optional {
+    margin-left: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #aaa;
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 20px;
 }
 
-.optional {
-    font-size: 12px;
-    font-weight: 400;
-    color: #6b7280;
-}
-
-/* ===== Input Modern ===== */
-.input-wrapper {
-    position: relative;
-}
-
-.form-control-modern {
+/* ─── INPUT / TEXTAREA ─── */
+.buat-input {
     width: 100%;
-    padding: 14px 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    padding: 13px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 14px;
     font-size: 14px;
-    color: #1a1a1a;
-    transition: all 0.3s ease;
-    background: #f9fafb;
-}
-
-.form-control-modern:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-control-modern.textarea {
-    resize: none;
+    color: #111;
+    background: #f8f9fa;
     font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
 }
 
-.char-counter {
+.buat-input:focus {
+    border-color: #185FA5;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.1);
+}
+
+.buat-textarea {
+    resize: none;
+    line-height: 1.55;
+}
+
+.buat-char {
     text-align: right;
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 6px;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 5px;
 }
 
-/* ===== Radio Cards ===== */
-.radio-group {
+/* ─── RADIO CARDS ─── */
+.buat-radio-group {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
-.radio-card {
-    position: relative;
-    cursor: pointer;
+.buat-radio-card {
     display: block;
+    cursor: pointer;
+    position: relative;
 }
 
-.radio-card input[type="radio"] {
+.buat-radio-card input[type="radio"] {
     position: absolute;
     opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.radio-content {
+.buat-radio-inner {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    background: #f9fafb;
-    transition: all 0.3s ease;
+    padding: 14px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    background: #f8f9fa;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.radio-card input[type="radio"]:checked ~ .radio-content {
-    border-color: #3b82f6;
-    background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.buat-radio-card input[type="radio"]:checked ~ .buat-radio-inner {
+    border-color: #185FA5;
+    background: #EBF3FB;
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.1);
 }
 
-.radio-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+.buat-radio-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
+.buat-radio-icon ion-icon { font-size: 22px; color: #fff; }
 
-.radio-icon ion-icon {
-    font-size: 24px;
-    color: white;
-}
+.ri-izin  { background: #185FA5; }
+.ri-sakit { background: #A32D2D; }
+.ri-cuti  { background: #3B6D11; }
 
-.radio-icon.izin {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
+.buat-radio-meta { flex: 1; }
+.buat-radio-title { font-size: 14px; font-weight: 700; color: #111; }
+.buat-radio-sub   { font-size: 12px; color: #888; margin-top: 2px; }
 
-.radio-icon.sakit {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.radio-icon.cuti {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-}
-
-.radio-text {
-    flex: 1;
-}
-
-.radio-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 2px;
-}
-
-.radio-desc {
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.radio-check {
+.buat-radio-check {
     opacity: 0;
-    transition: all 0.3s ease;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: scale(0.7);
 }
+.buat-radio-check ion-icon { font-size: 22px; color: #185FA5; }
 
-.radio-check ion-icon {
-    font-size: 24px;
-    color: #3b82f6;
-}
-
-.radio-card input[type="radio"]:checked ~ .radio-content .radio-check {
+.buat-radio-card input[type="radio"]:checked ~ .buat-radio-inner .buat-radio-check {
     opacity: 1;
     transform: scale(1);
 }
 
-/* ===== Upload Area ===== */
-.upload-area {
-    border: 2px dashed #d1d5db;
-    border-radius: 12px;
-    padding: 32px;
+/* ─── UPLOAD ─── */
+.buat-upload {
+    border: 1.5px dashed #c8d5e0;
+    border-radius: 16px;
+    padding: 28px 16px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: #f9fafb;
+    background: #f8f9fa;
+    transition: border-color 0.2s, background 0.2s;
 }
 
-.upload-area:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
+.buat-upload:hover {
+    border-color: #185FA5;
+    background: #EBF3FB;
 }
 
-.upload-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 12px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+.buat-upload-icon {
+    width: 56px;
+    height: 56px;
+    background: #185FA5;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto 10px;
 }
+.buat-upload-icon ion-icon { font-size: 28px; color: #fff; }
 
-.upload-icon ion-icon {
-    font-size: 32px;
-    color: white;
-}
+.buat-upload-title { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 3px; }
+.buat-upload-sub   { font-size: 12px; color: #aaa; }
 
-.upload-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 4px;
-}
-
-.upload-desc {
-    font-size: 13px;
-    color: #6b7280;
-}
-
-/* ===== File Preview ===== */
-.file-preview-card {
-    margin-top: 16px;
-    border-radius: 12px;
+/* ─── FILE PREVIEW ─── */
+.buat-preview {
+    margin-top: 12px;
+    border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
     overflow: hidden;
-    border: 2px solid #e5e7eb;
 }
 
-.file-preview-image {
+.buat-preview-img {
     width: 100%;
-    height: 200px;
+    height: 180px;
     overflow: hidden;
     background: #f3f4f6;
 }
-
-.file-preview-image img {
+.buat-preview-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
-.file-info-modern {
+.buat-preview-info {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: white;
+    gap: 10px;
+    padding: 13px 14px;
+    background: #fff;
 }
 
-.file-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    border-radius: 10px;
+.buat-preview-file-icon {
+    width: 42px;
+    height: 42px;
+    background: #FAEEDA;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
+.buat-preview-file-icon ion-icon { font-size: 22px; color: #633806; }
 
-.file-icon ion-icon {
-    font-size: 24px;
-    color: white;
+.buat-preview-meta { flex: 1; min-width: 0; }
+.buat-preview-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
 }
+.buat-preview-size { font-size: 11px; color: #aaa; }
 
-.file-details {
-    flex: 1;
-}
-
-.file-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 4px;
-    word-break: break-word;
-}
-
-.file-meta {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.file-remove {
-    width: 36px;
-    height: 36px;
+.buat-preview-remove {
+    width: 34px;
+    height: 34px;
+    background: #FCEBEB;
     border: none;
-    background: #fee2e2;
-    border-radius: 8px;
-    cursor: pointer;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
 }
+.buat-preview-remove:active { background: #fdd; }
+.buat-preview-remove ion-icon { font-size: 20px; color: #A32D2D; }
 
-.file-remove ion-icon {
-    font-size: 20px;
-    color: #ef4444;
-}
-
-.file-remove:hover {
-    background: #fecaca;
-    transform: scale(1.1);
-}
-
-/* ===== Submit Button ===== */
-.btn-submit {
+/* ─── SUBMIT ─── */
+.buat-submit {
     width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
+    padding: 15px;
+    background: #185FA5;
+    color: #fff;
     border: none;
-    border-radius: 12px;
+    border-radius: 16px;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(24,95,165,0.3);
+}
+.buat-submit:active  { opacity: 0.85; transform: scale(0.98); }
+.buat-submit ion-icon { font-size: 20px; }
+
+.buat-submit.loading {
+    opacity: 0.7;
+    pointer-events: none;
 }
 
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-}
-
-.btn-submit:active {
-    transform: translateY(0);
-}
-
-.btn-submit ion-icon {
-    font-size: 20px;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 576px) {
-    .form-card {
-        padding: 16px;
-    }
-    
-    .upload-area {
-        padding: 24px 16px;
-    }
+/* ─── RESPONSIVE ─── */
+@media (max-width: 380px) {
+    .buat-card    { padding: 16px 14px; }
+    .buat-upload  { padding: 22px 12px; }
 }
 </style>
 
+{{-- ═══ SCRIPT ═══════════════════════════════════════ --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('frmIzin');
-    const fileInput = document.getElementById('bukti_surat');
-    const uploadArea = document.getElementById('uploadArea');
-    const filePreviewCard = document.getElementById('filePreviewCard');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    const removeFileBtn = document.getElementById('removeFile');
-    const keterangan = document.getElementById('keterangan');
-    const charCount = document.getElementById('charCount');
+document.addEventListener('DOMContentLoaded', function () {
+    const form        = document.getElementById('frmIzin');
+    const fileInput   = document.getElementById('bukti_surat');
+    const uploadArea  = document.getElementById('uploadArea');
+    const filePreview = document.getElementById('filePreview');
+    const previewWrap = document.getElementById('previewImgWrap');
+    const removeBtn   = document.getElementById('removeFile');
+    const textarea    = document.getElementById('keterangan');
+    const charCount   = document.getElementById('charCount');
+    const submitBtn   = document.getElementById('submitBtn');
 
-    // Character counter
-    keterangan.addEventListener('input', function() {
-        const length = this.value.length;
-        charCount.textContent = length;
-        
-        if (length > 200) {
-            this.value = this.value.substring(0, 200);
-            charCount.textContent = 200;
-        }
+    /* ── Character counter ── */
+    textarea.addEventListener('input', function () {
+        charCount.textContent = this.value.length;
     });
 
-    // Upload area click
-    uploadArea.addEventListener('click', function() {
-        fileInput.click();
-    });
+    /* ── Upload area click ── */
+    uploadArea.addEventListener('click', () => fileInput.click());
 
-    // File upload handler
-    fileInput.addEventListener('change', function(e) {
+    /* ── File selected ── */
+    fileInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
-        
-        if (file) {
-            // Validasi ukuran (max 5MB)
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'File Terlalu Besar',
-                    text: 'Ukuran file maksimal 5MB!',
-                    confirmButtonColor: '#3b82f6'
-                });
-                fileInput.value = '';
-                return;
-            }
+        if (!file) return;
 
-            // Validasi tipe file
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-            if (!allowedTypes.includes(file.type)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Tipe File Tidak Valid',
-                    text: 'Hanya file gambar, PDF, atau Word yang diperbolehkan!',
-                    confirmButtonColor: '#3b82f6'
-                });
-                fileInput.value = '';
-                return;
-            }
+        const maxSize = 5 * 1024 * 1024;
+        const allowed = ['image/jpeg','image/jpg','image/png','image/gif','image/webp',
+                         'application/pdf','application/msword',
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
-            // Tampilkan preview
-            showFilePreview(file);
+        if (file.size > maxSize) {
+            Swal.fire({ icon:'error', title:'File Terlalu Besar', text:'Maksimal ukuran file 5MB.', confirmButtonColor:'#185FA5' });
+            fileInput.value = '';
+            return;
         }
+
+        if (!allowed.includes(file.type)) {
+            Swal.fire({ icon:'error', title:'Format Tidak Valid', text:'Hanya gambar, PDF, atau Word yang diperbolehkan.', confirmButtonColor:'#185FA5' });
+            fileInput.value = '';
+            return;
+        }
+
+        showPreview(file);
     });
 
-    // Show file preview
-    function showFilePreview(file) {
+    function showPreview(file) {
         uploadArea.style.display = 'none';
-        filePreviewCard.style.display = 'block';
+        filePreview.style.display = 'block';
 
-        // Set file info
         document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(2) + ' KB';
-        document.getElementById('fileType').textContent = file.type.split('/')[1].toUpperCase();
+        document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('fileType').textContent = file.name.split('.').pop().toUpperCase();
 
-        // Preview image jika file adalah gambar
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 document.getElementById('previewImg').src = e.target.result;
-                imagePreviewContainer.style.display = 'block';
+                previewWrap.style.display = 'block';
             };
             reader.readAsDataURL(file);
         } else {
-            imagePreviewContainer.style.display = 'none';
+            previewWrap.style.display = 'none';
         }
     }
 
-    // Remove file
-    removeFileBtn.addEventListener('click', function() {
+    /* ── Remove file ── */
+    removeBtn.addEventListener('click', function () {
         fileInput.value = '';
+        filePreview.style.display = 'none';
+        previewWrap.style.display = 'none';
         uploadArea.style.display = 'block';
-        filePreviewCard.style.display = 'none';
-        imagePreviewContainer.style.display = 'none';
     });
 
-    // Form validation
-    form.addEventListener('submit', function(e) {
+    /* ── Form submit ── */
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const tgl_izin = document.getElementById('tgl_izin').value;
+        const tgl    = document.getElementById('tgl_izin').value;
         const status = document.querySelector('input[name="status"]:checked');
-        const keterangan = document.getElementById('keterangan').value.trim();
+        const ket    = textarea.value.trim();
 
-        if (!tgl_izin) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Oops!',
-                text: 'Tanggal tidak boleh kosong!',
-                confirmButtonColor: '#3b82f6'
-            });
+        if (!tgl) {
+            Swal.fire({ icon:'warning', title:'Tanggal Kosong', text:'Pilih tanggal izin terlebih dahulu.', confirmButtonColor:'#185FA5' });
             return;
         }
-
         if (!status) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Oops!',
-                text: 'Pilih jenis pengajuan terlebih dahulu!',
-                confirmButtonColor: '#3b82f6'
-            });
+            Swal.fire({ icon:'warning', title:'Jenis Belum Dipilih', text:'Pilih jenis pengajuan (Izin / Sakit / Cuti).', confirmButtonColor:'#185FA5' });
+            return;
+        }
+        if (!ket) {
+            Swal.fire({ icon:'warning', title:'Keterangan Kosong', text:'Isi keterangan pengajuan terlebih dahulu.', confirmButtonColor:'#185FA5' });
             return;
         }
 
-        if (!keterangan) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Oops!',
-                text: 'Keterangan tidak boleh kosong!',
-                confirmButtonColor: '#3b82f6'
-            });
-            return;
-        }
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Mengirim...';
 
-        // Show loading
         Swal.fire({
-            title: 'Mengirim pengajuan...',
+            title: 'Mengirim Pengajuan...',
             allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading()
         });
 
-        // Submit form
         form.submit();
     });
 });
 </script>
+
 @endsection

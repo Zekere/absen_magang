@@ -1,491 +1,441 @@
 @extends('layout.presensi')
 
 @section('header')
-<div class="appHeader bg-primary text-light">
+<div class="appHeader bg-primary text-light shadow-sm">
     <div class="left">
         <a href="javascript:;" class="headerButton goBack">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Histori Presensi</div>
+    <div class="pageTitle fw-semibold">Histori Presensi</div>
     <div class="right"></div>
 </div>
 @endsection
 
 @section('content')
-<div class="container-fluid" style="margin-top: 70px; margin-bottom: 100px; padding-bottom: 20px;">
-    
-    <!-- Real-time Clock Card -->
-    <div class="card border-0 shadow-sm mb-4 clock-card">
-        <div class="card-body text-center py-4">
-            <div class="clock-icon mb-3">
-                <ion-icon name="time-outline"></ion-icon>
-            </div>
-            <h4 id="today-date" class="fw-bold mb-2 date-text"></h4>
-            <h3 id="today-time" class="time-text mb-0"></h3>
-            <small class="text-muted mt-2 d-block" style="color: rgba(255,255,255,0.8) !important;">Waktu Real-time</small>
+
+<div class="hp-wrap">
+
+    {{-- ─── CLOCK CARD ─── --}}
+    <div class="hp-clock">
+        <div class="hp-clock-left">
+            <div class="hp-clock-time" id="today-time">00:00:00</div>
+            <div class="hp-clock-date" id="today-date">Memuat...</div>
+        </div>
+        <div class="hp-clock-icon">
+            <ion-icon name="time-outline"></ion-icon>
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card border-0 shadow-sm mb-4 filter-card">
-        <div class="card-header bg-white border-0 py-3">
-            <h6 class="fw-bold mb-0 d-flex align-items-center">
-                <ion-icon name="filter-outline" class="me-2" style="font-size: 20px;"></ion-icon>
-                Filter Periode
-            </h6>
-        </div>
-        <div class="card-body px-4 py-4">
-            <div class="row g-3">
-                
-                <!-- Filter Bulan -->
-                <div class="col-12 mb-2">
-                    <label class="form-label small fw-semibold text-dark mb-2 d-flex align-items-center">
-                        <ion-icon name="calendar-outline" class="me-2" style="font-size: 18px;"></ion-icon>
-                        Pilih Bulan
-                    </label>
-                    <div class="input-group input-group-custom">
-                        <span class="input-group-text bg-light border-end-0">
-                            <ion-icon name="calendar" style="font-size: 20px;"></ion-icon>
-                        </span>
-                        <select name="bulan" id="bulan" class="form-select border-start-0 select-custom">
-                            <option value="">-- Pilih Bulan --</option>
-                            @for ($i=1; $i<=12; $i++)
-                            <option value="{{ $i }}" {{ (int)date("m") == $i ? 'selected' : '' }}>
-                                {{ $namabulan[$i] }}
-                            </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
+    {{-- ─── FILTER PERIODE ─── --}}
+    <div class="hp-section-label">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Filter Periode
+    </div>
 
-                <!-- Filter Tahun -->
-                <div class="col-12 mb-2">
-                    <label class="form-label small fw-semibold text-dark mb-2 d-flex align-items-center">
-                        <ion-icon name="newspaper-outline" class="me-2" style="font-size: 18px;"></ion-icon>
-                        Pilih Tahun
-                    </label>
-                    <div class="input-group input-group-custom">
-                        <span class="input-group-text bg-light border-end-0">
-                            <ion-icon name="newspaper" style="font-size: 20px;"></ion-icon>
-                        </span>
-                        <select name="tahun" id="tahun" class="form-select border-start-0 select-custom">
-                            <option value="">-- Pilih Tahun --</option>
-                            @php 
-                                $tahunmulai = 2023; 
-                                $tahunsekarang = date('Y');
-                            @endphp
-                            @for ($tahun = $tahunmulai; $tahun <= $tahunsekarang; $tahun++)
-                            <option value="{{ $tahun }}" {{ $tahun == date('Y') ? 'selected' : '' }}>
-                                {{ $tahun }}
-                            </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Tombol Search -->
-                <div class="col-12 mt-3">
-                    <button class="btn btn-primary w-100 py-3 fw-semibold btn-search" id="get">
-                        <ion-icon name="search-outline" class="me-2" style="font-size: 20px;"></ion-icon>
-                        Tampilkan Histori
-                    </button>
-                </div>
-
-                <!-- Tombol Reset -->
-                <div class="col-12 mt-2">
-                    <button class="btn btn-outline-secondary w-100 py-2 btn-reset" id="reset">
-                        <ion-icon name="refresh-outline" class="me-2" style="font-size: 18px;"></ion-icon>
-                        Reset Filter
-                    </button>
-                </div>
-
+    <div class="hp-filter-card">
+        <div class="hp-filter-row">
+            <div class="hp-filter-field">
+                <div class="hp-field-label">Bulan</div>
+                <select name="bulan" id="bulan" class="hp-select">
+                    <option value="">Pilih Bulan</option>
+                    @for ($i = 1; $i <= 12; $i++)
+                        <option value="{{ $i }}" {{ (int)date('m') == $i ? 'selected' : '' }}>
+                            {{ $namabulan[$i] }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+            <div class="hp-filter-field hp-filter-field-year">
+                <div class="hp-field-label">Tahun</div>
+                <select name="tahun" id="tahun" class="hp-select">
+                    <option value="">Tahun</option>
+                    @php $cy = date('Y'); @endphp
+                    @for ($y = 2023; $y <= $cy; $y++)
+                        <option value="{{ $y }}" {{ $y == $cy ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
             </div>
         </div>
-    </div>
 
-    <!-- Loading Spinner -->
-    <div class="text-center py-5 d-none" id="loading">
-        <div class="spinner-border text-primary mb-3" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <div class="hp-filter-btns">
+            <button class="hp-btn-search" id="get">
+                <ion-icon name="search-outline"></ion-icon>
+                Tampilkan
+            </button>
+            <button class="hp-btn-reset" id="reset">
+                <ion-icon name="refresh-outline"></ion-icon>
+            </button>
         </div>
-        <p class="text-muted">Memuat data histori...</p>
     </div>
 
-    <!-- Histori Results -->
+    {{-- ─── LOADING ─── --}}
+    <div class="hp-loading d-none" id="loading">
+        <div class="hp-loading-spinner"></div>
+        <div class="hp-loading-text">Memuat data histori...</div>
+    </div>
+
+    {{-- ─── HASIL HISTORI ─── --}}
     <div id="showhistori"></div>
 
 </div>
 
-<!-- Modal Lightbox untuk Preview Foto -->
-<div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox(event)">
-    <div class="lightbox-content">
-        <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
-        <img id="lightboxImage" src="" alt="Preview Foto">
-        <div class="lightbox-info">
-            <div class="lightbox-info-header">
-                <h3 id="lightboxTitle"></h3>
-                <span id="lightboxDate" class="date-badge"></span>
+{{-- ─── LIGHTBOX MODAL ─── --}}
+<div id="lightboxModal" class="hp-lb-bg" onclick="hpCloseLightbox(event)">
+    <div class="hp-lb-sheet">
+        <div class="hp-lb-handle"></div>
+        <button class="hp-lb-close" onclick="hpCloseLightboxDirect()">
+            <ion-icon name="close-outline"></ion-icon>
+        </button>
+
+        <img id="lightboxImage" src="" alt="Foto Presensi" class="hp-lb-img">
+
+        <div class="hp-lb-info">
+            <div class="hp-lb-title" id="lightboxTitle">Foto Presensi</div>
+            <div class="hp-lb-date-badge" id="lightboxDate"></div>
+        </div>
+
+        <div class="hp-lb-times">
+            <div class="hp-lb-time-block hp-time-in">
+                <div class="hp-lb-time-label">Jam Masuk</div>
+                <div class="hp-lb-time-val" id="lightboxJamIn">-</div>
             </div>
-            <div class="lightbox-info-body">
-                <div class="info-block masuk">
-                    <div class="info-block-label">Jam Masuk</div>
-                    <div class="info-block-value" id="lightboxJamIn">-</div>
-                </div>
-                <div class="info-block pulang">
-                    <div class="info-block-label">Jam Pulang</div>
-                    <div class="info-block-value" id="lightboxJamOut">-</div>
-                </div>
+            <div class="hp-lb-time-block hp-time-out">
+                <div class="hp-lb-time-label">Jam Pulang</div>
+                <div class="hp-lb-time-val" id="lightboxJamOut">-</div>
             </div>
         </div>
     </div>
 </div>
 
+{{-- ═══ STYLES ═══════════════════════════════════ --}}
 <style>
-/* Clock Card Styling */
-.clock-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 20px;
-    overflow: hidden;
-    position: relative;
+/* ─── BASE ─── */
+.hp-wrap {
+    padding: 72px 14px 100px;
+    max-width: 500px;
+    margin: 0 auto;
+    font-family: -apple-system, 'Segoe UI', sans-serif;
 }
 
-.clock-card::before {
+/* ─── CLOCK ─── */
+.hp-clock {
+    background: #185FA5;
+    border-radius: 20px;
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hp-clock::after {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: pulse 4s ease-in-out infinite;
+    right: -20px;
+    top: -20px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+.hp-clock-time {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 6px;
 }
 
-.clock-icon {
-    display: inline-flex;
+.hp-clock-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.hp-clock-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.14);
+    border-radius: 16px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    z-index: 1;
 }
+.hp-clock-icon ion-icon { font-size: 28px; color: rgba(255,255,255,0.9); }
 
-.clock-icon ion-icon {
-    font-size: 40px;
-    color: white;
-}
-
-.date-text {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.time-text {
-    font-size: 2.5rem;
+/* ─── SECTION LABEL ─── */
+.hp-section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
     font-weight: 700;
-    color: white;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    letter-spacing: 2px;
-    font-family: 'Courier New', monospace;
+    color: #555;
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+.hp-section-label ion-icon { font-size: 16px; color: #185FA5; }
+
+/* ─── FILTER CARD ─── */
+.hp-filter-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 0.5px solid rgba(0,0,0,0.07);
+    padding: 16px 16px 14px;
+    margin-bottom: 16px;
 }
 
-/* Filter Card */
-.card {
-    border-radius: 16px;
+.hp-filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
-.filter-card .card-body {
-    padding: 1.5rem 1.25rem;
+.hp-filter-field       { flex: 1; }
+.hp-filter-field-year  { flex: 0 0 105px; }
+
+.hp-field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
 }
 
-.card-header {
-    padding: 1.25rem;
+.hp-select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111;
+    background: #f8f9fa;
+    font-family: inherit;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-label {
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+.hp-select:focus {
+    border-color: #185FA5;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.1);
 }
 
-.input-group-custom {
-    margin-bottom: 0.5rem;
+/* ─── FILTER BUTTONS ─── */
+.hp-filter-btns {
+    display: flex;
+    gap: 10px;
 }
 
-.input-group-text {
-    border-radius: 12px 0 0 12px;
-    color: #6b7280;
-    padding: 0.75rem 1rem;
-    background-color: #f9fafb;
-    border: 1px solid #e5e7eb;
-}
-
-.select-custom {
-    border-radius: 0 12px 12px 0;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
-    height: 48px;
-}
-
-.select-custom:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-}
-
-/* Spacing between elements */
-.col-12.mb-2 {
-    margin-bottom: 1rem !important;
-}
-
-.col-12.mt-3 {
-    margin-top: 1.5rem !important;
-}
-
-.col-12.mt-2 {
-    margin-top: 0.75rem !important;
-}
-
-/* Button Styling */
-.btn-search {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.hp-btn-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 13px;
+    background: #185FA5;
+    color: #fff;
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.btn-search:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-search:active {
-    transform: translateY(0);
-}
-
-.btn-reset {
-    border-radius: 12px;
-    border: 2px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.btn-reset:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-    transform: translateY(-1px);
-}
-
-/* Loading Spinner */
-.spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Style untuk preview foto */
-.foto-preview {
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 3px 12px rgba(24,95,165,0.28);
+}
+.hp-btn-search ion-icon { font-size: 18px; }
+.hp-btn-search:active   { opacity: 0.85; transform: scale(0.98); }
+
+.hp-btn-reset {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.hp-btn-reset ion-icon { font-size: 20px; color: #555; }
+.hp-btn-reset:active   { background: #e5e7eb; }
+
+/* ─── LOADING ─── */
+.hp-loading {
+    text-align: center;
+    padding: 40px 0;
 }
 
-.foto-preview:hover {
-    transform: scale(1.05);
+.hp-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #185FA5;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    animation: hpSpin 0.7s linear infinite;
 }
 
-/* Modal Lightbox */
-.lightbox-modal {
+@keyframes hpSpin {
+    to { transform: rotate(360deg); }
+}
+
+.hp-loading-text {
+    font-size: 13px;
+    color: #aaa;
+    font-weight: 500;
+}
+
+/* ─── HASIL HISTORI (render dari AJAX) ─── */
+#showhistori { animation: hpFadeUp 0.35s ease; }
+
+@keyframes hpFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── LIGHTBOX BOTTOM SHEET ─── */
+.hp-lb-bg {
     display: none;
     position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
     z-index: 9999;
-    left: 0;
-    top: 0;
+    align-items: flex-end;
+    justify-content: center;
+}
+.hp-lb-bg.open { display: flex; }
+
+.hp-lb-sheet {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
-    animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.lightbox-content {
-    position: relative;
-    margin: auto;
-    padding: 20px;
-    width: 90%;
     max-width: 500px;
-    top: 50%;
-    transform: translateY(-50%);
-    animation: zoomIn 0.3s;
+    padding: 16px 18px 36px;
+    animation: hpSlideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    max-height: 92vh;
+    overflow-y: auto;
 }
 
-@keyframes zoomIn {
-    from { transform: translateY(-50%) scale(0.5); }
-    to { transform: translateY(-50%) scale(1); }
+@keyframes hpSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
 }
 
-.lightbox-content img {
-    width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    margin-bottom: 20px;
+.hp-lb-handle {
+    width: 38px;
+    height: 4px;
+    border-radius: 2px;
+    background: #e0e0e0;
+    margin: 0 auto 16px;
 }
 
-.lightbox-close {
+.hp-lb-close {
     position: absolute;
-    top: -15px;
-    right: 5px;
-    color: #fff;
-    font-size: 45px;
-    font-weight: bold;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    background: #FCEBEB;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    z-index: 10000;
-    transition: all 0.3s;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    color: #A32D2D;
+}
+.hp-lb-close ion-icon { font-size: 20px; }
+
+.hp-lb-img {
+    width: 100%;
+    border-radius: 16px;
+    object-fit: cover;
+    max-height: 320px;
+    display: block;
+    margin-bottom: 14px;
+    background: #f3f4f6;
 }
 
-.lightbox-close:hover {
-    color: #ff4d4d;
-    transform: rotate(90deg);
+.hp-lb-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
 }
 
-.lightbox-info {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    color: #fff;
-}
-
-.lightbox-info-header {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.lightbox-info-header h3 {
-    color: #fff;
-    font-size: 22px;
+.hp-lb-title {
+    font-size: 15px;
     font-weight: 700;
-    margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: #111;
 }
 
-.lightbox-info-header .date-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    padding: 6px 20px;
+.hp-lb-date-badge {
+    background: #E6F1FB;
+    color: #0C447C;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
     border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 8px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    white-space: nowrap;
 }
 
-.lightbox-info-body {
+.hp-lb-times {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 10px;
 }
 
-.info-block {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    transition: all 0.3s;
+.hp-lb-time-block {
+    background: #f8f9fa;
+    border-radius: 14px;
+    padding: 14px 14px;
+    border-left: 3px solid transparent;
 }
 
-.info-block:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px);
-}
+.hp-time-in  { border-left-color: #3B6D11; }
+.hp-time-out { border-left-color: #A32D2D; }
 
-.info-block-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 8px;
-    font-weight: 500;
+.hp-lb-time-label {
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.info-block-value {
-    font-size: 24px;
+    letter-spacing: 0.05em;
     font-weight: 700;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: #aaa;
+    margin-bottom: 6px;
 }
 
-.info-block.masuk {
-    border-left: 4px solid #22c55e;
+.hp-lb-time-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111;
+    font-variant-numeric: tabular-nums;
 }
 
-.info-block.pulang {
-    border-left: 4px solid #ef4444;
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-    .time-text {
-        font-size: 2rem;
-    }
-    
-    .date-text {
-        font-size: 1rem;
-    }
-    
-    .clock-icon {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .clock-icon ion-icon {
-        font-size: 32px;
-    }
-
-    .lightbox-info-body {
-        grid-template-columns: 1fr;
-    }
-    
-    .info-block-value {
-        font-size: 20px;
-    }
-
-    .lightbox-close {
-        top: -10px;
-        right: 10px;
-        font-size: 40px;
-    }
-}
-
-/* Animation untuk hasil histori */
-#showhistori {
-    animation: fadeInUp 0.5s ease;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* ─── RESPONSIVE ─── */
+@media (max-width: 380px) {
+    .hp-clock-time { font-size: 26px; }
+    .hp-lb-times   { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -493,130 +443,108 @@
 
 @push('scripts')
 <script>
-// Fungsi untuk membuka preview foto dengan informasi lengkap
+/* ─── LIGHTBOX ─── */
 function openLightbox(imageSrc, tanggal, jamIn, jamOut, type) {
     document.getElementById('lightboxImage').src = imageSrc;
-    
-    // Set title berdasarkan type
-    let titleText = type === 'in' ? 'Foto Masuk' : type === 'out' ? 'Foto Pulang' : 'Detail Presensi';
-    document.getElementById('lightboxTitle').innerHTML = titleText;
-    
-    // Set tanggal
-    document.getElementById('lightboxDate').innerHTML = tanggal;
-    
-    // Set jam masuk dan pulang
-    document.getElementById('lightboxJamIn').innerHTML = jamIn || '<small style="font-size:14px;">Belum Absen</small>';
-    document.getElementById('lightboxJamOut').innerHTML = jamOut || '<small style="font-size:14px;">Belum Absen</small>';
-    
-    // Tampilkan modal
-    document.getElementById('lightboxModal').style.display = 'block';
+    document.getElementById('lightboxTitle').textContent =
+        type === 'in' ? 'Foto Masuk' : type === 'out' ? 'Foto Pulang' : 'Detail Presensi';
+    document.getElementById('lightboxDate').textContent = tanggal;
+    document.getElementById('lightboxJamIn').innerHTML  = jamIn  || '<span style="font-size:13px;color:#aaa">Belum absen</span>';
+    document.getElementById('lightboxJamOut').innerHTML = jamOut || '<span style="font-size:13px;color:#aaa">Belum absen</span>';
+
+    document.getElementById('lightboxModal').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
-// Fungsi untuk menutup preview foto
-function closeLightbox(event) {
-    if (event.target.id === 'lightboxModal' || event.target.className === 'lightbox-close') {
-        document.getElementById('lightboxModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
+function hpCloseLightbox(e) {
+    if (e.target === document.getElementById('lightboxModal')) hpCloseLightboxDirect();
 }
 
-// Tutup dengan tombol ESC
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        document.getElementById('lightboxModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
+function hpCloseLightboxDirect() {
+    document.getElementById('lightboxModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('lightboxImage').src = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hpCloseLightboxDirect();
 });
 
-$(function(){
-    
-    // AJAX Get Histori
-    $("#get").click(function(e){
+/* ─── JQUERY ─── */
+$(function () {
+
+    /* AJAX Tampilkan Histori */
+    $('#get').on('click', function (e) {
         e.preventDefault();
-        
-        var bulan = $("#bulan").val();
-        var tahun = $("#tahun").val();
-        
-        // Validasi
-        if(!bulan || !tahun) {
+
+        const bulan = $('#bulan').val();
+        const tahun = $('#tahun').val();
+
+        if (!bulan || !tahun) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Perhatian!',
+                title: 'Pilih Periode',
                 text: 'Silakan pilih bulan dan tahun terlebih dahulu.',
-                confirmButtonColor: '#667eea'
+                confirmButtonColor: '#185FA5'
             });
             return;
         }
-        
-        // Show loading
-        $("#loading").removeClass('d-none');
-        $("#showhistori").html('');
-        
+
+        $('#loading').removeClass('d-none');
+        $('#showhistori').html('');
+
         $.ajax({
             type: 'POST',
             url: '/gethistori',
             data: {
-                _token: "{{ csrf_token() }}",
+                _token: '{{ csrf_token() }}',
                 bulan: bulan,
-                tahun: tahun 
+                tahun: tahun
             },
             cache: false,
-            success: function(respond){
-                $("#loading").addClass('d-none');
-                $("#showhistori").html(respond);
+            success: function (respond) {
+                $('#loading').addClass('d-none');
+                $('#showhistori').html(respond);
             },
-            error: function(){
-                $("#loading").addClass('d-none');
+            error: function () {
+                $('#loading').addClass('d-none');
                 Swal.fire({
                     icon: 'error',
-                    title: 'Oops...',
-                    text: 'Gagal memuat data histori. Silakan coba lagi.',
-                    confirmButtonColor: '#667eea'
+                    title: 'Gagal Memuat',
+                    text: 'Tidak dapat memuat data histori. Silakan coba lagi.',
+                    confirmButtonColor: '#185FA5'
                 });
             }
         });
     });
-    
-    // Reset Filter
-    $("#reset").click(function(e){
+
+    /* Reset Filter */
+    $('#reset').on('click', function (e) {
         e.preventDefault();
-        $("#bulan").val('');
-        $("#tahun").val('{{ date("Y") }}');
-        $("#showhistori").html('');
+        $('#bulan').val('');
+        $('#tahun').val('{{ date("Y") }}');
+        $('#showhistori').html('');
     });
 
-    // Real-time Clock dengan format Indonesia
-    function updateDateTime(){
-        const now = new Date();
-        
-        // Format tanggal
-        const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric'
-        };
-        const dateStr = now.toLocaleDateString('id-ID', options);
-        
-        // Format waktu dengan detik
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const timeStr = `${hours}:${minutes}:${seconds}`;
-        
-        $("#today-date").text(dateStr);
-        $("#today-time").text(timeStr);
+    /* Real-time Clock */
+    function updateClock() {
+        const now  = new Date();
+        const h    = String(now.getHours()).padStart(2, '0');
+        const m    = String(now.getMinutes()).padStart(2, '0');
+        const s    = String(now.getSeconds()).padStart(2, '0');
+        const date = now.toLocaleDateString('id-ID', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        $('#today-time').text(`${h}:${m}:${s}`);
+        $('#today-date').text(date);
     }
 
-    // Update setiap detik
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
-    
-    // Auto load data bulan dan tahun sekarang saat halaman dibuka
-    setTimeout(function(){
-        $("#get").click();
-    }, 500);
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* Auto load saat halaman dibuka */
+    setTimeout(() => $('#get').trigger('click'), 400);
 });
 </script>
 @endpush

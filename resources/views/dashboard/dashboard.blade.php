@@ -2,1115 +2,993 @@
 
 @section('content')
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
 <style>
-/* ===== Dynamic Header Backgrounds ===== */
-#user-section {
+* { box-sizing: border-box; }
+body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 0; }
+
+/* ─────────────────────────────────────
+   HERO HEADER
+───────────────────────────────────── */
+.hero-header {
     position: relative;
     overflow: hidden;
-    transition: background 1s ease;
-    min-height: 150px;
+    padding: 56px 20px 80px;
+    transition: background 1.2s ease;
 }
 
-/* Pagi (05:00 - 10:59) - Langit Biru dengan Awan */
-.time-morning {
-    background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 50%, #E0F6FF 100%);
-}
+/* Time themes */
+.hero-header.time-morning  { background: linear-gradient(160deg, #0ea5e9 0%, #38bdf8 40%, #7dd3fc 70%, #bae6fd 100%); }
+.hero-header.time-noon     { background: linear-gradient(160deg, #0369a1 0%, #0284c7 40%, #38bdf8 100%); }
+.hero-header.time-afternoon{ background: linear-gradient(160deg, #c2410c 0%, #ea580c 35%, #fb923c 65%, #fed7aa 100%); }
+.hero-header.time-night    { background: linear-gradient(160deg, #020617 0%, #0f172a 40%, #1e293b 70%, #334155 100%); }
 
-/* Siang (11:00 - 14:59) - Langit Terang dengan Matahari */
-.time-noon {
-    background: linear-gradient(180deg, #4FC3F7 0%, #81D4FA 40%, #B3E5FC 70%, #E1F5FE 100%);
-}
-
-/* Sore (15:00 - 17:59) - Senja Orange */
-.time-afternoon {
-    background: linear-gradient(180deg, #FF6B6B 0%, #FF8E53 30%, #FFB347 60%, #FFDAB9 100%);
-}
-
-/* Malam (18:00 - 04:59) - Biru Gelap dengan Bulan */
-.time-night {
-    background: linear-gradient(180deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
-}
-
-/* Cloud Animation */
-.clouds {
+/* Decorative blobs */
+.hero-blob {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    border-radius: 50%;
+    opacity: 0.15;
     pointer-events: none;
-    z-index: 1;
-    opacity: 0.6;
 }
+.hero-blob-1 { width: 200px; height: 200px; top: -60px; right: -60px; background: rgba(255,255,255,0.6); }
+.hero-blob-2 { width: 120px; height: 120px; bottom: 20px; left: -30px; background: rgba(255,255,255,0.4); }
+.hero-blob-3 { width: 70px; height: 70px; top: 30px; left: 30%; background: rgba(255,255,255,0.3); }
 
-.cloud {
+/* Stars for night */
+.hero-stars { position: absolute; inset: 0; pointer-events: none; }
+.hero-star {
     position: absolute;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 100px;
-    opacity: 0.8;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: starTwinkle 2.5s ease-in-out infinite;
 }
+@keyframes starTwinkle { 0%,100%{opacity:.2} 50%{opacity:1} }
 
-.cloud:before,
-.cloud:after {
+/* Sun / Moon */
+.hero-sun {
+    position: absolute;
+    top: 18px; right: 24px;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fef08a 0%, #fde047 45%, #facc15 100%);
+    box-shadow: 0 0 0 12px rgba(253,224,71,0.15), 0 0 0 24px rgba(253,224,71,0.08);
+    animation: sunPulse 3s ease-in-out infinite;
+}
+@keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+
+.hero-moon {
+    position: absolute;
+    top: 18px; right: 24px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f1f5f9, #cbd5e1);
+    box-shadow: 0 0 20px rgba(203,213,225,0.3);
+}
+.hero-moon::after {
     content: '';
     position: absolute;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 100px;
-}
-
-.cloud-1 {
-    width: 60px;
-    height: 20px;
-    top: 20px;
-    left: -60px;
-    animation: floatCloud 30s linear infinite;
-}
-
-.cloud-1:before {
-    width: 30px;
-    height: 30px;
-    top: -15px;
-    left: 10px;
-}
-
-.cloud-1:after {
-    width: 40px;
-    height: 35px;
-    top: -18px;
-    right: 8px;
-}
-
-.cloud-2 {
-    width: 80px;
-    height: 25px;
-    top: 60px;
-    left: -80px;
-    animation: floatCloud 40s linear infinite;
-    animation-delay: 5s;
-}
-
-.cloud-2:before {
-    width: 40px;
-    height: 40px;
-    top: -20px;
-    left: 15px;
-}
-
-.cloud-2:after {
-    width: 50px;
-    height: 45px;
-    top: -22px;
-    right: 10px;
-}
-
-.cloud-3 {
-    width: 70px;
-    height: 22px;
-    top: 100px;
-    left: -70px;
-    animation: floatCloud 35s linear infinite;
-    animation-delay: 10s;
-}
-
-.cloud-3:before {
-    width: 35px;
-    height: 35px;
-    top: -17px;
-    left: 12px;
-}
-
-.cloud-3:after {
-    width: 45px;
-    height: 40px;
-    top: -20px;
-    right: 9px;
-}
-
-@keyframes floatCloud {
-    0% {
-        left: -100px;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-/* Sun */
-.sun {
-    position: absolute;
-    width: 90px;
-    height: 90px;
-    background: radial-gradient(circle, #FFF700 0%, #FFD700 40%, #FFA500 100%);
+    top: 6px; left: 16px;
+    width: 44px; height: 44px;
     border-radius: 50%;
-    top: 25px;
-    right: 35px;
-    box-shadow: 
-        0 0 20px rgba(255, 215, 0, 0.8),
-        0 0 40px rgba(255, 165, 0, 0.6),
-        0 0 60px rgba(255, 140, 0, 0.4),
-        inset 0 -10px 20px rgba(255, 140, 0, 0.3);
-    z-index: 1;
-    animation: pulseSun 3s ease-in-out infinite;
+    background: #1e293b;
+    opacity: 0.85;
 }
 
-.sun::before {
+/* Clouds */
+.hero-cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50px;
+    animation: cloudFloat linear infinite;
+}
+.hero-cloud::before, .hero-cloud::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
+    background: rgba(255,255,255,0.7);
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
 }
+.hero-cloud.c1 { width:70px;height:22px;top:15px;left:-70px;animation-duration:28s; }
+.hero-cloud.c1::before{width:32px;height:32px;top:-16px;left:10px;}
+.hero-cloud.c1::after{width:42px;height:38px;top:-20px;right:8px;}
+.hero-cloud.c2 { width:55px;height:18px;top:50px;left:-55px;animation-duration:36s;animation-delay:7s; }
+.hero-cloud.c2::before{width:26px;height:26px;top:-13px;left:8px;}
+.hero-cloud.c2::after{width:34px;height:30px;top:-16px;right:6px;}
+@keyframes cloudFloat { 0%{left:-100px} 100%{left:110%} }
 
-@keyframes pulseSun {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 
-            0 0 20px rgba(255, 215, 0, 0.8),
-            0 0 40px rgba(255, 165, 0, 0.6),
-            0 0 60px rgba(255, 140, 0, 0.4),
-            inset 0 -10px 20px rgba(255, 140, 0, 0.3);
-    }
-    50% {
-        transform: scale(1.08);
-        box-shadow: 
-            0 0 30px rgba(255, 215, 0, 0.9),
-            0 0 60px rgba(255, 165, 0, 0.7),
-            0 0 90px rgba(255, 140, 0, 0.5),
-            inset 0 -10px 20px rgba(255, 140, 0, 0.4);
-    }
-}
-
-/* Moon */
-.moon {
-    position: absolute;
-    width: 70px;
-    height: 70px;
-    background: #F4F4F4;
-    border-radius: 50%;
-    top: 20px;
-    right: 30px;
-    box-shadow: 0 0 20px rgba(244, 244, 244, 0.6), 0 0 40px rgba(244, 244, 244, 0.4);
-    z-index: 1;
-}
-
-.moon:before {
-    content: '';
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    top: 5px;
-    left: 15px;
-}
-
-/* Stars */
-.stars {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    opacity: 0.7;
-}
-
-.star {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    border-radius: 50%;
-    animation: twinkle 2s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-}
-
-/* Pastikan konten tetap di atas dengan kontras yang baik */
-#user-section #user-detail {
+/* Hero content */
+.hero-content {
     position: relative;
-    z-index: 100 !important;
-}
-
-#user-section .avatar {
-    position: relative;
-    z-index: 100;
-}
-
-/* Text color adjustment dengan shadow untuk keterbacaan */
-.time-night #user-name,
-.time-night #user-role {
-    color: white !important;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.time-morning #user-name,
-.time-morning #user-role {
-    color: #1a1a1a !important;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-}
-
-.time-noon #user-name,
-.time-noon #user-role {
-    color: #2d2d2d !important;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
-}
-
-.time-afternoon #user-name,
-.time-afternoon #user-role {
-    color: #1a1a1a !important;
-    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.4);
-}
-
-/* ===== Rekap Presensi Modern ===== */
-.rekap-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  padding: 0 10px;
-}
-
-.rekap-card {
-  width: 90px;
-  height: 100px;
-  background: #fff;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.07);
-  transition: all 0.25s ease;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.rekap-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-}
-
-.rekap-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.rekap-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #333;
-}
-
-/* ===== Warna Tiap Kategori ===== */
-.bg-hadir {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-.bg-izin {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-}
-.bg-sakit {
-  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
-  color: #000 !important;
-}
-.bg-cuti {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-}
-.bg-terlambat {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-@media (max-width: 576px) {
-  .rekap-container {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 10px;
-    gap: 12px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  
-  .rekap-container::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .rekap-card {
-    width: 75px;
-    height: 85px;
-  }
-  .rekap-icon-box {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
-  }
-  .rekap-label {
-    font-size: 0.75rem;
-  }
-}
-
-/* Style untuk preview foto */
-.foto-preview {
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.foto-preview:hover {
-    transform: scale(1.05);
-}
-
-/* Modal Lightbox */
-.lightbox-modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
-    animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.lightbox-content {
-    position: relative;
-    margin: auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 500px;
-    top: 50%;
-    transform: translateY(-50%);
-    animation: zoomIn 0.3s;
-}
-
-@keyframes zoomIn {
-    from { transform: translateY(-50%) scale(0.5); }
-    to { transform: translateY(-50%) scale(1); }
-}
-
-.lightbox-content img {
-    width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    margin-bottom: 20px;
-}
-
-.lightbox-close {
-    position: absolute;
-    top: -15px;
-    right: 5px;
-    color: #fff;
-    font-size: 45px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10000;
-    transition: all 0.3s;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.lightbox-close:hover {
-    color: #ff4d4d;
-    transform: rotate(90deg);
-}
-
-.lightbox-info {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    color: #fff;
-}
-
-.lightbox-info-header {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.lightbox-info-header h3 {
-    color: #fff;
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.lightbox-info-header .date-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    padding: 6px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 8px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.lightbox-info-body {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.info-block {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.info-block:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px);
-}
-
-.info-block-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 8px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.info-block-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.info-block.masuk {
-    border-left: 4px solid #22c55e;
-}
-
-.info-block.pulang {
-    border-left: 4px solid #ef4444;
-}
-
-/* Leaderboard Badges Alignment */
-.leaderboard-badges {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-    min-width: 80px;
-}
-
-.leaderboard-badges .badge {
-    display: inline-block;
-    text-align: center;
-    min-width: 70px;
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* ===== History List Styling - Bulan Ini ===== */
-.history-item {
+    z-index: 10;
     display: flex;
     align-items: center;
-    padding: 12px;
+    gap: 14px;
+}
+.hero-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.hero-avatar {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,0.8);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.hero-avatar-dot {
+    position: absolute;
+    bottom: 2px; right: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #fff;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-greeting {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+.hero-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.hero-role {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+}
+.hero-logout-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    backdrop-filter: blur(6px);
+    text-decoration: none;
+    transition: all .2s;
+}
+.hero-logout-btn:hover { background: rgba(255,255,255,0.28); }
+.hero-logout-btn ion-icon { font-size: 18px; }
+
+/* ─────────────────────────────────────
+   DATE & TIME PILL
+───────────────────────────────────── */
+.datetime-pill {
+    position: relative;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50px;
+    padding: 6px 14px;
+    margin-top: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.95);
+}
+.datetime-pill ion-icon { font-size: 14px; }
+
+/* ─────────────────────────────────────
+   ABSEN CARD (floating overlap)
+───────────────────────────────────── */
+.page-body {
+    padding: 0 16px 100px;
+    max-width: 520px;
+    margin: 0 auto;
+    position: relative;
+    top: -44px;
+}
+
+.absen-card {
     background: #fff;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 8px 32px rgba(59,111,240,0.12);
+    border: 1px solid rgba(99,130,220,0.1);
+    margin-bottom: 16px;
 }
-
-.history-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateX(5px);
+.absen-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
+.absen-card-title ion-icon { font-size: 13px; color: #3b6ff0; }
 
-.history-item .icon-box {
-    width: 60px;
-    height: 60px;
+.absen-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.absen-box {
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform .2s;
+    position: relative;
+    overflow: hidden;
+}
+.absen-box:hover { transform: scale(1.02); }
+.absen-box.masuk  { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+.absen-box.pulang { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+.absen-box-thumb {
+    width: 48px; height: 48px;
     border-radius: 12px;
     overflow: hidden;
-    margin-right: 15px;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgba(255,255,255,0.6);
     display: flex;
     align-items: center;
     justify-content: center;
 }
+.absen-box-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.absen-box-thumb ion-icon { font-size: 22px; color: #94a3b8; }
+.absen-box-info { flex: 1; min-width: 0; }
+.absen-box-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.absen-box-time  { font-size: 15px; font-weight: 800; color: #1e2a4a; margin-top: 2px; }
+.absen-box-status {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+.absen-box.masuk  .absen-box-status { background: rgba(22,163,74,0.15); color: #16a34a; }
+.absen-box.pulang .absen-box-status { background: rgba(220,38,38,0.15); color: #dc2626; }
 
-.history-item .icon-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* ─────────────────────────────────────
+   QUICK MENU
+───────────────────────────────────── */
+.qmenu-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 4px 20px rgba(59,111,240,0.08);
+    border: 1px solid rgba(99,130,220,0.1);
+    margin-bottom: 16px;
+}
+.qmenu-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.qmenu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    cursor: pointer;
+}
+.qmenu-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .25s;
+}
+.qmenu-icon ion-icon { font-size: 22px; color: #fff; }
+.qmenu-item:hover .qmenu-icon { transform: scale(1.08); }
+.qmenu-label { font-size: 11px; font-weight: 700; color: #475569; text-align: center; }
+
+.qi-profile   { background: linear-gradient(135deg, #3b6ff0, #667eea); }
+.qi-cuti      { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.qi-histori   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.qi-kamera    { background: linear-gradient(135deg, #ec4899, #db2777); }
+.qi-lembur    { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.qi-logout    { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+/* extra row for 6 items → 3+3 */
+.qmenu-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(99,130,220,0.1);
 }
 
-.history-item .in {
-    flex: 1;
+/* ─────────────────────────────────────
+   SECTION TITLE
+───────────────────────────────────── */
+.sec-hd {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 12px;
 }
+.sec-hd-title { font-size: 14px; font-weight: 800; color: #1e2a4a; }
+.sec-hd-link  { font-size: 12px; font-weight: 600; color: #3b6ff0; text-decoration: none; }
 
-.history-item .in .left-content {
-    flex: 1;
+/* ─────────────────────────────────────
+   REKAP STRIP
+───────────────────────────────────── */
+.rekap-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
 }
+.rekap-strip::-webkit-scrollbar { display: none; }
 
-.history-item .in .date-text {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 2px;
-}
-
-.history-item .in .time-badges {
+.rekap-chip {
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    min-width: 85px;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(99,130,220,0.12);
+    box-shadow: 0 2px 10px rgba(59,111,240,0.06);
+    min-width: 72px;
 }
-
-.history-item .badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    min-width: 80px;
-    text-align: center;
+.rekap-chip-num {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
 }
-
-.badge-success {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    color: #fff;
+.rekap-chip-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
+.rnum-hadir    { color: #2563eb; }
+.rnum-izin     { color: #16a34a; }
+.rnum-sakit    { color: #d97706; }
+.rnum-cuti     { color: #7c3aed; }
+.rnum-terlambat{ color: #dc2626; }
 
-.badge-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: #fff;
+/* ─────────────────────────────────────
+   TAB
+───────────────────────────────────── */
+.tab-bar {
+    display: flex;
+    background: #eef2ff;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 14px;
+    gap: 4px;
 }
-
-.badge-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #fff;
-}
-
-/* Custom Listview untuk History */
-.listview.image-listview.history-list {
-    padding: 0;
-}
-
-.listview.image-listview.history-list > li {
-    list-style: none;
-    padding: 0;
+.tab-btn {
+    flex: 1;
+    padding: 9px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all .2s;
+}
+.tab-btn.active {
+    background: #fff;
+    color: #3b6ff0;
+    box-shadow: 0 2px 8px rgba(59,111,240,0.12);
 }
 
-.listview.image-listview.history-list .item {
+/* ─────────────────────────────────────
+   HISTORY LIST
+───────────────────────────────────── */
+.hist-list { display: flex; flex-direction: column; gap: 10px; }
+
+.hist-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
-    padding: 0;
-    border: none;
+    gap: 12px;
+    border: 1px solid rgba(99,130,220,0.1);
+    box-shadow: 0 2px 8px rgba(59,111,240,0.05);
+    cursor: pointer;
+    transition: all .2s;
+    animation: fadeSlide .3s ease both;
+}
+.hist-item:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(59,111,240,0.1); }
+
+@keyframes fadeSlide {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.hist-item:nth-child(1){animation-delay:.05s}
+.hist-item:nth-child(2){animation-delay:.08s}
+.hist-item:nth-child(3){animation-delay:.11s}
+.hist-item:nth-child(4){animation-delay:.14s}
+.hist-item:nth-child(5){animation-delay:.17s}
+
+.hist-thumb {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f0f4ff;
+}
+.hist-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.hist-info { flex: 1; min-width: 0; }
+.hist-date { font-size: 13px; font-weight: 700; color: #1e2a4a; margin-bottom: 4px; }
+.hist-status { font-size: 11px; font-weight: 600; }
+.hist-status.hadir    { color: #16a34a; }
+.hist-status.terlambat{ color: #dc2626; }
+
+.hist-times { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+.time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.time-pill ion-icon { font-size: 11px; }
+.pill-in  { background: #dcfce7; color: #16a34a; }
+.pill-out { background: #fee2e2; color: #dc2626; }
+.pill-pending { background: #fef9c3; color: #b45309; }
+
+/* ─────────────────────────────────────
+   LEADERBOARD
+───────────────────────────────────── */
+.lb-list { display: flex; flex-direction: column; gap: 10px; }
+.lb-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(99,130,220,0.1);
+    box-shadow: 0 2px 8px rgba(59,111,240,0.05);
+    animation: fadeSlide .3s ease both;
+}
+.lb-rank {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.lb-rank.r1 { background: #fef08a; color: #854d0e; }
+.lb-rank.r2 { background: #e2e8f0; color: #475569; }
+.lb-rank.r3 { background: #fed7aa; color: #9a3412; }
+.lb-rank.rn { background: #f1f5f9; color: #94a3b8; font-size: 11px; }
+
+.lb-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(99,130,220,0.2);
+    flex-shrink: 0;
+}
+.lb-info { flex: 1; min-width: 0; }
+.lb-name { font-size: 13px; font-weight: 700; color: #1e2a4a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-jabatan { font-size: 11px; color: #64748b; margin-top: 1px; }
+.lb-time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 576px) {
-    .lightbox-info-body {
-        grid-template-columns: 1fr;
-    }
-    
-    .info-block-value {
-        font-size: 20px;
-    }
+/* ─────────────────────────────────────
+   LIGHTBOX
+───────────────────────────────────── */
+.lb-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.92);
+    z-index: 9999;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+}
+.lb-overlay.open { display: flex; animation: overlayIn .25s ease; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+
+.lb-sheet {
+    background: #0f172a;
+    border-radius: 24px 24px 0 0;
+    padding: 0 20px 48px;
+    width: 100%;
+    max-width: 480px;
+    animation: sheetUp .3s cubic-bezier(.32,.72,0,1);
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+.lb-sheet-handle {
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin: 14px auto 20px;
+}
+.lb-photo {
+    width: 100%;
+    border-radius: 16px;
+    max-height: 260px;
+    object-fit: cover;
+    margin-bottom: 16px;
+}
+.lb-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+.lb-info-block {
+    background: rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+.lb-info-block-lbl { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.lb-info-block-val { font-size: 20px; font-weight: 800; color: #fff; }
+.lb-title { font-size: 16px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 4px; }
+.lb-date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59,111,240,0.3);
+    border: 1px solid rgba(59,111,240,0.4);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #93c5fd;
+    margin: 0 auto 16px;
+    display: block;
+    text-align: center;
+    width: fit-content;
 }
 
-.purple {
-    color: #5a4fcf;
-}
+/* ─────────────────────────────────────
+   SOUNDS
+───────────────────────────────────── */
 </style>
 
-<!-- Tambahkan SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Tambahkan Animate.css -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<audio id="clickSound"  src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"   preload="none"></audio>
+<audio id="logoutSound" src="https://assets.mixkit.co/sfx/preview/mixkit-door-lock-click-1126.mp3" preload="none"></audio>
 
-<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
-<audio id="logoutSound" src="https://assets.mixkit.co/sfx/preview/mixkit-door-lock-click-1126.mp3"></audio>
-
-<!-- Modal Lightbox untuk Preview Foto -->
-<div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox(event)">
-    <div class="lightbox-content">
-        <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
-        <img id="lightboxImage" src="" alt="Preview Foto">
-        <div class="lightbox-info">
-            <div class="lightbox-info-header">
-                <h3 id="lightboxTitle"></h3>
-                <span id="lightboxDate" class="date-badge"></span>
+{{-- ════════════════════════════════════
+     LIGHTBOX SHEET
+════════════════════════════════════ --}}
+<div id="lbOverlay" class="lb-overlay" onclick="handleLbClose(event)">
+    <div class="lb-sheet">
+        <div class="lb-sheet-handle"></div>
+        <img id="lbPhoto" src="" alt="" class="lb-photo">
+        <div class="lb-title" id="lbTitle">-</div>
+        <div class="lb-date-pill" id="lbDate">-</div>
+        <div class="lb-info-row">
+            <div class="lb-info-block">
+                <div class="lb-info-block-lbl">Jam Masuk</div>
+                <div class="lb-info-block-val" id="lbIn">-</div>
             </div>
-            <div class="lightbox-info-body">
-                <div class="info-block masuk">
-                    <div class="info-block-label">Jam Masuk</div>
-                    <div class="info-block-value" id="lightboxJamIn">-</div>
-                </div>
-                <div class="info-block pulang">
-                    <div class="info-block-label">Jam Pulang</div>
-                    <div class="info-block-value" id="lightboxJamOut">-</div>
-                </div>
+            <div class="lb-info-block">
+                <div class="lb-info-block-lbl">Jam Pulang</div>
+                <div class="lb-info-block-val" id="lbOut">-</div>
             </div>
         </div>
     </div>
 </div>
+
+{{-- ════════════════════════════════════
+     HERO HEADER
+════════════════════════════════════ --}}
+<div class="hero-header" id="heroHeader">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-blob hero-blob-3"></div>
+
+    <div class="hero-content">
+        <div class="hero-avatar-wrap">
+            @if(!empty(Auth::guard('karyawan')->user()->foto))
+                @php $fotoPath = Storage::url('uploads/karyawan/' . Auth::guard('karyawan')->user()->foto); @endphp
+                <img src="{{ url($fotoPath) }}" class="hero-avatar" alt="avatar">
+            @else
+                <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" class="hero-avatar" alt="avatar">
+            @endif
+            <div class="hero-avatar-dot"></div>
+        </div>
+        <div class="hero-text">
+            <div class="hero-greeting" id="heroGreeting">Selamat datang 👋</div>
+            <div class="hero-name">{{ Auth::guard('karyawan')->user()->nama_lengkap }}</div>
+            <div class="hero-role">{{ Auth::guard('karyawan')->user()->jabatan }}</div>
+        </div>
+        <a href="/logout" class="hero-logout-btn" onclick="return confirmLogout(event)" title="Keluar">
+            <ion-icon name="log-out-outline"></ion-icon>
+        </a>
+    </div>
+
+    <div class="datetime-pill" id="datetimePill">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span id="dateText">-</span>
+        <span style="opacity:.5">·</span>
+        <ion-icon name="time-outline"></ion-icon>
+        <span id="timeText">-</span>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════
+     PAGE BODY
+════════════════════════════════════ --}}
+<div class="page-body">
+
+    {{-- ── Absen Hari Ini ── --}}
+    <div class="absen-card">
+        <div class="absen-card-title">
+            <ion-icon name="today-outline"></ion-icon>
+            Absensi Hari Ini
+        </div>
+        <div class="absen-row">
+            {{-- MASUK --}}
+            <div class="absen-box masuk"
+                @if($presensihariini != null)
+                    onclick="openLb(
+                        '{{ url(Storage::url('uploads/absensi/'.$presensihariini->foto_in)) }}',
+                        'Foto Masuk',
+                        '{{ date('d M Y', strtotime($presensihariini->tgl_presensi)) }}',
+                        '{{ $presensihariini->jam_in }}',
+                        '{{ $presensihariini->jam_out ?? '' }}'
+                    )"
+                @endif>
+                <div class="absen-box-thumb">
+                    @if($presensihariini != null)
+                        <img src="{{ url(Storage::url('uploads/absensi/'.$presensihariini->foto_in)) }}" alt="foto masuk">
+                    @else
+                        <ion-icon name="camera-outline"></ion-icon>
+                    @endif
+                </div>
+                <div class="absen-box-info">
+                    <div class="absen-box-label">Masuk</div>
+                    <div class="absen-box-time">{{ $presensihariini != null ? $presensihariini->jam_in : '-- : --' }}</div>
+                </div>
+                @if($presensihariini != null)
+                    <div class="absen-box-status">✓ Hadir</div>
+                @endif
+            </div>
+
+            {{-- PULANG --}}
+            <div class="absen-box pulang"
+                @if($presensihariini != null && $presensihariini->foto_out)
+                    onclick="openLb(
+                        '{{ url(Storage::url('uploads/absensi/'.$presensihariini->foto_out)) }}',
+                        'Foto Pulang',
+                        '{{ date('d M Y', strtotime($presensihariini->tgl_presensi)) }}',
+                        '{{ $presensihariini->jam_in }}',
+                        '{{ $presensihariini->jam_out }}'
+                    )"
+                @endif>
+                <div class="absen-box-thumb">
+                    @if($presensihariini != null && $presensihariini->foto_out)
+                        <img src="{{ url(Storage::url('uploads/absensi/'.$presensihariini->foto_out)) }}" alt="foto pulang">
+                    @else
+                        <ion-icon name="camera-outline"></ion-icon>
+                    @endif
+                </div>
+                <div class="absen-box-info">
+                    <div class="absen-box-label">Pulang</div>
+                    <div class="absen-box-time">
+                        {{ ($presensihariini != null && $presensihariini->jam_out) ? $presensihariini->jam_out : '-- : --' }}
+                    </div>
+                </div>
+                @if($presensihariini != null && $presensihariini->jam_out)
+                    <div class="absen-box-status">✓ Pulang</div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Quick Menu ── --}}
+    <div class="qmenu-card">
+        <div class="qmenu-grid">
+            <a href="/presensi/editprofile" class="qmenu-item">
+                <div class="qmenu-icon qi-profile"><ion-icon name="person-outline"></ion-icon></div>
+                <span class="qmenu-label">Profil</span>
+            </a>
+            <a href="/presensi/izin" class="qmenu-item">
+                <div class="qmenu-icon qi-cuti"><ion-icon name="calendar-outline"></ion-icon></div>
+                <span class="qmenu-label">Cuti</span>
+            </a>
+            <a href="/presensi/histori" class="qmenu-item">
+                <div class="qmenu-icon qi-histori"><ion-icon name="document-text-outline"></ion-icon></div>
+                <span class="qmenu-label">Histori</span>
+            </a>
+            <a href="/presensi/create" class="qmenu-item">
+                <div class="qmenu-icon qi-kamera"><ion-icon name="camera-outline"></ion-icon></div>
+                <span class="qmenu-label">Kamera</span>
+            </a>
+        </div>
+        <div class="qmenu-grid-2">
+            <a href="/lembur" class="qmenu-item">
+                <div class="qmenu-icon qi-lembur"><ion-icon name="time-outline"></ion-icon></div>
+                <span class="qmenu-label">Lembur</span>
+            </a>
+            <a href="#" class="qmenu-item" onclick="return confirmLogout(event)">
+                <div class="qmenu-icon qi-logout"><ion-icon name="log-out-outline"></ion-icon></div>
+                <span class="qmenu-label">Keluar</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- ── Rekap Bulan Ini ── --}}
+    <div class="sec-hd">
+        <span class="sec-hd-title">Rekap — {{ $namabulan[(int)$bulanini] ?? '' }} {{ $tahunini }}</span>
+    </div>
+    <div class="rekap-strip">
+        <div class="rekap-chip">
+            <div class="rekap-chip-num rnum-hadir">{{ $rekappresensi->jmlhadir ?? 0 }}</div>
+            <div class="rekap-chip-lbl">Hadir</div>
+        </div>
+        <div class="rekap-chip">
+            <div class="rekap-chip-num rnum-terlambat">{{ $rekappresensi->jmlterlambat ?? 0 }}</div>
+            <div class="rekap-chip-lbl">Terlambat</div>
+        </div>
+        <div class="rekap-chip">
+            <div class="rekap-chip-num rnum-izin">{{ $rekapizin->jmlizin ?? 0 }}</div>
+            <div class="rekap-chip-lbl">Izin</div>
+        </div>
+        <div class="rekap-chip">
+            <div class="rekap-chip-num rnum-sakit">{{ $rekapizin->jmlsakit ?? 0 }}</div>
+            <div class="rekap-chip-lbl">Sakit</div>
+        </div>
+        <div class="rekap-chip">
+            <div class="rekap-chip-num rnum-cuti">{{ $rekapizin->jmlcuti ?? 0 }}</div>
+            <div class="rekap-chip-lbl">Cuti</div>
+        </div>
+    </div>
+
+    {{-- ── Tabs ── --}}
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tabBtnHistory" onclick="switchTab('history')">
+            Riwayat Bulan Ini
+        </button>
+        <button class="tab-btn" id="tabBtnLeaderboard" onclick="switchTab('leaderboard')">
+            Leaderboard
+        </button>
+    </div>
+
+    {{-- Tab: History --}}
+    <div id="tabHistory">
+        <div class="hist-list">
+            @forelse($histroribulanini as $d)
+                @php
+                    $fotoPath = url(Storage::url('uploads/absensi/'.$d->foto_in));
+                    $tgl      = date('d M Y', strtotime($d->tgl_presensi));
+                    $hariNama = date('l', strtotime($d->tgl_presensi));
+                    $hariMap  = ['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
+                    $hariInd  = $hariMap[$hariNama] ?? $hariNama;
+                    $jamOut   = $d->jam_out ?? '';
+                @endphp
+                <div class="hist-item"
+                     onclick="openLb('{{ $fotoPath }}','Presensi {{ $tgl }}','{{ $tgl }}','{{ $d->jam_in }}','{{ $jamOut }}')">
+                    <div class="hist-thumb">
+                        <img src="{{ $fotoPath }}" alt="foto" loading="lazy">
+                    </div>
+                    <div class="hist-info">
+                        <div class="hist-date">{{ $hariInd }}, {{ $tgl }}</div>
+                        <div class="hist-status {{ strtolower($d->status ?? 'hadir') }}">
+                            {{ ucfirst($d->status ?? 'Hadir') }}
+                        </div>
+                    </div>
+                    <div class="hist-times">
+                        <div class="time-pill pill-in">
+                            <ion-icon name="log-in-outline"></ion-icon>
+                            {{ $d->jam_in }}
+                        </div>
+                        @if($d->jam_out)
+                            <div class="time-pill pill-out">
+                                <ion-icon name="log-out-outline"></ion-icon>
+                                {{ $d->jam_out }}
+                            </div>
+                        @else
+                            <div class="time-pill pill-pending">
+                                <ion-icon name="time-outline"></ion-icon>
+                                Belum
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div style="text-align:center;padding:40px 20px;color:#94a3b8;">
+                    <ion-icon name="calendar-outline" style="font-size:40px;display:block;margin:0 auto 10px"></ion-icon>
+                    <div style="font-size:14px;font-weight:600">Belum ada presensi bulan ini</div>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- Tab: Leaderboard --}}
+    <div id="tabLeaderboard" style="display:none">
+        <div class="lb-list">
+            @foreach($leaderboard as $i => $d)
+                @php
+                    $rankClass = match($i) { 0=>'r1', 1=>'r2', 2=>'r3', default=>'rn' };
+                    $isOnTime  = $d->jam_in < '07:30';
+                    $lbFoto    = !empty($d->foto)
+                        ? url(Storage::url('uploads/karyawan/'.$d->foto))
+                        : asset('assets/img/sample/avatar/avatar1.jpg');
+                @endphp
+                <div class="lb-item" style="animation-delay:{{ $i * 0.06 }}s">
+                    <div class="lb-rank {{ $rankClass }}">{{ $i + 1 }}</div>
+                    <img src="{{ $lbFoto }}" class="lb-avatar" alt="foto">
+                    <div class="lb-info">
+                        <div class="lb-name">{{ $d->nama_lengkap }}</div>
+                        <div class="lb-jabatan">{{ $d->jabatan }}</div>
+                    </div>
+                    <div class="lb-time-pill {{ $isOnTime ? 'pill-in' : 'pill-out' }}">
+                        <ion-icon name="{{ $isOnTime ? 'checkmark-circle-outline' : 'alert-circle-outline' }}" style="font-size:13px"></ion-icon>
+                        {{ $d->jam_in }}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+</div>{{-- /page-body --}}
 
 <script>
-    // Dynamic Header Based on Time
-    function updateHeaderBackground() {
-        const userSection = document.getElementById('user-section');
-        const currentHour = new Date().getHours();
-        
-        // Remove all time classes
-        userSection.classList.remove('time-morning', 'time-noon', 'time-afternoon', 'time-night');
-        
-        // Remove existing weather elements
-        const existingClouds = userSection.querySelector('.clouds');
-        const existingSun = userSection.querySelector('.sun');
-        const existingMoon = userSection.querySelector('.moon');
-        const existingStars = userSection.querySelector('.stars');
-        
-        if (existingClouds) existingClouds.remove();
-        if (existingSun) existingSun.remove();
-        if (existingMoon) existingMoon.remove();
-        if (existingStars) existingStars.remove();
-        
-        // Pagi (05:00 - 10:59)
-        if (currentHour >= 5 && currentHour < 11) {
-            userSection.classList.add('time-morning');
-            
-            // Add clouds
-            const clouds = document.createElement('div');
-            clouds.className = 'clouds';
-            clouds.innerHTML = `
-                <div class="cloud cloud-1"></div>
-                <div class="cloud cloud-2"></div>
-                <div class="cloud cloud-3"></div>
-            `;
-            userSection.insertBefore(clouds, userSection.firstChild);
+/* ── Time-based hero ── */
+(function () {
+    const el     = document.getElementById('heroHeader');
+    const greet  = document.getElementById('heroGreeting');
+    const h      = new Date().getHours();
+
+    el.classList.remove('time-morning','time-noon','time-afternoon','time-night');
+
+    // Remove old weather
+    ['hero-sun','hero-moon','hero-stars','hero-cloud'].forEach(cls => {
+        el.querySelectorAll('.'+cls).forEach(n => n.remove());
+    });
+
+    if (h >= 5 && h < 11) {
+        el.classList.add('time-morning');
+        greet.textContent = 'Selamat Pagi 🌤️';
+        el.insertAdjacentHTML('afterbegin',
+            '<div class="hero-cloud c1"></div><div class="hero-cloud c2"></div>');
+    } else if (h >= 11 && h < 15) {
+        el.classList.add('time-noon');
+        greet.textContent = 'Selamat Siang ☀️';
+        const sun = document.createElement('div');
+        sun.className = 'hero-sun';
+        el.prepend(sun);
+    } else if (h >= 15 && h < 18) {
+        el.classList.add('time-afternoon');
+        greet.textContent = 'Selamat Sore 🌅';
+        el.insertAdjacentHTML('afterbegin','<div class="hero-cloud c1"></div>');
+    } else {
+        el.classList.add('time-night');
+        greet.textContent = 'Selamat Malam 🌙';
+        const moon = document.createElement('div');
+        moon.className = 'hero-moon';
+        el.prepend(moon);
+        const stars = document.createElement('div');
+        stars.className = 'hero-stars';
+        for (let i = 0; i < 40; i++) {
+            const s = document.createElement('div');
+            s.className = 'hero-star';
+            s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;
+            stars.appendChild(s);
         }
-        // Siang (11:00 - 14:59)
-        else if (currentHour >= 11 && currentHour < 15) {
-            userSection.classList.add('time-noon');
-            
-            // Add sun
-            const sun = document.createElement('div');
-            sun.className = 'sun';
-            userSection.insertBefore(sun, userSection.firstChild);
-        }
-        // Sore (15:00 - 17:59)
-        else if (currentHour >= 15 && currentHour < 18) {
-            userSection.classList.add('time-afternoon');
-            
-            // Add clouds with sunset
-            const clouds = document.createElement('div');
-            clouds.className = 'clouds';
-            clouds.innerHTML = `
-                <div class="cloud cloud-1"></div>
-                <div class="cloud cloud-2"></div>
-            `;
-            userSection.insertBefore(clouds, userSection.firstChild);
-        }
-        // Malam (18:00 - 04:59)
-        else {
-            userSection.classList.add('time-night');
-            
-            // Add moon
-            const moon = document.createElement('div');
-            moon.className = 'moon';
-            userSection.insertBefore(moon, userSection.firstChild);
-            
-            // Add stars
-            const stars = document.createElement('div');
-            stars.className = 'stars';
-            
-            // Generate random stars
-            for (let i = 0; i < 50; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 2 + 's';
-                stars.appendChild(star);
-            }
-            
-            userSection.insertBefore(stars, userSection.firstChild);
-        }
+        el.prepend(stars);
     }
-    
-    // Run on page load
-    document.addEventListener('DOMContentLoaded', updateHeaderBackground);
-    
-    // Update every minute
-    setInterval(updateHeaderBackground, 60000);
+})();
 
-    function confirmLogout(event) {
-        event.preventDefault();
+/* ── Live clock ── */
+const HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function tick() {
+    const now = new Date();
+    document.getElementById('dateText').textContent =
+        HARI[now.getDay()] + ', ' + now.getDate() + ' ' + BULAN[now.getMonth()] + ' ' + now.getFullYear();
+    document.getElementById('timeText').textContent =
+        String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+tick();
+setInterval(tick, 30000);
 
-        // Suara klik
-        document.getElementById("clickSound").play();
+/* ── Lightbox ── */
+function openLb(src, title, date, jamIn, jamOut) {
+    document.getElementById('lbPhoto').src = src;
+    document.getElementById('lbTitle').textContent = title;
+    document.getElementById('lbDate').textContent  = date;
+    document.getElementById('lbIn').textContent    = jamIn  || '-';
+    document.getElementById('lbOut').textContent   = jamOut || 'Belum Absen';
+    document.getElementById('lbOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function handleLbClose(e) {
+    if (e.target === document.getElementById('lbOverlay')) closeLb();
+}
+function closeLb() {
+    document.getElementById('lbOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 
-        Swal.fire({
-            title: 'Yakin ingin keluar?',
-            text: "Anda akan mengakhiri sesi ini",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Keluar!',
-            cancelButtonText: 'Batal',
-            showClass: {
-                popup: 'animate__animated animate__zoomIn animate__faster'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__zoomOut animate__faster'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById("logoutSound").play();
+/* ── Tab switch ── */
+function switchTab(tab) {
+    const isHist = tab === 'history';
+    document.getElementById('tabHistory').style.display      = isHist ? 'block' : 'none';
+    document.getElementById('tabLeaderboard').style.display  = isHist ? 'none'  : 'block';
+    document.getElementById('tabBtnHistory').classList.toggle('active', isHist);
+    document.getElementById('tabBtnLeaderboard').classList.toggle('active', !isHist);
+}
 
-                setTimeout(() => {
-                    window.location.href = "/logout";
-                }, 500);
-            }
-        });
-
-        return false;
-    }
-
-    // Fungsi untuk membuka preview foto dengan informasi lengkap
-    function openLightbox(imageSrc, tanggal, jamIn, jamOut, type) {
-        document.getElementById('lightboxImage').src = imageSrc;
-        
-        // Set title berdasarkan type
-        let titleText = type === 'in' ? 'Foto Masuk' : type === 'out' ? 'Foto Pulang' : 'Detail Presensi';
-        document.getElementById('lightboxTitle').innerHTML = titleText;
-        
-        // Set tanggal
-        document.getElementById('lightboxDate').innerHTML = tanggal;
-        
-        // Set jam masuk dan pulang
-        document.getElementById('lightboxJamIn').innerHTML = jamIn || '<small style="font-size:14px;">Belum Absen</small>';
-        document.getElementById('lightboxJamOut').innerHTML = jamOut || '<small style="font-size:14px;">Belum Absen</small>';
-        
-        // Tampilkan modal
-        document.getElementById('lightboxModal').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-
-    // Fungsi untuk menutup preview foto
-    function closeLightbox(event) {
-        if (event.target.id === 'lightboxModal' || event.target.className === 'lightbox-close') {
-            document.getElementById('lightboxModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-    }
-
-    // Tutup dengan tombol ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            document.getElementById('lightboxModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+/* ── Logout confirm ── */
+function confirmLogout(event) {
+    event.preventDefault();
+    document.getElementById('clickSound').play();
+    Swal.fire({
+        title: 'Yakin ingin keluar?',
+        text: 'Anda akan mengakhiri sesi ini',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3b6ff0',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Keluar!',
+        cancelButtonText: 'Batal',
+        showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+        hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' }
+    }).then(r => {
+        if (r.isConfirmed) {
+            document.getElementById('logoutSound').play();
+            setTimeout(() => { window.location.href = '/logout'; }, 400);
         }
     });
+    return false;
+}
 </script>
-
-<div class="section" id="user-section">
-    <div id="user-detail">
-        <div class="avatar">
-            @if(!empty(Auth::guard('karyawan')->user()->foto))
-                @php
-                    $path = Storage::url('uploads/karyawan/' . Auth::guard('karyawan')->user()->foto);
-                @endphp
-                <img src="{{ url($path) }}" alt="avatar" class="imaged w64" style="height:60px">
-            @else
-                <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="avatar" class="imaged w64 rounded" style="height:60px">
-            @endif
-        </div>
-        <div id="user-info">
-            <h2 id="user-name">{{ Auth::guard('karyawan')->user()->nama_lengkap }}</h2>
-            <span id="user-role">{{ Auth::guard('karyawan')->user()->jabatan }}</span>
-        </div>
-    </div>
-</div>
-
-<div class="section" id="menu-section">
-    <div class="card">
-        <div class="card-body text-center">
-            <div class="list-menu">
-                <div class="item-menu text-center">
-                    <div class="menu-icon">
-                        <a href="editprofile" class="primary" style="font-size: 40px;">
-                            <ion-icon name="person-sharp"></ion-icon>
-                        </a>
-                    </div>
-                    <div class="menu-name">
-                        <span class="text-center">Profil</span>
-                    </div>
-                </div>
-                <div class="item-menu text-center">
-                    <div class="menu-icon">
-                        <a href="/presensi/izin" class="green" style="font-size: 40px;">
-                            <ion-icon name="calendar-number"></ion-icon>
-                        </a>
-                    </div>
-                    <div class="menu-name">
-                        <span class="text-center">Cuti</span>
-                    </div>
-                </div>
-                <div class="item-menu text-center">
-                    <div class="menu-icon">
-                        <a href="/presensi/histori" class="warning" style="font-size: 40px;">
-                            <ion-icon name="document-text"></ion-icon>
-                        </a>
-                    </div>
-                    <div class="menu-name">
-                        <span class="text-center">Histori</span>
-                    </div>
-                </div>
-                <div class="item-menu text-center">
-                    <div class="menu-icon">
-                        <a href="/presensi/create" class="orange" style="font-size: 40px;">
-                            <ion-icon name="camera"></ion-icon>
-                        </a>
-                    </div>
-                    <div class="menu-name">
-                        Kamera
-                    </div>
-                </div>
-             <div class="item-menu text-center">
-                <div class="menu-icon">
-                    <a href="/lembur" class="purple" style="font-size: 40px;">
-                        <ion-icon name="time-outline"></ion-icon>
-                    </a>
-                </div>
-                <div class="menu-name">
-                    <span class="text-center">Lembur</span>
-                </div>
-            </div>
-                <div class="item-menu text-center">
-                    <div class="menu-icon">
-                        <a href="/logout" class="danger" style="font-size: 40px;" onclick="return confirmLogout(event)">
-                            <ion-icon name="log-out-outline"></ion-icon>
-                        </a>
-                    </div>
-                    <div class="menu-name">
-                        <span class="text-center">Keluar</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="section mt-2" id="presence-section">
-    <div class="todaypresence">
-        <div class="row">
-            <div class="col-6">
-                <div class="card gradasigreen">
-                    <div class="card-body">
-                        <div class="presencecontent">
-                            <div class="iconpresence">
-                                @if ($presensihariini != null)
-                                    @php
-                                        $path = Storage::url('uploads/absensi/'.$presensihariini->foto_in);
-                                        $tanggalHariIni = date('d-m-Y', strtotime($presensihariini->tgl_presensi));
-                                        $jamOut = $presensihariini->jam_out ?? 'Belum Absen';
-                                    @endphp
-                                    <img src="{{ $path }}" 
-                                         alt="avatar" 
-                                         class="imaged w64 rounded foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', '{{ $tanggalHariIni }}', '{{ $presensihariini->jam_in }}', '{{ $jamOut }}', 'in')">
-                                @else
-                                    <ion-icon name="camera"></ion-icon>
-                                @endif
-                            </div>
-                            <div class="presencedetail">
-                                <h4 class="presencetitle">Masuk</h4>
-                                <span>{{ $presensihariini != null ? $presensihariini->jam_in : 'Belum Absen'}}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="card gradasired">
-                    <div class="card-body">
-                        <div class="presencecontent">
-                            <div class="iconpresence">
-                                @if ($presensihariini != null && $presensihariini->foto_out != null)
-                                    @php
-                                        $pathOut = Storage::url('uploads/absensi/'.$presensihariini->foto_out);
-                                        $tanggalHariIni = date('d-m-Y', strtotime($presensihariini->tgl_presensi));
-                                    @endphp
-                                    <img src="{{ $pathOut }}" 
-                                         alt="avatar" 
-                                         class="imaged w64 rounded foto-preview" 
-                                         onclick="openLightbox('{{ $pathOut }}', '{{ $tanggalHariIni }}', '{{ $presensihariini->jam_in }}', '{{ $presensihariini->jam_out }}', 'out')">
-                                @else
-                                    <ion-icon name="camera"></ion-icon>
-                                @endif
-                            </div>
-                            <div class="presencedetail">
-                                <h4 class="presencetitle">Pulang</h4>
-                                <span>{{ $presensihariini != null && $presensihariini->jam_out != null ? $presensihariini->jam_out : 'Belum Absen' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="rekappresensi" class="mt-4">
-        <h5 class="text-center fw-semibold mb-4">
-            Rekap Presensi Bulan {{ $namabulan[(int)$bulanini] ?? 'Tidak Valid' }} {{ $tahunini }}
-        </h5>
-
-        <div class="rekap-container">
-            <div class="rekap-card">
-                <div class="rekap-icon-box bg-hadir shadow-sm">
-                    {{ $rekappresensi->jmlhadir ?? 0 }}
-                </div>
-                <div class="rekap-label">Hadir</div>
-            </div>
-
-            <div class="rekap-card">
-                <div class="rekap-icon-box bg-izin shadow-sm">
-                    {{ $rekapizin->jmlizin ?? 0 }}
-                </div>
-                <div class="rekap-label">Izin</div>
-            </div>
-
-            <div class="rekap-card">
-                <div class="rekap-icon-box bg-sakit shadow-sm">
-                    {{ $rekapizin->jmlsakit ?? 0 }}
-                </div>
-                <div class="rekap-label">Sakit</div>
-            </div>
-
-            <div class="rekap-card">
-                <div class="rekap-icon-box bg-cuti shadow-sm">
-                    {{ $rekapizin->jmlcuti ?? 0 }}
-                </div>
-                <div class="rekap-label">Cuti</div>
-            </div>
-
-            <div class="rekap-card">
-                <div class="rekap-icon-box bg-terlambat shadow-sm">
-                    {{ $rekappresensi->jmlterlambat ?? 0 }}
-                </div>
-                <div class="rekap-label">Terlambat</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="presencetab mt-2">
-        <div class="tab-pane fade show active" id="pilled" role="tabpanel">
-            <ul class="nav nav-tabs style1" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#home" role="tab">
-                        Bulan Ini
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#profile" role="tab">
-                        Leaderboard
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="tab-content mt-2" style="margin-bottom:100px;">
-            <div class="tab-pane fade show active" id="home" role="tabpanel">
-                <ul class="listview image-listview history-list">
-                    @foreach ($histroribulanini as $d)
-                        @php 
-                            $path = Storage::url('uploads/absensi/'.$d->foto_in);
-                            $tanggal = date('d-m-Y', strtotime($d->tgl_presensi));
-                            $jamOut = $d->jam_out ?? 'Belum Absen';
-                        @endphp
-                        <li>
-                            <div class="history-item">
-                                <div class="icon-box">
-                                    <img src="{{ $path }}" 
-                                         alt="foto absen" 
-                                         class="foto-preview" 
-                                         onclick="openLightbox('{{ $path }}', '{{ $tanggal }}', '{{ $d->jam_in }}', '{{ $jamOut }}', 'history')">
-                                </div>
-                                <div class="in">
-                                    <div class="left-content">
-                                        <div class="date-text">{{ $tanggal }}</div>
-                                    </div>
-                                    <div class="time-badges">
-                                        <span class="badge badge-success">{{ $d->jam_in }}</span>
-                                        <span class="badge {{ $d->jam_out != null ? 'badge-danger' : 'badge-warning' }}">
-                                            {{ $d->jam_out != null ? $d->jam_out : 'Belum Absen' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <div class="tab-pane fade" id="profile" role="tabpanel">
-                <ul class="listview image-listview">
-                    @foreach ($leaderboard as $d)
-                        <li>
-                            <div class="item">
-                                @if(!empty($d->foto))
-                                    @php
-                                        $fotoPath = Storage::url('uploads/karyawan/' . $d->foto);
-                                    @endphp
-                                    <img src="{{ url($fotoPath) }}" alt="image" class="image">
-                                @else
-                                    <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="image" class="image">
-                                @endif
-                                <div class="in">
-                                    <div>
-                                        <b>{{ $d->nama_lengkap }}</b><br>
-                                        <small class="text-muted">{{ $d->jabatan }}</small>
-                                    </div>
-                                    <div class="leaderboard-badges">
-                                        <span class="badge {{ $d->jam_in < '07:30' ? 'bg-success' : 'bg-danger' }}">{{ $d->jam_in }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
 
 @endsection

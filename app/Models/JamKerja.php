@@ -9,14 +9,8 @@ class JamKerja extends Model
 {
     use HasFactory;
 
-    /**
-     * Nama tabel yang digunakan oleh model ini
-     */
     protected $table = 'jam_kerja';
 
-    /**
-     * Kolom yang dapat diisi secara mass assignment
-     */
     protected $fillable = [
         'jam_masuk',
         'jam_pulang',
@@ -27,115 +21,150 @@ class JamKerja extends Model
     ];
 
     /**
-     * Mengambil konfigurasi jam kerja yang aktif
-     * Karena hanya ada 1 row, kita ambil yang pertama
-     * 
-     * @return JamKerja|null
+     * Paksa kolom time disimpan & dibaca sebagai string "HH:MM:SS"
+     * agar tidak otomatis dikonversi ke Carbon oleh Laravel.
      */
-    public static function getConfig()
+    protected $casts = [
+        'jam_masuk'  => 'string',
+        'jam_pulang' => 'string',
+    ];
+
+    // ─────────────────────────────────────────────────────────
+    //  HELPER INTERNAL: parse string / Carbon → total menit
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Konversi nilai waktu (string "HH:MM:SS" atau Carbon) ke total menit.
+     * Ini adalah satu-satunya tempat parsing terjadi — semua method lain
+     * memanggil helper ini agar tidak ada duplikasi logika.
+     */
+    private function toMenit($waktu): int
+    {
+        // Jika Carbon / object dengan method format()
+        if (is_object($waktu) && method_exists($waktu, 'format')) {
+            $waktu = $waktu->format('H:i:s');
+        }
+
+        // Pastikan string
+        $waktu = (string) $waktu;
+
+        // Ambil hanya "HH:MM" dari "HH:MM:SS" atau "HH:MM"
+        $parts = explode(':', substr(trim($waktu), 0, 5));
+
+        return (int)($parts[0] ?? 0) * 60 + (int)($parts[1] ?? 0);
+    }
+
+    /**
+     * Format total menit → string "HH:MM"
+     */
+    private function menitKeJam(int $menit): string
+    {
+        return sprintf('%02d:%02d', floor($menit / 60), $menit % 60);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  PUBLIC STATIC
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Ambil konfigurasi jam kerja (hanya 1 row).
+     */
+    public static function getConfig(): ?self
     {
         return self::first();
     }
 
+    // ─────────────────────────────────────────────────────────
+    //  GETTER WAKTU (format HH:MM)
+    // ─────────────────────────────────────────────────────────
+
     /**
-     * Helper: Cek apakah waktu sekarang dalam rentang absen masuk
-     * 
-     * @return bool
+     * Waktu paling awal bisa absen masuk (format HH:MM).
+     * Contoh: batas_absen_masuk_awal = 360 → "06:00"
      */
-    public function isWaktuAbsenMasuk()
+    public function getWaktuMulaiAbsenMasuk(): string
     {
-        $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
-        
-        return $waktuSekarangMenit >= $this->batas_absen_masuk_awal 
-            && $waktuSekarangMenit <= $this->batas_absen_masuk_akhir;
+        return $this->menitKeJam((int) $this->batas_absen_masuk_awal);
     }
 
     /**
-     * Helper: Cek apakah waktu sekarang sudah boleh absen pulang
-     * 
-     * @return bool
+     * Waktu paling akhir bisa absen masuk (format HH:MM).
+     * Contoh: batas_absen_masuk_akhir = 1020 → "17:00"
      */
-    public function isWaktuAbsenPulang()
+    public function getWaktuAkhirAbsenMasuk(): string
     {
-        $waktuSekarangMenit = (int)date('H') * 60 + (int)date('i');
-        $jamPulangMenit = (int)date('H', strtotime($this->jam_pulang)) * 60 + (int)date('i', strtotime($this->jam_pulang));
-        $batasAbsenPulang = $jamPulangMenit - $this->batas_absen_pulang_sebelum;
-        
-        return $waktuSekarangMenit >= $batasAbsenPulang;
+        return $this->menitKeJam((int) $this->batas_absen_masuk_akhir);
     }
 
     /**
-     * Helper: Mendapatkan waktu mulai boleh absen masuk (format HH:MM)
-     * 
-     * @return string
+     * Waktu mulai boleh absen pulang (format HH:MM).
+     * Contoh: jam_pulang = "15:00", batas_absen_pulang_sebelum = 60 → "14:00"
      */
-    public function getWaktuMulaiAbsenMasuk()
+    public function getWaktuMulaiAbsenPulang(): string
     {
-        return sprintf("%02d:%02d", 
-            floor($this->batas_absen_masuk_awal / 60), 
-            $this->batas_absen_masuk_awal % 60
-        );
+        $jamPulangMenit   = $this->toMenit($this->jam_pulang);
+        $batasAbsenPulang = $jamPulangMenit - (int) $this->batas_absen_pulang_sebelum;
+
+        return $this->menitKeJam($batasAbsenPulang);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  CEK WAKTU
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Apakah sekarang masih dalam rentang waktu absen masuk?
+     */
+    public function isWaktuAbsenMasuk(): bool
+    {
+        $sekarang = (int) date('H') * 60 + (int) date('i');
+
+        return $sekarang >= (int) $this->batas_absen_masuk_awal
+            && $sekarang <= (int) $this->batas_absen_masuk_akhir;
     }
 
     /**
-     * Helper: Mendapatkan waktu akhir boleh absen masuk (format HH:MM)
-     * 
-     * @return string
+     * Apakah sekarang sudah boleh absen pulang?
      */
-    public function getWaktuAkhirAbsenMasuk()
+    public function isWaktuAbsenPulang(): bool
     {
-        return sprintf("%02d:%02d", 
-            floor($this->batas_absen_masuk_akhir / 60), 
-            $this->batas_absen_masuk_akhir % 60
-        );
+        $sekarang         = (int) date('H') * 60 + (int) date('i');
+        $jamPulangMenit   = $this->toMenit($this->jam_pulang);
+        $batasAbsenPulang = $jamPulangMenit - (int) $this->batas_absen_pulang_sebelum;
+
+        return $sekarang >= $batasAbsenPulang;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  KETERLAMBATAN
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Apakah jam masuk karyawan melewati batas toleransi?
+     *
+     * @param string $jam_masuk_real Format "HH:MM:SS" atau "HH:MM"
+     */
+    public function isTerlambat(string $jam_masuk_real): bool
+    {
+        $realMenit      = $this->toMenit($jam_masuk_real);
+        $seharusnyaMenit = $this->toMenit($this->jam_masuk);
+        $batasToleransi  = $seharusnyaMenit + (int) $this->toleransi_keterlambatan;
+
+        return $realMenit > $batasToleransi;
     }
 
     /**
-     * Helper: Mendapatkan waktu mulai boleh absen pulang (format HH:MM)
-     * 
-     * @return string
+     * Hitung keterlambatan dalam menit (0 jika tidak terlambat).
+     *
+     * @param string $jam_masuk_real Format "HH:MM:SS" atau "HH:MM"
      */
-    public function getWaktuMulaiAbsenPulang()
+    public function hitungKeterlambatan(string $jam_masuk_real): int
     {
-        $jamPulangMenit = (int)date('H', strtotime($this->jam_pulang)) * 60 + (int)date('i', strtotime($this->jam_pulang));
-        $batasAbsenPulang = $jamPulangMenit - $this->batas_absen_pulang_sebelum;
-        
-        return sprintf("%02d:%02d", 
-            floor($batasAbsenPulang / 60), 
-            $batasAbsenPulang % 60
-        );
-    }
+        $realMenit       = $this->toMenit($jam_masuk_real);
+        $seharusnyaMenit = $this->toMenit($this->jam_masuk);
 
-    /**
-     * Helper: Cek apakah karyawan terlambat
-     * 
-     * @param string $jam_masuk_real Format HH:MM:SS
-     * @return bool
-     */
-    public function isTerlambat($jam_masuk_real)
-    {
-        $jamMasukReal = strtotime($jam_masuk_real);
-        $jamMasukSeharusnya = strtotime($this->jam_masuk);
-        
-        return $jamMasukReal > $jamMasukSeharusnya;
-    }
+        $selisih = $realMenit - $seharusnyaMenit;
 
-    /**
-     * Helper: Hitung selisih keterlambatan dalam menit
-     * 
-     * @param string $jam_masuk_real Format HH:MM:SS
-     * @return int Selisih dalam menit (0 jika tidak terlambat)
-     */
-    public function hitungKeterlambatan($jam_masuk_real)
-    {
-        if (!$this->isTerlambat($jam_masuk_real)) {
-            return 0;
-        }
-
-        $jamMasukReal = strtotime($jam_masuk_real);
-        $jamMasukSeharusnya = strtotime($this->jam_masuk);
-        $selisihDetik = $jamMasukReal - $jamMasukSeharusnya;
-        
-        return floor($selisihDetik / 60);
+        return max(0, $selisih);
     }
 }

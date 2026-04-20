@@ -10,9 +10,6 @@
 
 <div id="map"></div>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
     // Lokasi kantor
     var lok_kantor = [{{ $lok_kantor->lokasi_kantor }}];
@@ -155,20 +152,41 @@
 
     // FIT BOUNDS SETELAH SEMUA MARKER DIBUAT
     // Tunggu sebentar agar map selesai render
+    // FIT BOUNDS SETELAH SEMUA MARKER DIBUAT
     setTimeout(function() {
-        if (allLayers.length > 0) {
-            var group = new L.featureGroup(allLayers);
-            map.fitBounds(group.getBounds().pad(0.2));
-        }
-        
-        // Buka popup lokasi masuk jika ada
-        if (lok_masuk && typeof masukMarker !== 'undefined') {
-            masukMarker.openPopup();
-        } else {
-            // Jika tidak ada absen masuk, buka popup kantor
-            kantorMarker.openPopup();
-        }
-    }, 300);
+        // Paksa map recalculate size dulu sebelum fitBounds
+        map.invalidateSize(true);
+
+        setTimeout(function() {
+            if (allLayers.length > 0) {
+                try {
+                    // Kumpulkan hanya marker (bukan circle) untuk fitBounds
+                    var markerLayers = allLayers.filter(function(layer) {
+                        return layer instanceof L.Marker || layer instanceof L.Polyline;
+                    });
+
+                    if (markerLayers.length > 0) {
+                        var group = new L.featureGroup(markerLayers);
+                        map.fitBounds(group.getBounds().pad(0.3));
+                    } else {
+                        // Fallback: set view ke lokasi kantor
+                        map.setView(lok_kantor, 15);
+                    }
+                } catch(e) {
+                    console.warn('fitBounds error, fallback to setView:', e);
+                    map.setView(lok_kantor, 15);
+                }
+            }
+
+            // Buka popup
+            if (lok_masuk && typeof masukMarker !== 'undefined') {
+                masukMarker.openPopup();
+            } else {
+                kantorMarker.openPopup();
+            }
+        }, 300);
+
+    }, 400);
 
     // Event listener untuk memastikan map ter-render dengan benar
     map.on('load', function() {

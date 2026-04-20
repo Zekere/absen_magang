@@ -239,3 +239,19 @@ Route::post('/konfigurasi/updatelokasi/{id}', [KonfigurasiController::class, 'up
 Route::post('/konfigurasi/deletelokasi/{id}', [KonfigurasiController::class, 'deletelokasi']); // ← ubah GET ke POST
 
 Route::post('/presensi/setupwajah', [PresensiController::class, 'setupwajah']);
+
+// DEBUG SEMENTARA - hapus setelah selesai
+Route::get('/debug-jamkerja', function () {
+    $jamKerja = \App\Models\JamKerja::first();
+    $jamPulangMenit   = (int)date('H', strtotime($jamKerja->jam_pulang)) * 60 
+                      + (int)date('i', strtotime($jamKerja->jam_pulang));
+    $batasAbsenPulang = $jamPulangMenit - $jamKerja->batas_absen_pulang_sebelum;
+    $jamSekarang      = (int)date('H') * 60 + (int)date('i');
+
+    dd([
+        'jam_pulang_menit'    => $jamPulangMenit,       // harusnya 600
+        'batas_absen_pulang'  => $batasAbsenPulang,     // harusnya 540
+        'jam_sekarang_menit'  => $jamSekarang,          // jam sekarang
+        'bisa_absen_pulang'   => $jamSekarang >= $batasAbsenPulang,
+    ]);
+});

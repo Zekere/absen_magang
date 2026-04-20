@@ -8,428 +8,609 @@
         </a>
     </div>
     <div class="pageTitle">Data Lembur</div>
-    <div class="right"></div>
+    <div class="right">
+        <a href="{{ route('lembur.create') }}" class="headerButton">
+            <ion-icon name="add-outline" style="font-size:22px"></ion-icon>
+        </a>
+    </div>
 </div>
 
 <style>
-    .container {
-        padding-top: 70px;
-        padding-bottom: 100px;
-        background: #f5f7fa;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Modern Card Design */
-    .lembur-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #e8ecef;
-    }
+* { box-sizing: border-box; }
+body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    .lembur-card:hover {
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        transform: translateY(-4px);
-    }
+.appHeader {
+    background: linear-gradient(135deg, #3b6ff0, #667eea) !important;
+    border-bottom: none;
+    box-shadow: 0 2px 20px rgba(59,111,240,0.3) !important;
+}
+.appHeader .pageTitle {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff !important;
+}
 
-    /* Header dengan tanggal */
-    .lembur-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #f0f3f7;
-    }
+/* ─── Container ─── */
+.lembur-container {
+    padding: 76px 16px 110px; /* 76px = tinggi appHeader (~56px) + gap 20px */
+    max-width: 520px;
+    margin: 0 auto;
+}
 
-    .date-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-    }
+/* ─── Alert ─── */
+.ep-alert {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    animation: fadeSlide .3s ease;
+}
+.ep-alert ion-icon { font-size: 18px; flex-shrink: 0; }
+.ep-alert.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.ep-alert.error   { background: #fff1f2; color: #dc2626; border: 1px solid #fecdd3; }
+.ep-alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    font-size: 16px;
+    padding: 0;
+}
 
-    .date-day {
-        font-size: 18px;
-        line-height: 1;
-    }
+/* ─── Summary Strip ─── */
+.sum-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.sum-chip {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 1px solid rgba(99,130,220,0.15);
+    box-shadow: 0 2px 10px rgba(59,111,240,0.06);
+}
+.sum-num {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.sum-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+}
+.sum-chip.total .sum-num { color: #3b6ff0; }
+.sum-chip.hours .sum-num { color: #8b5cf6; }
+.sum-chip.this-month .sum-num { color: #16a34a; }
 
-    .date-month {
-        font-size: 10px;
-        text-transform: uppercase;
-        opacity: 0.9;
-    }
+/* ─── Section Header ─── */
+.sec-hd {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.sec-title { font-size: 13px; font-weight: 700; color: #1e2a4a; }
+.sec-count {
+    font-size: 12px;
+    color: #64748b;
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(99,130,220,0.15);
+}
 
-    .date-info {
-        flex: 1;
-    }
+/* ─── Lembur Card ─── */
+.card-list { display: flex; flex-direction: column; gap: 12px; }
 
-    .date-full {
-        font-weight: 600;
-        font-size: 15px;
-        color: #1a1f36;
-        margin-bottom: 2px;
-    }
+.lembur-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(99,130,220,0.12);
+    box-shadow: 0 2px 14px rgba(59,111,240,0.07);
+    animation: fadeSlide .35s ease both;
+}
+.lembur-card:nth-child(1){animation-delay:.04s}
+.lembur-card:nth-child(2){animation-delay:.08s}
+.lembur-card:nth-child(3){animation-delay:.12s}
+.lembur-card:nth-child(4){animation-delay:.16s}
+.lembur-card:nth-child(5){animation-delay:.20s}
 
-    .date-day-name {
-        font-size: 12px;
-        color: #8492a6;
-    }
+@keyframes fadeSlide {
+    from { opacity:0; transform:translateY(10px); }
+    to   { opacity:1; transform:translateY(0); }
+}
 
-    /* Time Info */
-    .time-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: #f8f9fb;
-        padding: 10px 14px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-    }
+/* accent bar */
+.card-accent {
+    height: 4px;
+    background: linear-gradient(90deg, #3b6ff0, #8b5cf6);
+}
 
-    .time-info ion-icon {
-        font-size: 18px;
-        color: #667eea;
-    }
+.card-body { padding: 16px; }
 
-    .time-text {
-        font-size: 14px;
-        color: #3c4257;
-        font-weight: 500;
-    }
+/* ─── Card Top Row ─── */
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.date-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(59,111,240,0.3);
+}
+.date-badge-day   { font-size: 20px; font-weight: 800; line-height: 1; }
+.date-badge-month { font-size: 10px; font-weight: 700; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* Duration Badge */
-    .duration-badge {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 10px 16px;
-        border-radius: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
+.date-info { flex: 1; min-width: 0; }
+.date-full { font-size: 14px; font-weight: 700; color: #1e2a4a; }
+.date-dayname { font-size: 12px; color: #64748b; margin-top: 2px; }
 
-    .duration-badge ion-icon {
-        font-size: 18px;
-    }
+.durasi-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(139,92,246,0.3);
+}
+.durasi-pill ion-icon { font-size: 13px; }
 
-    /* Keterangan Box */
-    .keterangan-box {
-        background: #f8f9fb;
-        padding: 12px 14px;
-        border-radius: 10px;
-        border-left: 3px solid #667eea;
-        margin-bottom: 12px;
-    }
+/* ─── Info Rows ─── */
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8faff;
+    border-radius: 11px;
+    margin-bottom: 10px;
+}
+.info-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.info-row-icon.blue   { background: #eff6ff; }
+.info-row-icon.blue   ion-icon { color: #3b6ff0; font-size: 16px; }
+.info-row-icon.purple { background: #f5f3ff; }
+.info-row-icon.purple ion-icon { color: #7c3aed; font-size: 16px; }
+.info-row-icon.green  { background: #f0fdf4; }
+.info-row-icon.green  ion-icon { color: #16a34a; font-size: 16px; }
 
-    .keterangan-label {
-        font-size: 11px;
-        text-transform: uppercase;
-        font-weight: 700;
-        color: #8492a6;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
-    }
+.info-row-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
+.info-row-val   { font-size: 13px; font-weight: 600; color: #1e2a4a; }
 
-    .keterangan-text {
-        font-size: 14px;
-        color: #3c4257;
-        line-height: 1.6;
-    }
+/* keterangan */
+.keterangan-wrap {
+    background: #f8faff;
+    border-radius: 11px;
+    padding: 12px;
+    border-left: 3px solid #3b6ff0;
+    margin-bottom: 12px;
+}
+.keterangan-lbl  { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+.keterangan-text { font-size: 13px; color: #374151; line-height: 1.55; }
 
-    /* Photo Badge */
-    .photo-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #e3f2fd;
-        color: #1976d2;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 12px;
-    }
+/* bukti */
+.bukti-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 12px;
+}
+.bukti-pill ion-icon { font-size: 13px; }
 
-    .photo-badge ion-icon {
-        font-size: 16px;
-    }
+/* ─── Action Buttons ─── */
+.action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(99,130,220,0.1);
+}
+.btn-act {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    width: 100%;
+}
+.btn-act ion-icon { font-size: 14px; }
+.btn-act:hover { transform: translateY(-1px); }
 
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-    }
+.btn-detail   { background: #eff6ff; color: #1d4ed8; }
+.btn-detail:hover { background: #dbeafe; }
+.btn-edit-act { background: #fefce8; color: #854d0e; }
+.btn-edit-act:hover { background: #fef08a; }
+.btn-del      { background: #fff1f2; color: #dc2626; }
+.btn-del:hover { background: #fecdd3; }
 
-    .btn-action {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-    }
+/* ─── Empty State ─── */
+.empty-state {
+    background: #fff;
+    border-radius: 20px;
+    padding: 52px 24px;
+    text-align: center;
+    border: 1px solid rgba(99,130,220,0.12);
+    box-shadow: 0 2px 14px rgba(59,111,240,0.06);
+}
+.empty-icon-wrap {
+    width: 72px;
+    height: 72px;
+    background: #eff6ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+.empty-icon-wrap ion-icon { font-size: 32px; color: #3b6ff0; }
+.empty-title { font-size: 16px; font-weight: 800; color: #1e2a4a; margin-bottom: 6px; }
+.empty-desc  { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 20px; }
+.btn-empty-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(59,111,240,0.3);
+    transition: all .2s;
+}
+.btn-empty-add:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(59,111,240,0.4); color: #fff; }
+.btn-empty-add ion-icon { font-size: 18px; }
 
-    .btn-detail {
-        background: #2196f3;
-        color: white;
-        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
-    }
+/* ─── FAB ─── */
+.fab-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(59,111,240,0.4);
+    text-decoration: none;
+    z-index: 50;
+    transition: all .25s;
+}
+.fab-btn:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 8px 28px rgba(59,111,240,0.5); }
+.fab-btn ion-icon { font-size: 26px; }
 
-    .btn-detail:hover {
-        background: #1976d2;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-    }
-
-    .btn-edit {
-        background: #ffc107;
-        color: #333;
-        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-    }
-
-    .btn-edit:hover {
-        background: #ffb300;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
-    }
-
-    .btn-delete {
-        background: #f44336;
-        color: white;
-        box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
-    }
-
-    .btn-delete:hover {
-        background: #d32f2f;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-    }
-
-    .btn-action ion-icon {
-        font-size: 16px;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-
-    .empty-state ion-icon {
-        font-size: 100px;
-        color: #cbd5e0;
-        margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 8px;
-    }
-
-    .empty-state p {
-        font-size: 14px;
-        color: #718096;
-        margin-bottom: 24px;
-    }
-
-    /* Floating Action Button (FAB) */
-    .fab-button {
-        position: fixed;
-        bottom: 90px;
-        right: 20px;
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(33, 150, 243, 0.5);
-        z-index: 999;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: none;
-        text-decoration: none;
-    }
-
-    .fab-button:hover {
-        transform: scale(1.1) rotate(90deg);
-        box-shadow: 0 6px 28px rgba(33, 150, 243, 0.6);
-    }
-
-    .fab-button:active {
-        transform: scale(0.95);
-    }
-
-    .fab-button ion-icon {
-        font-size: 28px;
-        color: white;
-    }
-
-    /* Alert Modern */
-    .alert {
-        border-radius: 12px;
-        border: none;
-        padding: 14px 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .alert-danger {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    /* Responsive */
-    @media (max-width: 576px) {
-        .lembur-card {
-            padding: 16px;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-        }
-
-        .btn-action {
-            width: 100%;
-        }
-
-        .fab-button {
-            bottom: 80px;
-            right: 16px;
-        }
-    }
+/* ─── Delete modal ─── */
+.del-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.del-overlay.open { display: flex; animation: overlayIn .2s ease; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+.del-sheet {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 0 20px 48px;
+    width: 100%;
+    max-width: 480px;
+    animation: sheetUp .3s cubic-bezier(.32,.72,0,1);
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.del-handle { width: 36px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 2px; margin: 14px auto 20px; }
+.del-icon-wrap {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #fff1f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+}
+.del-icon-wrap ion-icon { font-size: 28px; color: #dc2626; }
+.del-title { font-size: 17px; font-weight: 800; color: #1e2a4a; text-align: center; margin-bottom: 6px; }
+.del-desc  { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 20px; line-height: 1.5; }
+.del-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.del-cancel {
+    padding: 13px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(99,130,220,0.2);
+    background: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all .2s;
+}
+.del-cancel:hover { background: #f8faff; }
+.del-confirm {
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    box-shadow: 0 4px 14px rgba(220,38,38,0.3);
+    transition: all .2s;
+}
+.del-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220,38,38,0.4); }
 </style>
 @endsection
 
 @section('content')
-<div class="container">
-    <!-- Alert Messages -->
-    @if (Session::get('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <ion-icon name="checkmark-circle-outline" style="font-size: 20px; vertical-align: middle;"></ion-icon>
-            {{ Session::get('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+{{-- Delete Confirm Sheet --}}
+<div class="del-overlay" id="delOverlay" onclick="handleDelClose(event)">
+    <div class="del-sheet">
+        <div class="del-handle"></div>
+        <div class="del-icon-wrap">
+            <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="del-title">Hapus Data Lembur?</div>
+        <div class="del-desc">Data lembur ini akan dihapus permanen dan tidak dapat dikembalikan.</div>
+        <div class="del-btn-row">
+            <button class="del-cancel" onclick="closeDelModal()">Batal</button>
+            <button class="del-confirm" id="delConfirmBtn" onclick="submitDelete()">Ya, Hapus</button>
+        </div>
+    </div>
+</div>
+<form id="delForm" method="POST" style="display:none">
+    @csrf
+    @method('DELETE')
+</form>
+
+<div class="lembur-container">
+
+    {{-- ── Alerts ── --}}
+    @if(Session::get('success'))
+        <div class="ep-alert success" id="alertBox">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span>{{ Session::get('success') }}</span>
+            <button class="ep-alert-close" onclick="this.parentElement.remove()">✕</button>
         </div>
     @endif
-    @if (Session::get('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ion-icon name="close-circle-outline" style="font-size: 20px; vertical-align: middle;"></ion-icon>
-            {{ Session::get('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    @if(Session::get('error'))
+        <div class="ep-alert error" id="alertBox">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ Session::get('error') }}</span>
+            <button class="ep-alert-close" onclick="this.parentElement.remove()">✕</button>
         </div>
     @endif
 
     @if($dataLembur->count() > 0)
-        @foreach($dataLembur as $lembur)
-        <div class="lembur-card">
-            <!-- Header dengan Icon Tanggal -->
-            <div class="lembur-header">
-                <div class="date-icon">
-                    <div class="date-day">{{ date('d', strtotime($lembur->tanggal_lembur)) }}</div>
-                    <div class="date-month">{{ date('M', strtotime($lembur->tanggal_lembur)) }}</div>
-                </div>
-                <div class="date-info">
-                    <div class="date-full">{{ date('d F Y', strtotime($lembur->tanggal_lembur)) }}</div>
-                    <div class="date-day-name">{{ date('l', strtotime($lembur->tanggal_lembur)) }}</div>
-                </div>
-            </div>
 
-            <!-- Time Info -->
-            <div class="time-info">
-                <ion-icon name="time-outline"></ion-icon>
-                <span class="time-text">
-                    {{ date('H:i', strtotime($lembur->jam_mulai)) }} - {{ date('H:i', strtotime($lembur->jam_selesai)) }} WIB
-                </span>
+        {{-- ── Summary Strip ── --}}
+        @php
+            $totalEntri    = $dataLembur->count();
+            $totalMenit    = $dataLembur->sum('durasi_menit');
+            $totalJam      = floor($totalMenit / 60);
+            $sisaMenit     = $totalMenit % 60;
+            $bulanSekarang = date('m');
+            $tahunSekarang = date('Y');
+            $bulanIni      = $dataLembur->filter(function($l) use ($bulanSekarang, $tahunSekarang) {
+                return date('m', strtotime($l->tanggal_lembur)) == $bulanSekarang
+                    && date('Y', strtotime($l->tanggal_lembur)) == $tahunSekarang;
+            })->count();
+        @endphp
+        <div class="sum-strip">
+            <div class="sum-chip total">
+                <div class="sum-num">{{ $totalEntri }}</div>
+                <div class="sum-lbl">Total</div>
             </div>
-
-            <!-- Duration Badge -->
-            <div class="duration-badge">
-                <ion-icon name="hourglass-outline"></ion-icon>
-                @php
-                    $jam = floor($lembur->durasi_menit / 60);
-                    $menit = $lembur->durasi_menit % 60;
-                @endphp
-                <span>Durasi: {{ $jam }} jam {{ $menit }} menit</span>
+            <div class="sum-chip hours">
+                <div class="sum-num">{{ $totalJam }}j</div>
+                <div class="sum-lbl">Durasi</div>
             </div>
-
-            <!-- Keterangan -->
-            <div class="keterangan-box">
-                <div class="keterangan-label">Keterangan</div>
-                <div class="keterangan-text">{{ $lembur->keterangan }}</div>
-            </div>
-
-            <!-- Photo Badge -->
-            @if($lembur->bukti_foto)
-            <div class="photo-badge">
-                <ion-icon name="image-outline"></ion-icon>
-                <span>Dengan bukti foto</span>
-            </div>
-            @endif
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <a href="/lembur/{{ $lembur->id }}" class="btn-action btn-detail">
-                    <ion-icon name="eye-outline"></ion-icon>
-                    <span>Detail</span>
-                </a>
-                
-                <a href="/lembur/{{ $lembur->id }}/edit" class="btn-action btn-edit">
-                    <ion-icon name="create-outline"></ion-icon>
-                    <span>Edit</span>
-                </a>
-                
-                <form action="/lembur/{{ $lembur->id }}/delete" method="POST" style="flex: 1;" onsubmit="return confirm('Yakin ingin menghapus data lembur ini?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-action btn-delete" style="width: 100%;">
-                        <ion-icon name="trash-outline"></ion-icon>
-                        <span>Hapus</span>
-                    </button>
-                </form>
+            <div class="sum-chip this-month">
+                <div class="sum-num">{{ $bulanIni }}</div>
+                <div class="sum-lbl">Bulan ini</div>
             </div>
         </div>
-        @endforeach
+
+        {{-- ── Section Header ── --}}
+        <div class="sec-hd">
+            <span class="sec-title">Riwayat Lembur</span>
+            <span class="sec-count">{{ $totalEntri }} data</span>
+        </div>
+
+        {{-- ── Card List ── --}}
+        <div class="card-list">
+            @foreach($dataLembur as $lembur)
+                @php
+                    $jam   = floor($lembur->durasi_menit / 60);
+                    $menit = $lembur->durasi_menit % 60;
+                    $hariMap = ['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
+                    $hariInd = $hariMap[date('l', strtotime($lembur->tanggal_lembur))] ?? date('l', strtotime($lembur->tanggal_lembur));
+                    $bulanMap = ['January'=>'Jan','February'=>'Feb','March'=>'Mar','April'=>'Apr','May'=>'Mei','June'=>'Jun','July'=>'Jul','August'=>'Agu','September'=>'Sep','October'=>'Okt','November'=>'Nov','December'=>'Des'];
+                    $bulanInd = $bulanMap[date('F', strtotime($lembur->tanggal_lembur))] ?? date('M', strtotime($lembur->tanggal_lembur));
+                @endphp
+
+                <div class="lembur-card">
+                    <div class="card-accent"></div>
+                    <div class="card-body">
+
+                        {{-- Top: tanggal + durasi --}}
+                        <div class="card-top">
+                            <div class="date-badge">
+                                <div class="date-badge-day">{{ date('d', strtotime($lembur->tanggal_lembur)) }}</div>
+                                <div class="date-badge-month">{{ $bulanInd }}</div>
+                            </div>
+                            <div class="date-info">
+                                <div class="date-full">{{ $hariInd }}, {{ date('d', strtotime($lembur->tanggal_lembur)) }} {{ $bulanInd }} {{ date('Y', strtotime($lembur->tanggal_lembur)) }}</div>
+                                <div class="date-dayname">{{ date('Y', strtotime($lembur->tanggal_lembur)) }}</div>
+                            </div>
+                            <div class="durasi-pill">
+                                <ion-icon name="hourglass-outline"></ion-icon>
+                                {{ $jam }}j {{ $menit > 0 ? $menit.'m' : '' }}
+                            </div>
+                        </div>
+
+                        {{-- Jam ── --}}
+                        <div class="info-row">
+                            <div class="info-row-icon blue">
+                                <ion-icon name="time-outline"></ion-icon>
+                            </div>
+                            <div>
+                                <div class="info-row-label">Jam Lembur</div>
+                                <div class="info-row-val">
+                                    {{ date('H:i', strtotime($lembur->jam_mulai)) }} — {{ date('H:i', strtotime($lembur->jam_selesai)) }} WIB
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Keterangan --}}
+                        <div class="keterangan-wrap">
+                            <div class="keterangan-lbl">Keterangan</div>
+                            <div class="keterangan-text">{{ $lembur->keterangan }}</div>
+                        </div>
+
+                        {{-- Bukti --}}
+                        @if($lembur->bukti_foto)
+                            <div class="bukti-pill">
+                                <ion-icon name="image-outline"></ion-icon>
+                                Dilampirkan bukti foto
+                            </div>
+                        @endif
+
+                        {{-- Actions --}}
+                        <div class="action-row">
+                            <a href="{{ route('lembur.show', $lembur->id) }}" class="btn-act btn-detail">
+                                <ion-icon name="eye-outline"></ion-icon>
+                                Detail
+                            </a>
+                            <a href="{{ route('lembur.edit', $lembur->id) }}" class="btn-act btn-edit-act">
+                                <ion-icon name="create-outline"></ion-icon>
+                                Edit
+                            </a>
+                            <button type="button"
+                                    class="btn-act btn-del"
+                                    onclick="openDelModal('{{ route('lembur.destroy', $lembur->id) }}')">
+                                <ion-icon name="trash-outline"></ion-icon>
+                                Hapus
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
     @else
+        {{-- ── Empty State ── --}}
         <div class="empty-state">
-            <ion-icon name="briefcase-outline"></ion-icon>
-            <h3>Belum Ada Data Lembur</h3>
-            <p>Klik tombol + di pojok kanan bawah untuk menambah data lembur</p>
+            <div class="empty-icon-wrap">
+                <ion-icon name="briefcase-outline"></ion-icon>
+            </div>
+            <div class="empty-title">Belum Ada Data Lembur</div>
+            <div class="empty-desc">Anda belum memiliki catatan lembur. Tambahkan data lembur pertama Anda.</div>
+            <a href="{{ route('lembur.create') }}" class="btn-empty-add">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                Tambah Lembur
+            </a>
         </div>
     @endif
+
 </div>
 
-<!-- Floating Action Button -->
-<a href="/lembur/create" class="fab-button">
+{{-- FAB --}}
+<a href="{{ route('lembur.create') }}" class="fab-btn" title="Tambah Lembur">
     <ion-icon name="add-outline"></ion-icon>
 </a>
+
+<script>
+let pendingDeleteUrl = null;
+
+function openDelModal(url) {
+    pendingDeleteUrl = url;
+    document.getElementById('delOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDelModal() {
+    document.getElementById('delOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    pendingDeleteUrl = null;
+}
+function handleDelClose(e) {
+    if (e.target === document.getElementById('delOverlay')) closeDelModal();
+}
+function submitDelete() {
+    if (!pendingDeleteUrl) return;
+    const form = document.getElementById('delForm');
+    form.action = pendingDeleteUrl;
+    form.submit();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDelModal(); });
+
+// Auto-hide alert
+const alertBox = document.getElementById('alertBox');
+if (alertBox) setTimeout(() => alertBox.remove(), 4000);
+</script>
+
 @endsection

@@ -1,501 +1,724 @@
 @extends('layout.admin.template')
 @section('content')
 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-  /* Custom styles untuk halaman konfigurasi */
-  .config-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 25px;
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
+/*
+ * PENTING: Semua selector diawali dengan .mon-page
+ * agar tidak merembet ke sidebar/header/footer template.
+ */
 
-  .config-header h3 {
-    font-weight: 700;
-    margin-bottom: 5px;
-    font-size: 1.75rem;
-  }
+.mon-page {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
-  .config-header h5 {
-    font-weight: 400;
-    opacity: 0.9;
-    font-size: 1rem;
-  }
+.mon-page * {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    box-sizing: border-box;
+}
 
-  .config-card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+/* ─── Page Header ─── */
+.mon-page .mon-header {
+    background: linear-gradient(135deg, #3b6ff0 0%, #667eea 100%);
+    border-radius: 18px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(59,111,240,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
     overflow: hidden;
-  }
+}
+.mon-page .mon-header::before {
+    content: '';
+    position: absolute;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    top: -80px; right: -60px;
+    pointer-events: none;
+}
+.mon-page .mon-header::after {
+    content: '';
+    position: absolute;
+    width: 130px; height: 130px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+    bottom: -50px; left: 40%;
+    pointer-events: none;
+}
+.mon-page .mon-header-left { position: relative; z-index: 1; }
+.mon-page .mon-header-icon {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+}
+.mon-page .mon-header-icon i { font-size: 22px; }
+.mon-page .mon-header-title { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
+.mon-page .mon-header-sub   { font-size: 13px; opacity: 0.8; font-weight: 500; }
+.mon-page .mon-header-badge {
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mon-page .mon-header-badge i { font-size: 15px; }
 
-  .config-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  }
-
-  .card-header-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border: none;
-  }
-
-  .card-header-custom h4 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 1.25rem;
+/* ─── Date Picker Card ─── */
+.mon-page .date-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(99,130,220,0.12);
+    box-shadow: 0 2px 14px rgba(59,111,240,0.07);
+}
+.mon-page .date-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.mon-page .date-card-label i { font-size: 13px; color: #3b6ff0; }
+.mon-page .date-nav {
     display: flex;
     align-items: center;
     gap: 10px;
-  }
-
-  .input-group-custom {
-    margin-bottom: 20px;
-  }
-
-  .input-group-custom .input-group-text {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+}
+.mon-page .date-nav-btn {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(99,130,220,0.2);
+    background: #f8faff;
+    color: #3b6ff0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+.mon-page .date-nav-btn:hover { background: #eff6ff; border-color: #3b6ff0; }
+.mon-page .date-input-wrap { position: relative; flex: 1; }
+.mon-page .date-input-wrap i {
+    position: absolute;
+    left: 13px; top: 50%;
+    transform: translateY(-50%);
+    color: #3b6ff0;
+    font-size: 16px;
+    pointer-events: none;
+}
+.mon-page .date-input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1.5px solid rgba(99,130,220,0.2);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #1e2a4a;
+    background: #f8faff;
+    outline: none;
+    cursor: pointer;
+    transition: all .2s;
+}
+.mon-page .date-input:focus {
+    border-color: #3b6ff0;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,111,240,0.1);
+}
+.mon-page .date-today-btn {
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    color: #fff;
     border: none;
-    width: 45px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(59,111,240,0.25);
+}
+.mon-page .date-today-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(59,111,240,0.35);
+}
+
+/* ─── Stats Row ─── */
+.mon-page .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+@media(max-width:768px){ .mon-page .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+.mon-page .stat-chip {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(99,130,220,0.12);
+    box-shadow: 0 2px 10px rgba(59,111,240,0.06);
+}
+.mon-page .stat-chip-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.mon-page .stat-chip-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+}
+.mon-page .sci-blue   { background: #eff6ff; color: #2563eb; }
+.mon-page .sci-green  { background: #f0fdf4; color: #16a34a; }
+.mon-page .sci-red    { background: #fff1f2; color: #dc2626; }
+.mon-page .sci-amber  { background: #fffbeb; color: #d97706; }
+.mon-page .stat-chip-num  { font-size: 24px; font-weight: 800; color: #1e2a4a; line-height: 1; }
+.mon-page .stat-chip-lbl  { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+
+/* ─── Table Card ─── */
+.mon-page .table-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid rgba(99,130,220,0.1);
+    box-shadow: 0 2px 16px rgba(59,111,240,0.07);
+    overflow: hidden;
+}
+.mon-page .table-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(99,130,220,0.1);
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.mon-page .table-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e2a4a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mon-page .table-card-title i { color: #3b6ff0; }
+.mon-page .tbl-count {
+    font-size: 12px;
+    color: #64748b;
+    background: #f0f4ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* ─── Table ─── */
+.mon-page .mon-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mon-page .mon-table thead tr { background: #f8faff; }
+.mon-page .mon-table thead th {
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(99,130,220,0.1);
+    white-space: nowrap;
+    text-align: center;
+}
+.mon-page .mon-table thead th:nth-child(1),
+.mon-page .mon-table thead th:nth-child(2),
+.mon-page .mon-table thead th:nth-child(3),
+.mon-page .mon-table thead th:nth-child(4) { text-align: left; }
+
+.mon-page .mon-table tbody tr {
+    border-bottom: 1px solid rgba(99,130,220,0.06);
+    transition: background .15s;
+}
+.mon-page .mon-table tbody tr:hover { background: #f8faff; }
+.mon-page .mon-table tbody tr:last-child { border-bottom: none; }
+.mon-page .mon-table tbody td { padding: 12px 14px; vertical-align: middle; color: #374151; }
+
+.mon-page .cell-no { font-size: 12px; font-weight: 700; color: #94a3b8; width: 36px; }
+
+/* employee */
+.mon-page .emp-wrap { display: flex; align-items: center; gap: 10px; }
+.mon-page .emp-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+}
+.mon-page .emp-name { font-size: 13px; font-weight: 700; color: #1e2a4a; white-space: nowrap; }
+.mon-page .emp-nik  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+
+.mon-page .dept-pill {
+    display: inline-flex;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #bfdbfe;
+}
+
+.mon-page .time-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e2a4a;
+}
+.mon-page .time-display i { font-size: 13px; }
+.mon-page .time-in  { color: #16a34a; }
+.mon-page .time-out { color: #dc2626; }
+
+.mon-page .foto-thumb {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1.5px solid rgba(99,130,220,0.15);
+    cursor: pointer;
+    transition: transform .2s;
+}
+.mon-page .foto-thumb:hover { transform: scale(1.08); }
+
+.mon-page .badge-dalam {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #f0fdf4; color: #16a34a;
+    border: 1px solid #bbf7d0;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.mon-page .badge-luar {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fffbeb; color: #b45309;
+    border: 1px solid #fde68a;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.mon-page .badge-na {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #f8faff; color: #94a3b8;
+    border: 1px solid rgba(99,130,220,0.15);
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+}
+
+.mon-page .status-hadir     { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+.mon-page .status-terlambat { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+.mon-page .status-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 10px; border-radius:20px;
+    font-size:11px; font-weight:700; white-space:nowrap;
+}
+
+.mon-page .act-btn {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-  }
-
-  .input-group-custom .form-control {
-    border: 2px solid #e0e0e0;
-    padding: 12px 15px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-  }
-
-  .input-group-custom .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-  }
-
-  .btn-save {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
     border: none;
-    padding: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.mon-page .act-btn:hover { transform: translateY(-1px); }
+.mon-page .act-map { background: #eff6ff; color: #1d4ed8; }
+.mon-page .act-map:hover { background: #dbeafe; }
+.mon-page .act-del { background: #fff1f2; color: #dc2626; }
+.mon-page .act-del:hover { background: #fecdd3; }
 
-  .btn-save:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  }
+/* empty / loading */
+.mon-page .empty-row td { padding: 56px 20px; text-align: center; color: #94a3b8; }
+.mon-page .empty-icon { font-size: 40px; display: block; margin: 0 auto 12px; }
+.mon-page .empty-txt  { font-size: 14px; font-weight: 600; }
 
-  .info-box {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
+.mon-page .loading-row td { padding: 40px; text-align: center; }
+.mon-page .spinner-ring {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(59,111,240,0.15);
+    border-top-color: #3b6ff0;
+    border-radius: 50%;
+    animation: monSpin .7s linear infinite;
+    margin: 0 auto 10px;
+}
+@keyframes monSpin { to { transform: rotate(360deg); } }
 
-  .info-box i {
-    color: #667eea;
-    margin-right: 10px;
-  }
+.mon-page .table-wrap { overflow-x: auto; }
+@media(max-width:992px){ .mon-page .mon-table { min-width: 900px; } }
 
-  .info-box p {
+/* ─── Modal Map ─── */
+/* Modal tidak di dalam .mon-page karena dirender di root body,
+   tapi selector tetap spesifik via ID */
+#modal-map .modal-content { border: none; border-radius: 18px; overflow: hidden; }
+#modal-map .modal-header-custom {
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    padding: 16px 20px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+#modal-map .modal-header-custom h5 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
     margin: 0;
-    color: #6c757d;
-    font-size: 0.9rem;
-  }
-
-  /* Badge untuk status lokasi */
-  .badge-dalam-kantor {
-    background-color: #28a745;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 5px;
-  }
-
-  .badge-luar-kantor {
-    background-color: #ffc107;
-    color: #000;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  /* Tombol aksi */
-  .btn-action {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    margin: 2px;
-  }
-
-  .btn-delete {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-  }
-
-  .btn-delete:hover {
-    background-color: #c82333;
-    transform: scale(1.05);
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .config-header {
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .config-header h3 {
-      font-size: 1.5rem;
-    }
-
-    .config-header h5 {
-      font-size: 0.9rem;
-    }
-
-    .card-header-custom {
-      padding: 15px;
-    }
-
-    .card-header-custom h4 {
-      font-size: 1.1rem;
-    }
-
-    .input-group-custom .input-group-text {
-      width: 40px;
-      font-size: 1rem;
-    }
-
-    .input-group-custom .form-control {
-      padding: 10px 12px;
-      font-size: 0.9rem;
-    }
-
-    .btn-save {
-      padding: 10px;
-      font-size: 0.95rem;
-    }
-
-    .badge-dalam-kantor,
-    .badge-luar-kantor {
-      font-size: 0.75rem;
-      padding: 4px 8px;
-    }
-
-    .btn-action {
-      padding: 4px 8px;
-      font-size: 0.75rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .config-header h3 {
-      font-size: 1.25rem;
-    }
-
-    .config-header h5 {
-      font-size: 0.85rem;
-    }
-
-    /* Untuk mobile, stack tombol aksi */
-    .btn-action {
-      display: block;
-      width: 100%;
-      margin-bottom: 5px;
-    }
-  }
+    gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+#modal-map .modal-header-custom .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+#modal-map .modal-body { padding: 0; }
 </style>
 
+{{-- Semua konten dibungkus .mon-page --}}
+<div class="mon-page">
 <div class="container-fluid mt-4 px-3 px-md-4">
-  <!-- Header Section -->
-  <div class="config-header">
-    <h3 class="mb-1">
-      <i class="bi bi-eye-fill"></i> Monitoring
-    </h3>
-    <h5 class="mb-0">Monitoring Presensi Karyawan</h5>
-  </div>
 
-  <div class="page-body">
-    <div class="container-xl">
-      <div class="row">
-        <div class="col-12">
-          <div class="form-group">
-            <div class="card">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-12">
-                    <div class="form-group">
-                      <div class="input-group mb-3">
-                        <button class="btn btn-outline-primary" type="button" id="btn-prev">
-                          <i class="bi bi-chevron-left"></i> Previous
-                        </button>
-                        <span class="input-icon-addon input-group-text">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                            <path d="M16 3v4" />
-                            <path d="M8 3v4" />
-                            <path d="M4 11h16" />
-                            <path d="M7 14h.013" />
-                            <path d="M10.01 14h.005" />
-                            <path d="M13.01 14h.005" />
-                            <path d="M16.015 14h.005" />
-                            <path d="M13.015 17h.005" />
-                            <path d="M7.01 17h.005" />
-                            <path d="M10.01 17h.005" />
-                          </svg>
-                        </span>
-                        <input type="text" id="tanggal" value="{{ date("Y-m-d") }}" name="tanggal" class="form-control" placeholder="Tanggal Presensi" autocomplete="off">
-                        <button class="btn btn-outline-primary" type="button" id="btn-next">
-                          Next <i class="bi bi-chevron-right"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    <div class="table-responsive">
-                      <table class="table table-striped table-hover table-bordered text-center">
-                        <thead>
-                          <tr>
-                            <th style="width: 3%;">No</th>
-                            <th style="width: 8%;">NIK</th>
-                            <th style="width: 12%;">Nama Karyawan</th>
-                            <th style="width: 10%;">Departemen</th>
-                            <th style="width: 7%;">Jam Masuk</th>
-                            <th style="width: 8%;">Foto Masuk</th>
-                            <th style="width: 9%;">Lokasi Masuk</th>
-                            <th style="width: 7%;">Jam Pulang</th>
-                            <th style="width: 8%;">Foto Pulang</th>
-                            <th style="width: 9%;">Lokasi Pulang</th>
-                            <th style="width: 8%;">Keterangan</th>
-                            <th style="width: 6%;">Maps</th>
-                            <th style="width: 5%;">Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody id="loadpresensi">
-                          <tr>
-                            <td colspan="13" class="text-center">
-                              <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    {{-- ── Page Header ── --}}
+    <div class="mon-header">
+        <div class="mon-header-left">
+            <div class="mon-header-icon">
+                <i class="bi bi-eye-fill"></i>
             </div>
-          </div>
+            <div class="mon-header-title">Monitoring Presensi</div>
+            <div class="mon-header-sub">Pantau kehadiran karyawan secara real-time</div>
         </div>
-      </div>
+        <div class="mon-header-badge">
+            <i class="bi bi-calendar-check"></i>
+            <span id="headerDateDisplay">{{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</span>
+        </div>
     </div>
-  </div>
+
+    {{-- ── Date Navigator ── --}}
+    <div class="date-card">
+        <div class="date-card-label">
+            <i class="bi bi-calendar3"></i>
+            Pilih Tanggal
+        </div>
+        <div class="date-nav">
+            <button class="date-nav-btn" id="btn-prev" title="Sebelumnya">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="date-input-wrap">
+                <i class="bi bi-calendar-event"></i>
+                <input type="text" id="tanggal"
+                       value="{{ date('Y-m-d') }}"
+                       name="tanggal"
+                       class="date-input"
+                       placeholder="Pilih tanggal"
+                       autocomplete="off"
+                       readonly>
+            </div>
+            <button class="date-nav-btn" id="btn-next" title="Berikutnya">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="date-today-btn" id="btn-today">
+                <i class="bi bi-calendar2-check"></i> Hari Ini
+            </button>
+        </div>
+    </div>
+
+    {{-- ── Stats Row ── --}}
+    <div class="stats-row" id="statsRow">
+        <div class="stat-chip">
+            <div class="stat-chip-top">
+                <div class="stat-chip-icon sci-blue"><i class="bi bi-people-fill"></i></div>
+            </div>
+            <div class="stat-chip-num" id="statTotal">—</div>
+            <div class="stat-chip-lbl">Total Hadir</div>
+        </div>
+        <div class="stat-chip">
+            <div class="stat-chip-top">
+                <div class="stat-chip-icon sci-green"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+            <div class="stat-chip-num" id="statHadir">—</div>
+            <div class="stat-chip-lbl">Tepat Waktu</div>
+        </div>
+        <div class="stat-chip">
+            <div class="stat-chip-top">
+                <div class="stat-chip-icon sci-amber"><i class="bi bi-clock-fill"></i></div>
+            </div>
+            <div class="stat-chip-num" id="statTerlambat">—</div>
+            <div class="stat-chip-lbl">Terlambat</div>
+        </div>
+        <div class="stat-chip">
+            <div class="stat-chip-top">
+                <div class="stat-chip-icon sci-red"><i class="bi bi-door-open-fill"></i></div>
+            </div>
+            <div class="stat-chip-num" id="statPulang">—</div>
+            <div class="stat-chip-lbl">Sudah Pulang</div>
+        </div>
+    </div>
+
+    {{-- ── Table Card ── --}}
+    <div class="table-card">
+        <div class="table-card-header">
+            <div class="table-card-title">
+                <i class="bi bi-table"></i>
+                Data Presensi
+            </div>
+            <span class="tbl-count" id="tblCount">Memuat...</span>
+        </div>
+        <div class="table-wrap">
+            <table class="mon-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Karyawan</th>
+                        <th>Departemen</th>
+                        <th>Masuk</th>
+                        <th>Foto Masuk</th>
+                        <th>Lokasi Masuk</th>
+                        <th>Pulang</th>
+                        <th>Foto Pulang</th>
+                        <th>Lokasi Pulang</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="loadpresensi">
+                    <tr class="loading-row">
+                        <td colspan="11">
+                            <div class="spinner-ring"></div>
+                            <div style="font-size:13px;color:#94a3b8;font-weight:600">Memuat data...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</div>{{-- end .mon-page --}}
+
+{{-- ── Modal Map ── --}}
+<div class="modal fade" id="modal-map" tabindex="-1" aria-hidden="true"
+     data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header-custom">
+                <h5>
+                    <i class="bi bi-geo-alt-fill"></i>
+                    Lokasi Presensi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="loadmap"></div>
+        </div>
+    </div>
 </div>
 
-<!-- Modal Map -->
-<div class="modal fade" id="modal-map" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content border-0 shadow-lg rounded-3">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Lokasi Presensi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="loadmap">
-        <!-- Map akan di-load di sini -->
-      </div>
-    </div>
-  </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
-$(function () {
-  $("#tanggal").datepicker({ 
-    autoclose: true, 
-    todayHighlight: true,
-    format:'yyyy-mm-dd'
-  });
+var bsModalMap = null;
 
-  function loadpresensi(){
-    var tanggal = $("#tanggal").val();
-    $.ajax({
-      type:'POST',
-      url:'/getpresensi',
-      data:{
-        _token:"{{ csrf_token() }}",
-        tanggal: tanggal
-      },
-      cache:false,
-      success:function(respond){
-        $("#loadpresensi").html(respond);
-      }
-    });
-  }
-
-  // Event handler untuk perubahan tanggal manual
-  $("#tanggal").change(function(e){
-    loadpresensi();
-  });
-
-  // Event handler untuk tombol Previous
-  $("#btn-prev").click(function(e){
-    e.preventDefault();
-    var currentDate = $("#tanggal").datepicker('getDate');
-    currentDate.setDate(currentDate.getDate() - 1);
-    $("#tanggal").datepicker('setDate', currentDate);
-    loadpresensi();
-  });
-
-  // Event handler untuk tombol Next
-  $("#btn-next").click(function(e){
-    e.preventDefault();
-    var currentDate = $("#tanggal").datepicker('getDate');
-    currentDate.setDate(currentDate.getDate() + 1);
-    $("#tanggal").datepicker('setDate', currentDate);
-    loadpresensi();
-  });
-
-  // Load data presensi saat halaman pertama kali dibuka
-  loadpresensi();
+document.addEventListener('DOMContentLoaded', function () {
+    var modalMapEl = document.getElementById('modal-map');
+    if (modalMapEl) bsModalMap = new bootstrap.Modal(modalMapEl);
 });
 
-// Fungsi untuk menghapus presensi dengan konfirmasi SweetAlert
-function deletePresensi(id) {
-  Swal.fire({
-    title: 'Apakah Anda yakin?',
-    text: "Data presensi ini akan dihapus secara permanen!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#dc3545',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Ya, Hapus!',
-    cancelButtonText: 'Batal',
-    reverseButtons: true
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Tampilkan loading
-      Swal.fire({
-        title: 'Menghapus...',
-        text: 'Mohon tunggu sebentar',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+$(function () {
+    $("#tanggal").datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        format: 'yyyy-mm-dd'
+    });
 
-      // Kirim request hapus ke server
-      $.ajax({
-        type: 'POST',
-        url: '/presensi/delete/' + id,
-        data: {
-          _token: "{{ csrf_token() }}",
-          _method: 'DELETE'
-        },
-        cache: false,
-        success: function(respond) {
-          Swal.fire({
-            title: 'Berhasil!',
-            text: 'Data presensi berhasil dihapus',
-            icon: 'success',
-            confirmButtonColor: '#28a745'
-          }).then(() => {
-            // Reload data presensi
-            loadpresensi();
-          });
-        },
-        error: function(xhr) {
-          Swal.fire({
-            title: 'Gagal!',
-            text: 'Terjadi kesalahan saat menghapus data',
-            icon: 'error',
-            confirmButtonColor: '#dc3545'
-          });
-          console.error("Error:", xhr);
-        }
-      });
-    }
-  });
-}
+    $("#tanggal").change(function () { loadpresensi(); });
 
-// Fungsi untuk reload presensi (bisa dipanggil dari luar)
+    $("#btn-prev").click(function (e) {
+        e.preventDefault();
+        var d = $("#tanggal").datepicker('getDate');
+        d.setDate(d.getDate() - 1);
+        $("#tanggal").datepicker('setDate', d);
+        loadpresensi();
+    });
+
+    $("#btn-next").click(function (e) {
+        e.preventDefault();
+        var d = $("#tanggal").datepicker('getDate');
+        d.setDate(d.getDate() + 1);
+        $("#tanggal").datepicker('setDate', d);
+        loadpresensi();
+    });
+
+    $("#btn-today").click(function (e) {
+        e.preventDefault();
+        $("#tanggal").datepicker('setDate', new Date());
+        loadpresensi();
+    });
+
+    loadpresensi();
+});
+
 function loadpresensi() {
-  var tanggal = $("#tanggal").val();
-  $.ajax({
-    type:'POST',
-    url:'/getpresensi',
-    data:{
-      _token:"{{ csrf_token() }}",
-      tanggal: tanggal
-    },
-    cache:false,
-    success:function(respond){
-      $("#loadpresensi").html(respond);
-    }
-  });
+    var tanggal = $("#tanggal").val();
+
+    ['statTotal','statHadir','statTerlambat','statPulang'].forEach(function (id) {
+        document.getElementById(id).textContent = '—';
+    });
+    document.getElementById('tblCount').textContent = 'Memuat...';
+
+    $("#loadpresensi").html(
+        '<tr class="loading-row"><td colspan="11">' +
+        '<div class="spinner-ring"></div>' +
+        '<div style="font-size:13px;color:#94a3b8;font-weight:600">Memuat data...</div>' +
+        '</td></tr>'
+    );
+
+    $.ajax({
+        type: 'POST',
+        url: '/getpresensi',
+        data: { _token: "{{ csrf_token() }}", tanggal: tanggal },
+        cache: false,
+        success: function (respond) {
+            $("#loadpresensi").html(respond);
+
+            var rows = document.querySelectorAll('#loadpresensi tr');
+            var total = 0, hadir = 0, terlambat = 0, sudahPulang = 0;
+
+            rows.forEach(function (r) {
+                if (r.querySelector('td[colspan]')) return;
+                total++;
+
+                var badgeHadir     = r.querySelector('.badge.bg-success');
+                var badgeTerlambat = r.querySelector('.badge.bg-warning');
+                if (badgeHadir     && badgeHadir.textContent.trim() === 'Hadir') hadir++;
+                if (badgeTerlambat && badgeTerlambat.textContent.includes('Terlambat')) terlambat++;
+
+                var tds = r.querySelectorAll('td');
+                if (tds.length > 7) {
+                    var jamOut = tds[7] ? tds[7].textContent.trim() : '';
+                    if (jamOut && jamOut !== '-' && jamOut.match(/\d{2}:\d{2}/)) sudahPulang++;
+                }
+            });
+
+            document.getElementById('statTotal').textContent     = total;
+            document.getElementById('statHadir').textContent     = hadir;
+            document.getElementById('statTerlambat').textContent = terlambat;
+            document.getElementById('statPulang').textContent    = sudahPulang;
+            document.getElementById('tblCount').textContent      = total + ' karyawan';
+        }
+    });
 }
 
-// Fungsi untuk menampilkan gambar full screen
+function deletePresensi(id) {
+    Swal.fire({
+        title: 'Hapus data presensi?',
+        text: 'Data akan dihapus permanen dan tidak dapat dikembalikan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            $.ajax({
+                type: 'POST',
+                url: '/presensi/delete/' + id,
+                data: { _token: "{{ csrf_token() }}", _method: 'DELETE' },
+                cache: false,
+                success: function () {
+                    Swal.fire({ title: 'Berhasil!', text: 'Data presensi berhasil dihapus.', icon: 'success', confirmButtonColor: '#3b6ff0' })
+                        .then(function () { loadpresensi(); });
+                },
+                error: function () {
+                    Swal.fire({ title: 'Gagal!', text: 'Terjadi kesalahan saat menghapus data.', icon: 'error' });
+                }
+            });
+        }
+    });
+}
+
 function showImage(src) {
-  Swal.fire({
-    imageUrl: src,
-    imageAlt: 'Foto Presensi',
-    showConfirmButton: false,
-    showCloseButton: true,
-    background: '#000',
-    width: 'auto',
-    padding: '20px'
-  });
+    Swal.fire({
+        imageUrl: src,
+        imageAlt: 'Foto Presensi',
+        showConfirmButton: false,
+        showCloseButton: true,
+        background: '#0f172a',
+        width: 'auto',
+        padding: '16px'
+    });
 }
 
-// Fungsi untuk menampilkan map
 function tampilkanMap(id) {
-  $.ajax({
-    type: 'POST',
-    url: '/presensi/showmap',
-    data: {
-      _token: "{{ csrf_token() }}",
-      id: id
-    },
-    cache: false,
-    success: function(respond) {
-      $("#loadmap").html(respond);
-      $("#modal-map").modal('show');
-    }
-  });
+    if (!bsModalMap) bsModalMap = new bootstrap.Modal(document.getElementById('modal-map'));
+    document.getElementById('loadmap').innerHTML =
+        '<div style="padding:48px;text-align:center">' +
+        '<div class="mon-page"><div class="spinner-ring" style="margin:0 auto 12px"></div></div>' +
+        '<div style="font-size:13px;color:#94a3b8;font-weight:600">Memuat peta...</div>' +
+        '</div>';
+    bsModalMap.show();
+
+    $.ajax({
+        type: 'POST',
+        url: '/presensi/showmap',
+        data: { _token: "{{ csrf_token() }}", id: id },
+        cache: false,
+        success: function (respond) {
+            var container = document.getElementById('loadmap');
+            container.innerHTML = respond;
+            container.querySelectorAll('script').forEach(function (old) {
+                var s = document.createElement('script');
+                Array.from(old.attributes).forEach(function (a) { s.setAttribute(a.name, a.value); });
+                s.textContent = old.textContent;
+                old.parentNode.replaceChild(s, old);
+            });
+            setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 600);
+        },
+        error: function () {
+            document.getElementById('loadmap').innerHTML =
+                '<div style="padding:24px">' +
+                '<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:16px;color:#dc2626;font-weight:600;font-size:13px">' +
+                'Gagal memuat peta. Silakan coba lagi.</div></div>';
+        }
+    });
 }
 </script>
 @endpush
