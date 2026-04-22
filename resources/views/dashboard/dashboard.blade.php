@@ -733,7 +733,7 @@ body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans
     {{-- ── Quick Menu ── --}}
     <div class="qmenu-card">
         <div class="qmenu-grid">
-            <a href="/presensi/editprofile" class="qmenu-item">
+            <a href="editprofile" class="qmenu-item">
                 <div class="qmenu-icon qi-profile"><ion-icon name="person-outline"></ion-icon></div>
                 <span class="qmenu-label">Profil</span>
             </a>
