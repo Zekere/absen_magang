@@ -127,12 +127,19 @@
               <li><a href="/presensi/rekap"><span class="sub-item">Rekap Presensi</span></a></li>
             </ul>
           </div>
+          <!-- Logout Fixed Bottom -->
+<!-- Logout -->
+<li class="nav-item sidebar-logout">
+    <a href="{{ url('/logoutadmin') }}" id="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <p>Logout</p>
+    </a>
         </li>
-
       </ul>
     </div>
   </div>
 </div>
+
 
 <style>
 /* Semua scoped ke .sidebar agar tidak merembet ke template */
