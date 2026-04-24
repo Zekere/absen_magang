@@ -452,8 +452,10 @@ body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans
 .hist-info { flex: 1; min-width: 0; }
 .hist-date { font-size: 13px; font-weight: 700; color: #1e2a4a; margin-bottom: 4px; }
 .hist-status { font-size: 11px; font-weight: 600; }
-.hist-status.hadir    { color: #16a34a; }
-.hist-status.terlambat{ color: #dc2626; }
+.hist-status.hadir      { color: #16a34a; }
+.hist-status.toleransi  { color: #2563eb; }
+.hist-status.terlambat  { color: #dc2626; }
+.hist-status.alpha      { color: #9333ea; }
 
 .hist-times { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
 .time-pill {
@@ -818,9 +820,18 @@ body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans
                     </div>
                     <div class="hist-info">
                         <div class="hist-date">{{ $hariInd }}, {{ $tgl }}</div>
-                        <div class="hist-status {{ strtolower($d->status ?? 'hadir') }}">
-                            {{ ucfirst($d->status ?? 'Hadir') }}
-                        </div>
+                         <div class="hist-status {{ strtolower($d->status ?? 'hadir') }}">
+                        @php
+                            $labelStatus = match(strtolower($d->status ?? 'hadir')) {
+                                'hadir'     => 'Hadir',
+                                'toleransi' => 'Hadir (Toleransi)',
+                                'terlambat' => 'Terlambat',
+                                'alpha'     => 'Alpha',
+                                default     => ucfirst($d->status ?? 'Hadir'),
+                            };
+                        @endphp
+                        {{ $labelStatus }}
+                    </div>
                     </div>
                     <div class="hist-times">
                         <div class="time-pill pill-in">

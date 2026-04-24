@@ -237,11 +237,17 @@
 }
 
 /* ─── Table ─── */
-.mon-page .mon-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mon-page .mon-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+}
+
 .mon-page .mon-table thead tr { background: #f8faff; }
 .mon-page .mon-table thead th {
-    padding: 12px 14px;
-    font-size: 11px;
+    padding: 11px 10px;
+    font-size: 10.5px;
     font-weight: 700;
     color: #64748b;
     text-transform: uppercase;
@@ -249,11 +255,14 @@
     border-bottom: 1px solid rgba(99,130,220,0.1);
     white-space: nowrap;
     text-align: center;
+    overflow: hidden;
 }
-.mon-page .mon-table thead th:nth-child(1),
-.mon-page .mon-table thead th:nth-child(2),
-.mon-page .mon-table thead th:nth-child(3),
-.mon-page .mon-table thead th:nth-child(4) { text-align: left; }
+
+/* Kolom No, NIP, Karyawan rata sesuai konten */
+.mon-page .mon-table thead th:nth-child(1) { text-align: center; }  /* No */
+.mon-page .mon-table thead th:nth-child(2) { text-align: left; }    /* NIP */
+.mon-page .mon-table thead th:nth-child(3) { text-align: left; }    /* Karyawan/Pegawai */
+.mon-page .mon-table thead th:nth-child(4) { text-align: left; }    /* Departemen */
 
 .mon-page .mon-table tbody tr {
     border-bottom: 1px solid rgba(99,130,220,0.06);
@@ -261,86 +270,136 @@
 }
 .mon-page .mon-table tbody tr:hover { background: #f8faff; }
 .mon-page .mon-table tbody tr:last-child { border-bottom: none; }
-.mon-page .mon-table tbody td { padding: 12px 14px; vertical-align: middle; color: #374151; }
+.mon-page .mon-table tbody td {
+    padding: 10px 10px;
+    vertical-align: middle;
+    color: #374151;
+    text-align: center;
+    overflow: hidden;
+}
 
-.mon-page .cell-no { font-size: 12px; font-weight: 700; color: #94a3b8; width: 36px; }
+/* Kolom teks rata kiri */
+.mon-page .mon-table tbody td:nth-child(1) { text-align: center; } /* No */
+.mon-page .mon-table tbody td:nth-child(2) { text-align: left; }   /* NIP */
+.mon-page .mon-table tbody td:nth-child(3) { text-align: left; }   /* Karyawan */
+.mon-page .mon-table tbody td:nth-child(4) { text-align: left; }   /* Departemen */
 
-/* employee */
-.mon-page .emp-wrap { display: flex; align-items: center; gap: 10px; }
+/* ─── Cell No ─── */
+.mon-page .cell-no {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+/* ─── NIP cell ─── */
+.mon-page .nip-text {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1e2a4a;
+    letter-spacing: 0.3px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Karyawan/Pegawai ─── */
+.mon-page .emp-wrap { display: flex; align-items: center; gap: 9px; }
 .mon-page .emp-avatar {
-    width: 34px; height: 34px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, #3b6ff0, #667eea);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: #fff;
+    font-size: 12px; font-weight: 800; color: #fff;
     flex-shrink: 0;
 }
-.mon-page .emp-name { font-size: 13px; font-weight: 700; color: #1e2a4a; white-space: nowrap; }
-.mon-page .emp-nik  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+.mon-page .emp-name {
+    font-size: 12.5px; font-weight: 700; color: #1e2a4a;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
+/* ─── Departemen pill ─── */
 .mon-page .dept-pill {
     display: inline-flex;
-    padding: 3px 10px;
+    padding: 3px 9px;
     border-radius: 20px;
     background: #eff6ff;
     color: #1d4ed8;
     font-size: 11px;
     font-weight: 700;
     border: 1px solid #bfdbfe;
+    white-space: nowrap;
 }
 
+/* ─── Jam Masuk / Pulang ─── */
 .mon-page .time-display {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 13px;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12.5px;
     font-weight: 700;
     color: #1e2a4a;
 }
-.mon-page .time-display i { font-size: 13px; }
+.mon-page .time-display i { font-size: 12px; }
 .mon-page .time-in  { color: #16a34a; }
 .mon-page .time-out { color: #dc2626; }
 
+/* ─── Foto thumbnail ─── */
 .mon-page .foto-thumb {
-    width: 44px; height: 44px;
-    border-radius: 10px;
+    width: 40px; height: 40px;
+    border-radius: 8px;
     object-fit: cover;
     border: 1.5px solid rgba(99,130,220,0.15);
     cursor: pointer;
     transition: transform .2s;
+    display: block;
+    margin: 0 auto;
 }
-.mon-page .foto-thumb:hover { transform: scale(1.08); }
+.mon-page .foto-thumb:hover { transform: scale(1.1); }
 
+/* ─── Lokasi badges ─── */
 .mon-page .badge-dalam {
     display: inline-flex; align-items: center; gap: 4px;
     background: #f0fdf4; color: #16a34a;
     border: 1px solid #bbf7d0;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; white-space: nowrap;
+    padding: 4px 8px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 700; white-space: nowrap;
 }
 .mon-page .badge-luar {
     display: inline-flex; align-items: center; gap: 4px;
     background: #fffbeb; color: #b45309;
     border: 1px solid #fde68a;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; white-space: nowrap;
+    padding: 4px 8px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 700; white-space: nowrap;
 }
 .mon-page .badge-na {
     display: inline-flex; align-items: center; gap: 4px;
     background: #f8faff; color: #94a3b8;
     border: 1px solid rgba(99,130,220,0.15);
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700;
+    padding: 4px 8px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 700;
 }
 
-.mon-page .status-hadir     { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
-.mon-page .status-terlambat { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+/* ─── Status badges (satu badge gabungan) ─── */
+/*  Hadir = tepat waktu  */
+.mon-page .status-hadir      { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+/*  Toleransi = masuk dalam rentang toleransi  */
+.mon-page .status-toleransi  { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+/*  Terlambat  */
+.mon-page .status-terlambat  { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+
 .mon-page .status-badge {
-    display:inline-flex; align-items:center; gap:4px;
-    padding:4px 10px; border-radius:20px;
-    font-size:11px; font-weight:700; white-space:nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    line-height: 1.2;
 }
+.mon-page .status-badge i { font-size: 11px; }
 
+/* ─── Aksi buttons ─── */
 .mon-page .act-btn {
     display: inline-flex;
     align-items: center;
@@ -355,14 +414,41 @@
     transition: all .2s;
     text-decoration: none;
     font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
 }
 .mon-page .act-btn:hover { transform: translateY(-1px); }
-.mon-page .act-map { background: #eff6ff; color: #1d4ed8; }
-.mon-page .act-map:hover { background: #dbeafe; }
-.mon-page .act-del { background: #fff1f2; color: #dc2626; }
+
+/* Tombol Map (kolom Maps) */
+.mon-page .act-map {
+    background: linear-gradient(135deg, #3b6ff0, #667eea);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(59,111,240,0.3);
+}
+.mon-page .act-map:hover {
+    box-shadow: 0 4px 14px rgba(59,111,240,0.45);
+    color: #fff;
+}
+
+/* Tombol hapus (icon only) */
+.mon-page .act-del {
+    background: #fff1f2;
+    color: #dc2626;
+    border: 1.5px solid #fecdd3;
+    padding: 6px 8px;
+}
 .mon-page .act-del:hover { background: #fecdd3; }
 
-/* empty / loading */
+.mon-page .act-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+}
+
+/* ─── Empty / Loading ─── */
 .mon-page .empty-row td { padding: 56px 20px; text-align: center; color: #94a3b8; }
 .mon-page .empty-icon { font-size: 40px; display: block; margin: 0 auto 12px; }
 .mon-page .empty-txt  { font-size: 14px; font-weight: 600; }
@@ -379,16 +465,22 @@
 @keyframes monSpin { to { transform: rotate(360deg); } }
 
 .mon-page .table-wrap { overflow-x: auto; }
-@media(max-width:992px){ .mon-page .mon-table { min-width: 900px; } }
+@media(max-width:992px) {
+    .mon-page .mon-table { min-width: 980px; table-layout: auto; }
+}
 
 /* ─── Modal Map ─── */
-/* Modal tidak di dalam .mon-page karena dirender di root body,
-   tapi selector tetap spesifik via ID */
-#modal-map .modal-content { border: none; border-radius: 18px; overflow: hidden; }
+#modal-map .modal-content {
+    border: 2px solid rgba(59,111,240,0.25);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(59,111,240,0.2), 0 4px 20px rgba(0,0,0,0.15);
+}
 #modal-map .modal-header-custom {
     background: linear-gradient(135deg, #3b6ff0, #667eea);
     padding: 16px 20px;
     border: none;
+    border-bottom: 2px solid rgba(255,255,255,0.15);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -407,7 +499,10 @@
     filter: brightness(0) invert(1);
     opacity: 0.8;
 }
-#modal-map .modal-body { padding: 0; }
+#modal-map .modal-body {
+    padding: 0;
+    border-top: none;
+}
 </style>
 
 {{-- Semua konten dibungkus .mon-page --}}
@@ -501,10 +596,42 @@
         </div>
         <div class="table-wrap">
             <table class="mon-table">
+                {{--
+                    URUTAN KOLOM (13 kolom):
+                    1. No
+                    2. NIP
+                    3. Karyawan / Pegawai
+                    4. Departemen
+                    5. Masuk
+                    6. Foto Masuk
+                    7. Lokasi Masuk
+                    8. Pulang
+                    9. Foto Pulang
+                    10. Lokasi Pulang
+                    11. Status  (satu badge: Hadir / Toleransi / Terlambat)
+                    12. Maps
+                    13. Aksi
+                --}}
+                <colgroup>
+                    <col>    {{-- 1. No --}}
+                    <col>   {{-- 2. NIP --}}
+                    <col>   {{-- 3. Karyawan / Pegawai --}}
+                    <col>   {{-- 4. Departemen --}}
+                    <col>    {{-- 5. Masuk --}}
+                    <col>    {{-- 6. Foto Masuk --}}
+                    <col>   {{-- 7. Lokasi Masuk --}}
+                    <col>    {{-- 8. Pulang --}}
+                    <col>    {{-- 9. Foto Pulang --}}
+                    <col>   {{-- 10. Lokasi Pulang --}}
+                    <col>   {{-- 11. Status --}}
+                    <col>    {{-- 12. Maps --}}
+                    <col>    {{-- 13. Aksi --}}
+                </colgroup>
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Karyawan</th>
+                        <th>NIP</th>
+                        <th>Karyawan / Pegawai</th>
                         <th>Departemen</th>
                         <th>Masuk</th>
                         <th>Foto Masuk</th>
@@ -512,13 +639,15 @@
                         <th>Pulang</th>
                         <th>Foto Pulang</th>
                         <th>Lokasi Pulang</th>
+                        <th>Keterlambatan</th>
                         <th>Status</th>
+                        <th>Maps</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="loadpresensi">
                     <tr class="loading-row">
-                        <td colspan="11">
+                        <td colspan="13">
                             <div class="spinner-ring"></div>
                             <div style="font-size:13px;color:#94a3b8;font-weight:600">Memuat data...</div>
                         </td>
@@ -530,6 +659,8 @@
 
 </div>
 </div>{{-- end .mon-page --}}
+
+<!-- PANDUAN: lihat README atau komentar di controller untuk struktur TR getpresensi -->
 
 {{-- ── Modal Map ── --}}
 <div class="modal fade" id="modal-map" tabindex="-1" aria-hidden="true"
@@ -602,7 +733,7 @@ function loadpresensi() {
     document.getElementById('tblCount').textContent = 'Memuat...';
 
     $("#loadpresensi").html(
-        '<tr class="loading-row"><td colspan="11">' +
+        '<tr class="loading-row"><td colspan="13">' +
         '<div class="spinner-ring"></div>' +
         '<div style="font-size:13px;color:#94a3b8;font-weight:600">Memuat data...</div>' +
         '</td></tr>'
@@ -623,11 +754,28 @@ function loadpresensi() {
                 if (r.querySelector('td[colspan]')) return;
                 total++;
 
-                var badgeHadir     = r.querySelector('.badge.bg-success');
-                var badgeTerlambat = r.querySelector('.badge.bg-warning');
-                if (badgeHadir     && badgeHadir.textContent.trim() === 'Hadir') hadir++;
-                if (badgeTerlambat && badgeTerlambat.textContent.includes('Terlambat')) terlambat++;
+                /* Deteksi status dari badge class baru (satu badge gabungan) */
+                var badgeHadir      = r.querySelector('.status-badge.status-hadir');
+                var badgeToleransi  = r.querySelector('.status-badge.status-toleransi');
+                var badgeTerlambat  = r.querySelector('.status-badge.status-terlambat');
+                if (badgeHadir || badgeToleransi) hadir++;
+                if (badgeTerlambat) terlambat++;
 
+                /* Fallback: deteksi dari badge Bootstrap lama */
+                if (!badgeHadir && !badgeToleransi && !badgeTerlambat) {
+                    var bgSuccess = r.querySelector('.badge.bg-success');
+                    var bgWarning = r.querySelector('.badge.bg-warning');
+                    if (bgSuccess && bgSuccess.textContent.trim() === 'Hadir') hadir++;
+                    if (bgWarning && bgWarning.textContent.includes('Terlambat')) terlambat++;
+                }
+
+                /*
+                 * Urutan kolom baru (13 kolom, 0-based):
+                 * 0=No | 1=NIP | 2=Karyawan | 3=Dept |
+                 * 4=Masuk | 5=FotoMasuk | 6=LokasiMasuk |
+                 * 7=Pulang | 8=FotoPulang | 9=LokasiPulang |
+                 * 10=Status | 11=Maps | 12=Aksi
+                 */
                 var tds = r.querySelectorAll('td');
                 if (tds.length > 7) {
                     var jamOut = tds[7] ? tds[7].textContent.trim() : '';

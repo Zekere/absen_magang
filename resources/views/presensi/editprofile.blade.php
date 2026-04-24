@@ -452,7 +452,7 @@ body, .wrapper { background: #f0f4ff !important; font-family: 'Plus Jakarta Sans
                     </div>
                     <input type="text" class="field-input readonly"
                            value="{{ $karyawan->departemen->nama_dept ?? '-' }}"disabled>
-                    <input type="hidden" name="departemen" value="{{ $karyawan->departemen }}">
+                    <input type="hidden" name="kode_dept" value="{{ $karyawan->kode_dept }}">
                     <div class="readonly-badge">
                         <ion-icon name="lock-closed-outline"></ion-icon>
                         Diatur oleh admin

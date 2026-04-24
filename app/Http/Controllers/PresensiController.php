@@ -15,7 +15,6 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use App\Models\JamKerja;
 use App\Models\Karyawan;
-use App\Models\Departemen;
 
 class PresensiController extends Controller
 {
@@ -28,17 +27,24 @@ class PresensiController extends Controller
      *
      * @param  string   $jamMasuk  Format "HH:MM:SS"
      * @param  JamKerja $jk
-     * @return string   hadir | terlambat | alpha
+     * @return string   hadir | toleransi | terlambat | alpha
      */
     private function hitungStatusKehadiran(string $jamMasuk, JamKerja $jk): string
     {
-        $masukMenit     = (int)date('H', strtotime($jamMasuk)) * 60 + (int)date('i', strtotime($jamMasuk));
-        $jamMasukMenit  = (int)date('H', strtotime($jk->jam_masuk)) * 60 + (int)date('i', strtotime($jk->jam_masuk));
-        $batasTerlambat = $jamMasukMenit + (int)$jk->toleransi_keterlambatan;
+        $masukMenit      = (int)date('H', strtotime($jamMasuk)) * 60 + (int)date('i', strtotime($jamMasuk));
+        $jamMasukMenit   = (int)date('H', strtotime($jk->jam_masuk)) * 60 + (int)date('i', strtotime($jk->jam_masuk));
+        $batasToleransi  = $jamMasukMenit + (int)$jk->toleransi_keterlambatan;
 
-        if ($masukMenit <= $batasTerlambat) {
+        if ($masukMenit <= $jamMasukMenit) {
+            // Masuk tepat waktu atau lebih awal
             return 'hadir';
         }
+
+        if ($masukMenit <= $batasToleransi) {
+            // Masuk setelah jam masuk tapi masih dalam toleransi
+            return 'toleransi';
+        }
+
         return 'terlambat';
     }
 
@@ -267,7 +273,11 @@ class PresensiController extends Controller
                     $pesanLokasi = $status_lokasi === 'luar_kantor'
                         ? " Anda berada di luar area kantor (Jarak: {$radius_terdekat}m)."
                         : '';
-                    $pesanStatus = $statusKehadiran === 'terlambat' ? ' Anda tercatat terlambat.' : '';
+                    $pesanStatus = match($statusKehadiran) {
+                        'toleransi' => ' Anda masuk dalam masa toleransi.',
+                        'terlambat' => ' Anda tercatat terlambat.',
+                        default     => '',
+                    };
 
                     echo "success|Selamat datang! Absen masuk berhasil.{$pesanStatus}{$pesanLokasi}|in";
                     return;
@@ -361,7 +371,7 @@ class PresensiController extends Controller
     public function editprofile()
     {
         $nik      = Auth::guard('karyawan')->user()->nik;
-        $karyawan = Karyawan::with('departemen')->where('nik', $nik)->first();
+        $karyawan = Karyawan::with('departemen')->where('nik', $nik)->firstOrFail();
 
         return view('presensi.editprofile', compact('karyawan'));
     }
@@ -566,8 +576,7 @@ class PresensiController extends Controller
         $jam_masuk_default = $jamKerja ? $jamKerja->jam_masuk : '07:30:00';
 
         $no   = 0;
-        // $html = '';
-        $html = '<tr data-status="' . strtolower($d->status ?? '') . '" data-jam-out="' . ($d->jam_out ?? '') . '">';
+        $html = '';
 
         if ($presensi->isEmpty()) {
             $html .= '<tr>';
@@ -643,6 +652,7 @@ class PresensiController extends Controller
                 if (!empty($d->status)) {
                     $statusMap = [
                         'hadir'     => '<span class="badge bg-success">Hadir</span>',
+                        'toleransi' => '<span class="badge bg-info text-dark">Hadir (Toleransi)</span>',
                         'terlambat' => '<span class="badge bg-warning text-dark">Terlambat</span>',
                         'alpha'     => '<span class="badge bg-danger">Alpha</span>',
                     ];
@@ -685,24 +695,16 @@ class PresensiController extends Controller
     //  SHOWMAP
     // ─────────────────────────────────────────────
 
-    // public function showmap(Request $request)
-    // {
-    //     $id         = $request->id;
-    //     $presensi   = DB::table('presensi')->where('id', $id)->first();
-    //     $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
-
-    //     return view('presensi.showmap', compact('presensi', 'lok_kantor'));
-    // }
-
-    public function showMap(Request $request)
+    public function showmap(Request $request)
     {
-        $id       = $request->id;
-        $presensi = DB::table('presensi')->where('id', $id)
-            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->first();
+        $id         = $request->id;
+        $presensi   = DB::table('presensi')->where('id', $id)->first();
         $lok_kantor = DB::table('konfigurasi_lokasi')->where('id', 1)->first();
+
         return view('presensi.showmap', compact('presensi', 'lok_kantor'));
     }
+
+
 
     public function deletePresensi($id)
     {
